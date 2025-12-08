@@ -27,17 +27,49 @@ export function FileList({ files }: Props): React.JSX.Element {
         <span className="text-sm text-gray-600">{totalSize} MB</span>
       </div>
 
-      <div className="mb-4 flex gap-2 flex-wrap">
-        {Object.entries(byCategory).map(([cat, count]) => (
-          <span key={cat} className="px-2 py-1 bg-gray-200 rounded text-xs">
-            {cat}: {count}
-          </span>
-        ))}
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="p-4 bg-white dark:bg-gray-800 rounded shadow-sm border dark:border-gray-700">
+          <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-2">
+            Storage Overview
+          </h3>
+          <div className="text-3xl font-bold dark:text-white">
+            {files.length} <span className="text-lg font-normal text-gray-400">files</span>
+          </div>
+          <div className="text-gray-600 dark:text-gray-300 mt-1">{totalSize} MB total size</div>
+        </div>
+
+        <div className="p-4 bg-white dark:bg-gray-800 rounded shadow-sm border dark:border-gray-700 overflow-hidden">
+          <h3 className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase mb-3">
+            Distribution
+          </h3>
+          <div className="space-y-2">
+            {Object.entries(byCategory).map(([cat, count]) => {
+              const percentage = Math.round((count / files.length) * 100)
+              return (
+                <div key={cat} className="flex items-center text-xs">
+                  <div
+                    className="w-20 font-medium capitalize truncate dark:text-gray-300"
+                    title={cat}
+                  >
+                    {cat}
+                  </div>
+                  <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mx-2">
+                    <div
+                      className={`h-full rounded-full ${getCategoryColorBar(cat)}`}
+                      style={{ width: `${percentage}%` }}
+                    ></div>
+                  </div>
+                  <div className="w-8 text-right text-gray-500 dark:text-gray-400">{count}</div>
+                </div>
+              )
+            })}
+          </div>
+        </div>
       </div>
 
-      <div className="overflow-auto max-h-[400px] border rounded">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 sticky top-0">
+      <div className="overflow-auto max-h-[400px] border rounded dark:border-gray-700">
+        <table className="w-full text-sm text-left dark:text-gray-300">
+          <thead className="bg-gray-50 dark:bg-gray-800 sticky top-0">
             <tr>
               <th className="p-2">Name</th>
               <th className="p-2">Category</th>
@@ -46,7 +78,10 @@ export function FileList({ files }: Props): React.JSX.Element {
           </thead>
           <tbody>
             {files.map((file, idx) => (
-              <tr key={idx} className="border-t hover:bg-gray-50">
+              <tr
+                key={idx}
+                className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-800/50"
+              >
                 <td className="p-2 truncate max-w-[200px]" title={file.name}>
                   {file.name}
                 </td>
@@ -83,5 +118,24 @@ function getCategoryColor(cat: string): string {
       return 'bg-red-100 text-red-800'
     default:
       return 'bg-gray-100 text-gray-800'
+  }
+}
+
+function getCategoryColorBar(cat: string): string {
+  switch (cat) {
+    case 'image':
+      return 'bg-purple-500'
+    case 'video':
+      return 'bg-pink-500'
+    case 'document':
+      return 'bg-blue-500'
+    case 'archive':
+      return 'bg-yellow-500'
+    case 'dev':
+      return 'bg-green-500'
+    case 'executable':
+      return 'bg-red-500'
+    default:
+      return 'bg-gray-500'
   }
 }

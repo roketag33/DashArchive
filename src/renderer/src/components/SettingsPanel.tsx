@@ -83,6 +83,27 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
         </div>
 
         <div className="flex-1 overflow-auto p-6">
+          <div className="mb-8">
+            <h3 className="text-lg font-semibold mb-4">Preferences</h3>
+            <div className="flex items-center justify-between border p-4 rounded bg-gray-50">
+              <div>
+                <div className="font-bold">Dark Mode</div>
+                <div className="text-sm text-gray-600">Enable dark theme for the interface</div>
+              </div>
+              <label className="relative inline-flex items-center cursor-pointer">
+                <input
+                  type="checkbox"
+                  className="sr-only peer"
+                  checked={settings.theme === 'dark'}
+                  onChange={(e) =>
+                    onSave({ ...settings, theme: e.target.checked ? 'dark' : 'light' })
+                  }
+                />
+                <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              </label>
+            </div>
+          </div>
+
           <div className="mb-6 flex justify-between items-center">
             <h3 className="text-lg font-semibold">Rules ({rules.length})</h3>
             <button

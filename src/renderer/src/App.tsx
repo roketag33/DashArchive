@@ -145,117 +145,121 @@ function App(): React.JSX.Element {
   }
 
   return (
-    <div className="container mx-auto p-4 max-w-4xl">
-      <header className="flex items-center justify-between mb-8 border-b pb-4">
-        <div className="flex items-center gap-4 cursor-pointer" onClick={handleReset}>
-          <img src={electronLogo} className="h-10 w-10 animate-spin-slow" alt="logo" />
-          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
-            File Organizer
-          </h1>
-        </div>
-        <div className="flex gap-2">
-          <button
-            onClick={handleShowHistory}
-            className="text-gray-600 hover:text-blue-600 p-2"
-            title="History"
-          >
-            🕒
-          </button>
-          <button
-            onClick={() => setShowSettings(true)}
-            className="text-gray-600 hover:text-blue-600 p-2"
-            title="Settings"
-          >
-            ⚙️
-          </button>
-        </div>
-      </header>
-
-      <main className="space-y-6">
-        {showSettings && settings && (
-          <SettingsPanel
-            settings={settings}
-            onSave={handleSaveSettings}
-            onClose={() => setShowSettings(false)}
-          />
-        )}
-
-        {showHistory && (
-          <HistoryPanel
-            history={history}
-            onUndo={handleUndo}
-            onClose={() => setShowHistory(false)}
-          />
-        )}
-
-        {!plan && !executionResult && !showSettings && !showHistory && (
-          <>
-            <FolderSelector onSelect={handleFolderSelect} isLoading={scanning} />
-
-            {selectedPath && (
-              <div className="bg-blue-50 px-4 py-2 rounded text-blue-700 text-sm flex justify-between items-center">
-                <span>
-                  Selected: <span className="font-mono">{selectedPath}</span>
-                </span>
-                {files.length > 0 && (
-                  <button
-                    onClick={handleGeneratePlan}
-                    className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 text-sm font-bold"
-                  >
-                    Organize {files.length} Files
-                  </button>
-                )}
-              </div>
-            )}
-
-            {files.length > 0 && <FileList files={files} />}
-          </>
-        )}
-
-        {plan && !showSettings && !showHistory && (
-          <PlanPreview
-            plan={plan}
-            onConfirm={handleExecutePlan}
-            onCancel={() => setPlan(null)}
-            isExecuting={isExecuting}
-          />
-        )}
-
-        {executionResult && !showSettings && !showHistory && (
-          <div className="bg-white p-6 rounded shadow text-center">
-            <div
-              className={`text-6xl mb-4 ${executionResult.success ? 'text-green-500' : 'text-orange-500'}`}
-            >
-              {executionResult.success ? '✓' : '⚠'}
-            </div>
-            <h2 className="text-2xl font-bold mb-2">Operation Complete</h2>
-            <p className="text-gray-600 mb-6">
-              Successfully processed {executionResult.processed - executionResult.failed} files.
-              {executionResult.failed > 0 && ` Failed to move ${executionResult.failed} files.`}
-            </p>
-
-            {executionResult.errors.length > 0 && (
-              <div className="text-left bg-red-50 p-4 rounded mb-6 max-h-[200px] overflow-auto">
-                <h3 className="font-bold text-red-700 mb-2">Errors:</h3>
-                <ul className="list-disc list-inside text-sm text-red-600">
-                  {executionResult.errors.map((err, idx) => (
-                    <li key={idx}>
-                      <span className="font-mono text-xs">{err.file}</span>: {err.error}
-                    </li>
-                  ))}
-                </ul>
-              </div>
-            )}
-
+    <div
+      className={`min-h-screen transition-colors duration-200 ${settings?.theme === 'dark' ? 'dark bg-gray-900 text-white' : 'bg-white text-gray-900'}`}
+    >
+      <div className="container mx-auto p-4 max-w-4xl">
+        <header className="flex items-center justify-between mb-8 border-b pb-4 dark:border-gray-700">
+          <div className="flex items-center gap-4 cursor-pointer" onClick={handleReset}>
+            <img src={electronLogo} className="h-10 w-10 animate-spin-slow" alt="logo" />
+            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
+              File Organizer
+            </h1>
+          </div>
+          <div className="flex gap-2">
             <button
-              onClick={() => setExecutionResult(null)}
-              className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+              onClick={handleShowHistory}
+              className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 p-2"
+              title="History"
             >
-              Back to Dashboard
+              🕒
+            </button>
+            <button
+              onClick={() => setShowSettings(true)}
+              className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 p-2"
+              title="Settings"
+            >
+              ⚙️
             </button>
           </div>
-        )}
-      </main>
+        </header>
+
+        <main className="space-y-6">
+          {showSettings && settings && (
+            <SettingsPanel
+              settings={settings}
+              onSave={handleSaveSettings}
+              onClose={() => setShowSettings(false)}
+            />
+          )}
+
+          {showHistory && (
+            <HistoryPanel
+              history={history}
+              onUndo={handleUndo}
+              onClose={() => setShowHistory(false)}
+            />
+          )}
+
+          {!plan && !executionResult && !showSettings && !showHistory && (
+            <>
+              <FolderSelector onSelect={handleFolderSelect} isLoading={scanning} />
+
+              {selectedPath && (
+                <div className="bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded text-blue-700 dark:text-blue-300 text-sm flex justify-between items-center">
+                  <span>
+                    Selected: <span className="font-mono">{selectedPath}</span>
+                  </span>
+                  {files.length > 0 && (
+                    <button
+                      onClick={handleGeneratePlan}
+                      className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 text-sm font-bold"
+                    >
+                      Organize {files.length} Files
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {files.length > 0 && <FileList files={files} />}
+            </>
+          )}
+
+          {plan && !showSettings && !showHistory && (
+            <PlanPreview
+              plan={plan}
+              onConfirm={handleExecutePlan}
+              onCancel={() => setPlan(null)}
+              isExecuting={isExecuting}
+            />
+          )}
+
+          {executionResult && !showSettings && !showHistory && (
+            <div className="bg-white dark:bg-gray-800 p-6 rounded shadow text-center">
+              <div
+                className={`text-6xl mb-4 ${executionResult.success ? 'text-green-500' : 'text-orange-500'}`}
+              >
+                {executionResult.success ? '✓' : '⚠'}
+              </div>
+              <h2 className="text-2xl font-bold mb-2">Operation Complete</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
+                Successfully processed {executionResult.processed - executionResult.failed} files.
+                {executionResult.failed > 0 && ` Failed to move ${executionResult.failed} files.`}
+              </p>
+
+              {executionResult.errors.length > 0 && (
+                <div className="text-left bg-red-50 dark:bg-red-900/20 p-4 rounded mb-6 max-h-[200px] overflow-auto">
+                  <h3 className="font-bold text-red-700 dark:text-red-400 mb-2">Errors:</h3>
+                  <ul className="list-disc list-inside text-sm text-red-600 dark:text-red-300">
+                    {executionResult.errors.map((err, idx) => (
+                      <li key={idx}>
+                        <span className="font-mono text-xs">{err.file}</span>: {err.error}
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              )}
+
+              <button
+                onClick={() => setExecutionResult(null)}
+                className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
+              >
+                Back to Dashboard
+              </button>
+            </div>
+          )}
+        </main>
+      </div>
     </div>
   )
 }
