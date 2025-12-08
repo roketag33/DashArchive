@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { scanDirectory } from './scanner'
-import * as fs from 'fs/promises'
+import * as fsPromises from 'fs/promises'
+import * as fs from 'fs'
 import * as path from 'path'
 
 vi.mock('fs/promises')
@@ -23,9 +24,9 @@ describe('Scanner', () => {
     }
 
     // Mock readdir
-    vi.mocked(fs.readdir).mockResolvedValue(mockDirents as any)
+    vi.mocked(fsPromises.readdir).mockResolvedValue(mockDirents as any) // eslint-disable-line @typescript-eslint/no-explicit-any
     // Mock stat
-    vi.mocked(fs.stat).mockResolvedValue(mockStats as any)
+    vi.mocked(fsPromises.stat).mockResolvedValue(mockStats as any) // eslint-disable-line @typescript-eslint/no-explicit-any
 
     const result = await scanDirectory('/test/dir')
 
@@ -58,15 +59,15 @@ describe('Scanner', () => {
 
     const subDirents = [{ name: 'file2.jpg', isDirectory: () => false, isFile: () => true }]
 
-    vi.mocked(fs.readdir).mockImplementation(async (dirPath) => {
-      if (dirPath.toString().endsWith('sub')) return subDirents as any
-      return rootDirents as any
+    vi.mocked(fsPromises.readdir).mockImplementation(async (dirPath) => {
+      if (dirPath.toString().endsWith('sub')) return subDirents as any // eslint-disable-line @typescript-eslint/no-explicit-any
+      return rootDirents as any // eslint-disable-line @typescript-eslint/no-explicit-any
     })
-    vi.mocked(fs.stat).mockResolvedValue({
+    vi.mocked(fsPromises.stat).mockResolvedValue({
       size: 500,
       birthtime: new Date(),
       mtime: new Date()
-    } as any)
+    } as unknown as fs.Stats)
 
     const result = await scanDirectory('/root')
 
@@ -81,8 +82,12 @@ describe('Scanner', () => {
       { name: '.git', isDirectory: () => true, isFile: () => false }
     ]
 
-    vi.mocked(fs.readdir).mockResolvedValue(dirents as any)
-    vi.mocked(fs.stat).mockResolvedValue({ size: 100, birthtime: new Date(), mtime: new Date() } as any)
+    vi.mocked(fsPromises.readdir).mockResolvedValue(dirents as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+    vi.mocked(fsPromises.stat).mockResolvedValue({
+      size: 100,
+      birthtime: new Date(),
+      mtime: new Date()
+    } as unknown as fs.Stats)
 
     const result = await scanDirectory('/root')
 

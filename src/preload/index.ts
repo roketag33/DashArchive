@@ -1,11 +1,13 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { FileEntry } from '../shared/types'
+import { FileEntry, Plan, ExecutionResult } from '../shared/types'
 
 // Custom APIs for renderer
 const api = {
   selectFolder: (): Promise<string | null> => ipcRenderer.invoke('dialog:openDirectory'),
-  scanFolder: (path: string): Promise<FileEntry[]> => ipcRenderer.invoke('scan-folder', path)
+  scanFolder: (path: string): Promise<FileEntry[]> => ipcRenderer.invoke('scan-folder', path),
+  generatePlan: (files: FileEntry[]): Promise<Plan> => ipcRenderer.invoke('generate-plan', files),
+  executePlan: (plan: Plan): Promise<ExecutionResult> => ipcRenderer.invoke('execute-plan', plan)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

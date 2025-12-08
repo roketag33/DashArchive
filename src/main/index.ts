@@ -1,6 +1,9 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { scanDirectory } from './scanner'
+import { buildPlan } from '../shared/planner'
+import { executePlan } from './executor'
+import { defaultRules } from './defaultRules'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -66,6 +69,15 @@ app.whenReady().then(() => {
 
   ipcMain.handle('scan-folder', async (_, path) => {
     return await scanDirectory(path)
+  })
+
+  ipcMain.handle('generate-plan', (_, files) => {
+    // In a real app, we might merge user rules with default rules
+    return buildPlan(files, defaultRules)
+  })
+
+  ipcMain.handle('execute-plan', async (_, plan) => {
+    return await executePlan(plan)
   })
 
   createWindow()

@@ -22,55 +22,78 @@ const mockFile2: FileEntry = {
   category: 'document'
 }
 
-const rules: Rule[] = [
-  { id: 'r1', priority: 10, type: 'extension', match: ['jpg'], destination: 'Images' },
-  { id: 'r2', priority: 5, type: 'fallback', destination: 'Other' }
+const mockRules: Rule[] = [
+  {
+    id: 'r1',
+    name: 'Img',
+    isActive: true,
+    priority: 1,
+    type: 'extension',
+    extensions: ['jpg'],
+    destination: 'Images'
+  },
+  {
+    id: 'r2',
+    name: 'Fallback',
+    isActive: true,
+    priority: 0,
+    type: 'fallback',
+    destination: 'Others'
+  }
 ]
 
 describe('Plan Builder', () => {
   it('should assign correct rules to files', () => {
-    const plan = buildPlan([mockFile1, mockFile2], rules)
+    const plan = buildPlan([mockFile1, mockFile2], mockRules)
     expect(plan.totalFiles).toBe(2)
 
     const move1 = plan.items.find((i) => i.file.name === 'img1.jpg')
     expect(move1).toBeDefined()
+    expect(move1?.ruleId).toBe('r1') // Img rule
     expect(move1?.destinationPath).toBe('Images/img1.jpg')
-    expect(move1?.ruleId).toBe('r1')
 
     const move2 = plan.items.find((i) => i.file.name === 'doc.pdf')
     expect(move2).toBeDefined()
-    // doc.pdf doesn't match r1, should match r2 (fallback)
-    expect(move2?.destinationPath).toBe('Other/doc.pdf')
-    expect(move2?.ruleId).toBe('r2')
+    expect(move2?.ruleId).toBe('r2') // Fallback rule
+    expect(move2?.destinationPath).toBe('Others/doc.pdf')
   })
 
-  it('should handle destination collisions with rename', () => {
-    const conflictFiles = [
-      { ...mockFile1, name: 'dup.jpg' },
-      { ...mockFile1, name: 'dup.jpg', path: '/src/sub/dup.jpg' } // Same name, different source
+  it('should handle conflict resolution renaming', () => {
+    // Two files resulting in same destination
+    // File 1: conflict.jpg -> Images/conflict.jpg
+    // File 2: conflict.jpg (different folder but same name) -> Images/conflict.jpg -> Images/conflict (1).jpg
+
+    // Determine order: plan builder preserves order of input files
+    const file1 = { ...mockFile1, name: 'conflict.jpg', path: '/source/conflict.jpg' }
+    const file2 = { ...mockFile1, name: 'conflict.jpg', path: '/source/sub/conflict.jpg' }
+
+    const plan = buildPlan([file1, file2], mockRules)
+
+    expect(plan.totalFiles).toBe(2)
+
+    const item1 = plan.items.find((i) => i.file.path === '/source/conflict.jpg')
+    const item2 = plan.items.find((i) => i.file.path === '/source/sub/conflict.jpg')
+
+    expect(item1?.destinationPath).toBe('Images/conflict.jpg')
+    expect(item2?.destinationPath).toBe('Images/conflict (1).jpg')
+    expect(item2?.status).toBe('ok')
+  })
+
+  it('should skip files matching no rules (if no fallback)', () => {
+    const strictRules: Rule[] = [
+      {
+        id: 'r1',
+        name: 'Img',
+        isActive: true,
+        priority: 1,
+        type: 'extension',
+        extensions: ['jpg'],
+        destination: 'Images'
+      }
     ]
-
-    // Both go to 'Images/dup.jpg' initially
-    const plan = buildPlan(conflictFiles, rules)
-
-    const moves = plan.items
-    expect(moves).toHaveLength(2)
-
-    const dests = moves.map((m) => m.destinationPath).sort()
-    expect(dests).toEqual(['Images/dup (1).jpg', 'Images/dup.jpg'])
-  })
-
-  it('should handle no matching rules', () => {
-    const file = { ...mockFile2 } // pdf
-    const plan = buildPlan([file], [rules[0]]) // Only jpg rule
-
-    expect(plan.items).toHaveLength(0) // Assuming we ignore files with no rules? Or specific "ignored" status?
-    // Let's refine requirements: "Plan includes... Ignored status"
-    // If no rule matches, does it appear in plan?
-    // Requirement 4.4: Table operations... Status (OK / Conflit / Ignoré)
-    // So yes, it should appear with ignored status?
-    // Or "Ignoré" means "Rule found but action ignored"?
-    // Usually, if no rule matches, we don't move it.
+    const plan = buildPlan([mockFile2], strictRules) // doc.pdf
+    expect(plan.totalFiles).toBe(1)
+    expect(plan.items).toHaveLength(0)
     // Let's assume we ONLY log items that HAVE a matching rule for now, OR return everything.
     // Re-reading: "Le plan est une liste d’opérations".
     // If no rule matches, no operation.

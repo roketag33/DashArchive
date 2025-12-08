@@ -1,21 +1,25 @@
 import { Rule, FileEntry } from './types'
 
 export function matchRule(file: FileEntry, rule: Rule): boolean {
+  if (!rule.isActive) return false
+
   switch (rule.type) {
     case 'extension':
-      return rule.match ? rule.match.includes(file.extension.toLowerCase()) : false
-    case 'namePattern':
-      if (!rule.pattern) return false
+      return rule.extensions?.includes(file.extension) ?? false
+    case 'name':
+      if (!rule.namePattern) return false
       try {
-        return new RegExp(rule.pattern).test(file.name)
+        return new RegExp(rule.namePattern).test(file.name)
       } catch (e) {
-        console.error(`Invalid regex for rule ${rule.id}: ${rule.pattern}`, e)
+        console.error(`Invalid regex for rule ${rule.id}: ${rule.namePattern}`, e)
         return false
       }
     case 'size':
-      return rule.minBytes !== undefined ? file.size >= rule.minBytes : false
+      if (rule.sizeMin && file.size < rule.sizeMin) return false
+      // if (rule.sizeMax && file.size > rule.sizeMax) return false; // This line was commented out in the provided edit, keeping it as is.
+      return true
     case 'category':
-      return rule.match ? rule.match.includes(file.category) : false
+      return rule.categories ? rule.categories.includes(file.category) : false
     case 'date':
       // TODO: Implement date matching logic if needed later (e.g. older than X)
       // For now, MVP requirements didn't specify date matching criteria details, just sorting by date.
