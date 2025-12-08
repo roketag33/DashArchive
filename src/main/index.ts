@@ -7,6 +7,8 @@ import { getSettings, saveSettings } from './settings'
 import { addEntry, getHistory, markReverted } from './journal'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
+import { extractText } from './textExtractor'
+import { aiService } from './aiService'
 
 function createWindow(): void {
   // Create the browser window.
@@ -72,9 +74,11 @@ app.whenReady().then(() => {
     return await scanDirectory(path)
   })
 
-  ipcMain.handle('generate-plan', (_, files) => {
+  ipcMain.handle('generate-plan', async (_, files) => {
     const rules = getSettings().rules
-    return buildPlan(files, rules)
+    return await buildPlan(files, rules, extractText, (text, labels) =>
+      aiService.classify(text, labels)
+    )
   })
 
   ipcMain.handle('execute-plan', async (_, plan) => {

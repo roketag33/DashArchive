@@ -1,6 +1,11 @@
 import { Rule, FileEntry } from './types'
 
-export function matchRule(file: FileEntry, rule: Rule): boolean {
+export async function matchRule(
+  file: FileEntry,
+  rule: Rule,
+  contentFetcher?: (path: string) => Promise<string>,
+  classifier?: (text: string, labels: string[]) => Promise<string | null>
+): Promise<boolean> {
   if (!rule.isActive) return false
 
   switch (rule.type) {
@@ -26,6 +31,55 @@ export function matchRule(file: FileEntry, rule: Rule): boolean {
         return file.modifiedAt.getTime() < cutoff
       }
       return false
+    case 'ai': {
+      if (!contentFetcher || !classifier) return false
+      if (!rule.aiPrompts || rule.aiPrompts.length === 0) return false
+
+      try {
+        // Optimized: We should probably cache content if multiple rules need it?
+        // For MVP, we fetch every time or rely on OS cache.
+        const text = await contentFetcher(file.path)
+        if (!text || text.length < 10) return false // Too short
+
+        // If the classifier returns one of our prompts, it's a match?
+        // Usually ZeroShot returns the best label.
+        // We assume if the top label is in our list (which it is by definition of the API),
+        // we might want to check confidence?
+        // For simplicity: If the classifier returns a label, does it mean it MATCHES this rule?
+        // The rule asks: "Is this file X or Y?".
+        // If we have multiple AI rules, it's tricky.
+        // Rule A: [Invoice]
+        // Rule B: [Resume]
+        // If we run Rule A, we ask classify(text, ['Invoice', 'Other']). If 'Invoice', match.
+        // If we just pass ['Invoice'], it will always say Invoice (100%).
+        // SO: We must always compare against a "Negative" or "Other" class?
+        // OR: We rely on the user providing a list of categories in the rule?
+        // Implementation decision: The rule defines "Categories to catch".
+        // We should classify against [ ...rule.aiPrompts, "Other" ].
+        // If result is NOT "Other", it's a match.
+        // ALSO: we want to capture the matched label to use in destination?
+        // For now, simple boolean match.
+
+        const labels = [...rule.aiPrompts, 'Other'] // Heuristic: Add 'Other' to allow rejection
+        const bestLabel = await classifier(text, labels)
+
+        if (bestLabel && bestLabel !== 'Other' && rule.aiPrompts.includes(bestLabel)) {
+          // Store the label on the file entry for destination resolution?
+          // Dirty hack: modify file entry temporarily or use a WeakMap?
+          // Since FileEntry is passed by ref, we can add a transient property if we extended the type.
+          // Let's attach it to 'file' for now as 'aiEvaluation' if added to type, or just return true.
+          // If we want {ai_label} in destination, we need it.
+          // Let's return true for now.
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          ;(file as any).aiLabel = bestLabel // Temporary hack for resolution
+          return true
+        }
+        return false
+      } catch (e) {
+        console.error('AI match failed', e)
+        return false
+      }
+    }
     case 'fallback':
       return true
     default:

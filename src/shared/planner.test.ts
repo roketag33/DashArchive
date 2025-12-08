@@ -43,8 +43,8 @@ const mockRules: Rule[] = [
 ]
 
 describe('Plan Builder', () => {
-  it('should assign correct rules to files', () => {
-    const plan = buildPlan([mockFile1, mockFile2], mockRules)
+  it('should assign correct rules to files', async () => {
+    const plan = await buildPlan([mockFile1, mockFile2], mockRules)
     expect(plan.totalFiles).toBe(2)
 
     const move1 = plan.items.find((i) => i.file.name === 'img1.jpg')
@@ -58,7 +58,7 @@ describe('Plan Builder', () => {
     expect(move2?.destinationPath).toBe('Others/doc.pdf')
   })
 
-  it('should handle conflict resolution renaming', () => {
+  it('should handle conflict resolution renaming', async () => {
     // Two files resulting in same destination
     // File 1: conflict.jpg -> Images/conflict.jpg
     // File 2: conflict.jpg (different folder but same name) -> Images/conflict.jpg -> Images/conflict (1).jpg
@@ -67,7 +67,7 @@ describe('Plan Builder', () => {
     const file1 = { ...mockFile1, name: 'conflict.jpg', path: '/source/conflict.jpg' }
     const file2 = { ...mockFile1, name: 'conflict.jpg', path: '/source/sub/conflict.jpg' }
 
-    const plan = buildPlan([file1, file2], mockRules)
+    const plan = await buildPlan([file1, file2], mockRules)
 
     expect(plan.totalFiles).toBe(2)
 
@@ -79,7 +79,7 @@ describe('Plan Builder', () => {
     expect(item2?.status).toBe('ok')
   })
 
-  it('should skip files matching no rules (if no fallback)', () => {
+  it('should skip files matching no rules (if no fallback)', async () => {
     const strictRules: Rule[] = [
       {
         id: 'r1',
@@ -91,7 +91,7 @@ describe('Plan Builder', () => {
         destination: 'Images'
       }
     ]
-    const plan = buildPlan([mockFile2], strictRules) // doc.pdf
+    const plan = await buildPlan([mockFile2], strictRules) // doc.pdf
     expect(plan.totalFiles).toBe(1)
     expect(plan.items).toHaveLength(0)
     // Let's assume we ONLY log items that HAVE a matching rule for now, OR return everything.

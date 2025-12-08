@@ -2,7 +2,12 @@ import { Plan, FileEntry, Rule, PlanItem } from './types'
 import { matchRule, resolveDestination } from './engine'
 import { getNextAvailableName } from './conflict'
 
-export function buildPlan(files: FileEntry[], rules: Rule[]): Plan {
+export async function buildPlan(
+  files: FileEntry[],
+  rules: Rule[],
+  contentFetcher?: (path: string) => Promise<string>,
+  classifier?: (text: string, labels: string[]) => Promise<string | null>
+): Promise<Plan> {
   // Sort rules by priority desc
   const sortedRules = [...rules].sort((a, b) => b.priority - a.priority)
 
@@ -11,7 +16,15 @@ export function buildPlan(files: FileEntry[], rules: Rule[]): Plan {
 
   for (const file of files) {
     // Find first matching rule
-    const matchedRule = sortedRules.find((rule) => matchRule(file, rule))
+    let matchedRule: Rule | undefined
+
+    for (const rule of sortedRules) {
+      const isMatch = await matchRule(file, rule, contentFetcher, classifier)
+      if (isMatch) {
+        matchedRule = rule
+        break
+      }
+    }
 
     if (matchedRule) {
       const initialDest = resolveDestination(file, matchedRule)

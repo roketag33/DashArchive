@@ -13,7 +13,7 @@ const mockFile: FileEntry = {
 }
 
 describe('Rule Engine - matchRule', () => {
-  it('should match extension rule', () => {
+  it('should match extension rule', async () => {
     const rule: Rule = {
       id: '1',
       name: 'Images',
@@ -24,10 +24,10 @@ describe('Rule Engine - matchRule', () => {
       destination: 'Images'
     }
     const file = { name: 'test.jpg', extension: 'jpg' } as FileEntry
-    expect(matchRule(file, rule)).toBe(true)
+    expect(await matchRule(file, rule)).toBe(true)
   })
 
-  it('should not match extension rule', () => {
+  it('should not match extension rule', async () => {
     const rule: Rule = {
       id: '1',
       name: 'Images',
@@ -39,10 +39,10 @@ describe('Rule Engine - matchRule', () => {
     }
     const file = { name: 'test.txt', extension: 'txt' } as FileEntry
     // Inactive check logic is inside matchRule
-    expect(matchRule(file, rule)).toBe(false)
+    expect(await matchRule(file, rule)).toBe(false)
   })
 
-  it('should match name pattern rule', () => {
+  it('should match name pattern rule', async () => {
     const rule: Rule = {
       id: '2',
       name: 'Logs',
@@ -53,10 +53,10 @@ describe('Rule Engine - matchRule', () => {
       destination: 'Logs'
     }
     const file = { name: 'log_2023.txt' } as FileEntry
-    expect(matchRule(file, rule)).toBe(true)
+    expect(await matchRule(file, rule)).toBe(true)
   })
 
-  it('should match fallback rule', () => {
+  it('should match fallback rule', async () => {
     const rule: Rule = {
       id: '99',
       name: 'Others',
@@ -66,10 +66,10 @@ describe('Rule Engine - matchRule', () => {
       destination: 'Others'
     }
     const file = { name: 'anything' } as FileEntry
-    expect(matchRule(file, rule)).toBe(true)
+    expect(await matchRule(file, rule)).toBe(true)
   })
 
-  it('should ignore inactive rules', () => {
+  it('should ignore inactive rules', async () => {
     const rule: Rule = {
       id: '1',
       name: 'Images',
@@ -80,7 +80,29 @@ describe('Rule Engine - matchRule', () => {
       destination: 'Images'
     }
     const file = { name: 'test.jpg', extension: 'jpg' } as FileEntry
-    expect(matchRule(file, rule)).toBe(false)
+    expect(await matchRule(file, rule)).toBe(false)
+  })
+
+  it('should match AI rule', async () => {
+    const rule: Rule = {
+      id: 'ai1',
+      name: 'Invoices',
+      isActive: true,
+      priority: 10,
+      type: 'ai',
+      aiPrompts: ['Invoice', 'Contract'],
+      destination: 'Financial'
+    }
+    const file = { path: '/test/invoice.pdf', name: 'invoice.pdf' } as FileEntry
+
+    const mockFetcher = async (): Promise<string> => 'This is an invoice for $500'
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const mockClassifier = async (text: string, _labels: string[]): Promise<string> => {
+      if (text.includes('invoice')) return 'Invoice'
+      return 'Other'
+    }
+
+    expect(await matchRule(file, rule, mockFetcher, mockClassifier)).toBe(true)
   })
 })
 
@@ -192,7 +214,7 @@ describe('Rule Engine - resolveDestination', () => {
 })
 
 describe('Size Rules', () => {
-  it('should match file larger than sizeMin', () => {
+  it('should match file larger than sizeMin', async () => {
     const rule: Rule = {
       id: '1',
       type: 'size',
@@ -204,11 +226,11 @@ describe('Size Rules', () => {
     const smallFile = { ...mockFile, size: 500 }
     const largeFile = { ...mockFile, size: 1500 }
 
-    expect(matchRule(smallFile, rule)).toBe(false)
-    expect(matchRule(largeFile, rule)).toBe(true)
+    expect(await matchRule(smallFile, rule)).toBe(false)
+    expect(await matchRule(largeFile, rule)).toBe(true)
   })
 
-  it('should match file smaller than sizeMax', () => {
+  it('should match file smaller than sizeMax', async () => {
     const rule: Rule = {
       id: '2',
       type: 'size',
@@ -220,11 +242,11 @@ describe('Size Rules', () => {
     const smallFile = { ...mockFile, size: 500 }
     const largeFile = { ...mockFile, size: 1500 }
 
-    expect(matchRule(smallFile, rule)).toBe(true)
-    expect(matchRule(largeFile, rule)).toBe(false)
+    expect(await matchRule(smallFile, rule)).toBe(true)
+    expect(await matchRule(largeFile, rule)).toBe(false)
   })
 
-  it('should match file within range', () => {
+  it('should match file within range', async () => {
     const rule: Rule = {
       id: '3',
       type: 'size',
@@ -238,14 +260,14 @@ describe('Size Rules', () => {
     const medium = { ...mockFile, size: 1500 }
     const large = { ...mockFile, size: 2500 }
 
-    expect(matchRule(small, rule)).toBe(false)
-    expect(matchRule(medium, rule)).toBe(true)
-    expect(matchRule(large, rule)).toBe(false)
+    expect(await matchRule(small, rule)).toBe(false)
+    expect(await matchRule(medium, rule)).toBe(true)
+    expect(await matchRule(large, rule)).toBe(false)
   })
 })
 
 describe('Date Rules', () => {
-  it('should match file older than ageDays', () => {
+  it('should match file older than ageDays', async () => {
     const rule: Rule = {
       id: '4',
       type: 'date',
@@ -261,11 +283,11 @@ describe('Date Rules', () => {
     const newFile = { ...mockFile, modifiedAt: fiveDaysOld }
     const oldFile = { ...mockFile, modifiedAt: fifteenDaysOld }
 
-    expect(matchRule(newFile, rule)).toBe(false)
-    expect(matchRule(oldFile, rule)).toBe(true)
+    expect(await matchRule(newFile, rule)).toBe(false)
+    expect(await matchRule(oldFile, rule)).toBe(true)
   })
 
-  it('should not match if ageDays is missing', () => {
+  it('should not match if ageDays is missing', async () => {
     const rule: Rule = {
       id: '5',
       type: 'date',
@@ -275,6 +297,6 @@ describe('Date Rules', () => {
     }
     const now = new Date()
     const oldFile = { ...mockFile, modifiedAt: new Date(now.getTime() - 100 * 24 * 60 * 60 * 1000) }
-    expect(matchRule(oldFile, rule)).toBe(false)
+    expect(await matchRule(oldFile, rule)).toBe(false)
   })
 })

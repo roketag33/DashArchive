@@ -18,17 +18,18 @@ export interface FileEntry {
   category: FileCategory
 }
 
-export type RuleType = 'extension' | 'namePattern' | 'size' | 'date' | 'category' | 'fallback'
+export type RuleType = 'extension' | 'name' | 'size' | 'date' | 'category' | 'ai' | 'fallback'
 
 export interface Rule {
   id: string
-  type: 'extension' | 'name' | 'size' | 'date' | 'category' | 'fallback'
+  type: RuleType
   extensions?: string[]
   namePattern?: string // Regex string
   sizeMin?: number
   sizeMax?: number
   categories?: FileCategory[]
   ageDays?: number // For 'date' rules: older than X days
+  aiPrompts?: string[] // For 'ai' rules: candidate labels or description
   description?: string
 
   // UI related

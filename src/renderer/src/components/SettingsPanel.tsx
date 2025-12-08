@@ -78,6 +78,14 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
     setEditForm((prev) => ({ ...prev, extensions: arr }))
   }
 
+  const handleAiPromptsChange = (value: string): void => {
+    const arr = value
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => s)
+    setEditForm((prev) => ({ ...prev, aiPrompts: arr }))
+  }
+
   const handleSelectDestination = async (): Promise<void> => {
     // @ts-ignore (api exposed in preload)
     const path = await window.api.selectFolder()
@@ -173,6 +181,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                               <option value="size">Size</option>
                               <option value="date">Date (Age)</option>
                               <option value="category">Category</option>
+                              <option value="ai">AI Smart Sort (Local)</option>
                               <option value="fallback">Fallback</option>
                             </select>
                           </div>
@@ -221,6 +230,19 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                 onChange={(e) => handleChange('ageDays', parseInt(e.target.value))}
                               />
                             )}
+                            {editForm.type === 'ai' && (
+                              <div className="grid gap-2">
+                                <Input
+                                  placeholder="Categories e.g. Invoice, Contract, Personal"
+                                  value={editForm.aiPrompts?.join(', ') || ''}
+                                  onChange={(e) => handleAiPromptsChange(e.target.value)}
+                                />
+                                <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-900">
+                                  <strong>Note:</strong> First run will download the AI model
+                                  (~50MB). Processing will be slower than standard rules.
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </div>
                         <div className="flex justify-end gap-2">
@@ -245,6 +267,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                               <span>Extensions: {rule.extensions?.join(', ')}</span>
                             )}
                             {rule.type === 'name' && <span>Pattern: {rule.namePattern}</span>}
+                            {rule.type === 'ai' && <span>AI: {rule.aiPrompts?.join(', ')}</span>}
                             <span className="mx-2">→</span>
                             <span className="font-mono bg-muted px-1 py-0.5 rounded text-xs">
                               {rule.destination}
