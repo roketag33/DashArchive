@@ -90,4 +90,33 @@ describe('Executor', () => {
     expect(result.errors).toHaveLength(1)
     expect(result.errors[0].file).toBe('/src/bad.jpg')
   })
+
+  it('should undo a plan by moving files back', async () => {
+    const mockPlan: Plan = {
+      items: [
+        {
+          id: '1',
+          file: { path: '/src/file1.jpg', name: 'file1.jpg' } as unknown as FileEntry,
+          ruleId: 'r1',
+          destinationPath: '/dest/file1.jpg',
+          status: 'ok'
+        }
+      ],
+      totalFiles: 1,
+      timestamp: new Date()
+    }
+
+    // Mock undo
+    vi.mocked(fs.mkdir).mockResolvedValue(undefined)
+    vi.mocked(fs.rename).mockResolvedValue(undefined)
+
+    const { undoPlan } = await import('./executor') // Re-import to get the new function if needed
+    const result = await undoPlan(mockPlan)
+
+    expect(result.success).toBe(true)
+    expect(result.processed).toBe(1)
+
+    // Verify reverse move
+    expect(fs.rename).toHaveBeenCalledWith('/dest/file1.jpg', '/src/file1.jpg')
+  })
 })

@@ -68,3 +68,10 @@ export interface AppSettings {
   language: string
   firstRun: boolean
 }
+
+export interface JournalEntry {
+  id: string
+  timestamp: number
+  plan: Plan
+  status: 'revertible' | 'reverted'
+}

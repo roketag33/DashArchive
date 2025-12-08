@@ -2,8 +2,9 @@ import { useState, useEffect } from 'react'
 import { FolderSelector } from './components/FolderSelector'
 import { FileList } from './components/FileList'
 import { PlanPreview } from './components/PlanPreview'
-import { SettingsPanel } from './components/SettingsPanel' // Import SettingsPanel
-import { FileEntry, Plan, ExecutionResult, AppSettings } from '../../shared/types'
+import { SettingsPanel } from './components/SettingsPanel'
+import { HistoryPanel } from './components/HistoryPanel'
+import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry } from '../../shared/types'
 import electronLogo from './assets/electron.svg'
 
 function App(): React.JSX.Element {
@@ -18,8 +19,13 @@ function App(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [showSettings, setShowSettings] = useState(false)
 
+  // History State
+  const [history, setHistory] = useState<JournalEntry[]>([])
+  const [showHistory, setShowHistory] = useState(false)
+
   useEffect(() => {
     loadSettings()
+    loadHistory()
   }, [])
 
   const loadSettings = async (): Promise<void> => {
@@ -29,6 +35,42 @@ function App(): React.JSX.Element {
       setSettings(s)
     } catch (e) {
       console.error('Failed to load settings', e)
+    }
+  }
+
+  const loadHistory = async (): Promise<void> => {
+    try {
+      // @ts-ignore - Window.api is defined in preload
+      const h = await window.api.getHistory()
+      setHistory(h)
+    } catch (e) {
+      console.error('Failed to load history', e)
+    }
+  }
+
+  const handleShowHistory = (): void => {
+    loadHistory()
+    setShowHistory(true)
+  }
+
+  const handleUndo = async (entry: JournalEntry): Promise<void> => {
+    try {
+      // @ts-ignore - Window.api is defined in preload
+      const result = await window.api.undoPlan(entry.plan)
+      if (result.success) {
+        // Refresh history to show 'reverted' status?
+        // @ts-ignore - Window.api is defined in preload
+        await window.api.markReverted(entry.id)
+        loadHistory()
+        alert('Undo successful!')
+        setExecutionResult(result) // Show result of undo
+        setShowHistory(false)
+      } else {
+        alert('Undo failed: ' + result.errors.map((e) => e.error).join(', '))
+      }
+    } catch (e) {
+      console.error('Failed to undo', e)
+      alert('Failed to undo')
     }
   }
 
@@ -111,13 +153,22 @@ function App(): React.JSX.Element {
             File Organizer
           </h1>
         </div>
-        <button
-          onClick={() => setShowSettings(true)}
-          className="text-gray-600 hover:text-blue-600 p-2"
-          title="Settings"
-        >
-          ⚙️
-        </button>
+        <div className="flex gap-2">
+          <button
+            onClick={handleShowHistory}
+            className="text-gray-600 hover:text-blue-600 p-2"
+            title="History"
+          >
+            🕒
+          </button>
+          <button
+            onClick={() => setShowSettings(true)}
+            className="text-gray-600 hover:text-blue-600 p-2"
+            title="Settings"
+          >
+            ⚙️
+          </button>
+        </div>
       </header>
 
       <main className="space-y-6">
@@ -129,7 +180,15 @@ function App(): React.JSX.Element {
           />
         )}
 
-        {!plan && !executionResult && !showSettings && (
+        {showHistory && (
+          <HistoryPanel
+            history={history}
+            onUndo={handleUndo}
+            onClose={() => setShowHistory(false)}
+          />
+        )}
+
+        {!plan && !executionResult && !showSettings && !showHistory && (
           <>
             <FolderSelector onSelect={handleFolderSelect} isLoading={scanning} />
 
@@ -153,7 +212,7 @@ function App(): React.JSX.Element {
           </>
         )}
 
-        {plan && !showSettings && (
+        {plan && !showSettings && !showHistory && (
           <PlanPreview
             plan={plan}
             onConfirm={handleExecutePlan}
@@ -162,14 +221,14 @@ function App(): React.JSX.Element {
           />
         )}
 
-        {executionResult && !showSettings && (
+        {executionResult && !showSettings && !showHistory && (
           <div className="bg-white p-6 rounded shadow text-center">
             <div
               className={`text-6xl mb-4 ${executionResult.success ? 'text-green-500' : 'text-orange-500'}`}
             >
               {executionResult.success ? '✓' : '⚠'}
             </div>
-            <h2 className="text-2xl font-bold mb-2">Organization Complete</h2>
+            <h2 className="text-2xl font-bold mb-2">Operation Complete</h2>
             <p className="text-gray-600 mb-6">
               Successfully processed {executionResult.processed - executionResult.failed} files.
               {executionResult.failed > 0 && ` Failed to move ${executionResult.failed} files.`}

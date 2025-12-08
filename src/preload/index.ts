@@ -1,6 +1,6 @@
 import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { FileEntry, Plan, ExecutionResult, AppSettings } from '../shared/types'
+import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry } from '../shared/types'
 
 // Custom APIs for renderer
 const api = {
@@ -10,7 +10,9 @@ const api = {
   executePlan: (plan: Plan): Promise<ExecutionResult> => ipcRenderer.invoke('execute-plan', plan),
   getSettings: (): Promise<AppSettings> => ipcRenderer.invoke('get-settings'),
   saveSettings: (settings: Partial<AppSettings>): Promise<AppSettings> =>
-    ipcRenderer.invoke('save-settings', settings)
+    ipcRenderer.invoke('save-settings', settings),
+  getHistory: (): Promise<JournalEntry[]> => ipcRenderer.invoke('get-history'),
+  undoPlan: (plan: Plan): Promise<ExecutionResult> => ipcRenderer.invoke('undo-plan', plan)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

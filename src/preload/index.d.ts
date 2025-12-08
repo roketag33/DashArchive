@@ -1,4 +1,4 @@
-import { FileEntry, Plan, ExecutionResult, AppSettings } from '../shared/types'
+import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry } from '../shared/types'
 
 interface CustomAPI {
   selectFolder: () => Promise<string | null>
@@ -7,6 +7,8 @@ interface CustomAPI {
   executePlan: (plan: Plan) => Promise<ExecutionResult>
   getSettings: () => Promise<AppSettings>
   saveSettings: (settings: Partial<AppSettings>) => Promise<AppSettings>
+  getHistory: () => Promise<JournalEntry[]>
+  undoPlan: (plan: Plan) => Promise<ExecutionResult>
 }
 
 declare global {

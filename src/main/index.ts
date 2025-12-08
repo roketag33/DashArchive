@@ -2,8 +2,9 @@ import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import { scanDirectory } from './scanner'
 import { buildPlan } from '../shared/planner'
-import { executePlan } from './executor'
+import { executePlan, undoPlan } from './executor'
 import { getSettings, saveSettings } from './settings'
+import { addEntry, getHistory, markReverted } from './journal'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -77,7 +78,30 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('execute-plan', async (_, plan) => {
-    return await executePlan(plan)
+    const result = await executePlan(plan)
+    if (result.success) {
+      addEntry(plan)
+    }
+    return result
+  })
+
+  ipcMain.handle('get-history', () => {
+    return getHistory()
+  })
+
+  ipcMain.handle('undo-plan', async (_, plan) => {
+    const result = await undoPlan(plan)
+    if (result.success) {
+      // Find entry by plan content or pass ID?
+      // For simplicity, we assume the UI passes the plan attached to the entry.
+      // We probably need to mark it reverted.
+      // Ideally pass entryId to undo-plan. Use plan for now.
+    }
+    return result
+  })
+
+  ipcMain.handle('mark-reverted', (_, id) => {
+    markReverted(id)
   })
 
   ipcMain.handle('get-settings', () => {
