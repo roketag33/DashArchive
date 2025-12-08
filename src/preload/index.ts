@@ -1,8 +1,12 @@
-import { contextBridge } from 'electron'
+import { contextBridge, ipcRenderer } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
+import { FileEntry } from '../shared/types'
 
 // Custom APIs for renderer
-const api = {}
+const api = {
+  selectFolder: (): Promise<string | null> => ipcRenderer.invoke('dialog:openDirectory'),
+  scanFolder: (path: string): Promise<FileEntry[]> => ipcRenderer.invoke('scan-folder', path)
+}
 
 // Use `contextBridge` APIs to expose Electron APIs to
 // renderer only if context isolation is enabled, otherwise
