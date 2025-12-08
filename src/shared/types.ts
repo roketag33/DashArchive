@@ -28,6 +28,7 @@ export interface Rule {
   sizeMin?: number
   sizeMax?: number
   categories?: FileCategory[]
+  ageDays?: number // For 'date' rules: older than X days
   description?: string
 
   // UI related

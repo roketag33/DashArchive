@@ -190,3 +190,91 @@ describe('Rule Engine - resolveDestination', () => {
     expect(resolveDestination(file, rule)).toBe('Docs/notes.txt')
   })
 })
+
+describe('Size Rules', () => {
+  it('should match file larger than sizeMin', () => {
+    const rule: Rule = {
+      id: '1',
+      type: 'size',
+      sizeMin: 1000,
+      isActive: true,
+      priority: 0,
+      destination: '/large'
+    }
+    const smallFile = { ...mockFile, size: 500 }
+    const largeFile = { ...mockFile, size: 1500 }
+
+    expect(matchRule(smallFile, rule)).toBe(false)
+    expect(matchRule(largeFile, rule)).toBe(true)
+  })
+
+  it('should match file smaller than sizeMax', () => {
+    const rule: Rule = {
+      id: '2',
+      type: 'size',
+      sizeMax: 1000,
+      isActive: true,
+      priority: 0,
+      destination: '/small'
+    }
+    const smallFile = { ...mockFile, size: 500 }
+    const largeFile = { ...mockFile, size: 1500 }
+
+    expect(matchRule(smallFile, rule)).toBe(true)
+    expect(matchRule(largeFile, rule)).toBe(false)
+  })
+
+  it('should match file within range', () => {
+    const rule: Rule = {
+      id: '3',
+      type: 'size',
+      sizeMin: 1000,
+      sizeMax: 2000,
+      isActive: true,
+      priority: 0,
+      destination: '/medium'
+    }
+    const small = { ...mockFile, size: 500 }
+    const medium = { ...mockFile, size: 1500 }
+    const large = { ...mockFile, size: 2500 }
+
+    expect(matchRule(small, rule)).toBe(false)
+    expect(matchRule(medium, rule)).toBe(true)
+    expect(matchRule(large, rule)).toBe(false)
+  })
+})
+
+describe('Date Rules', () => {
+  it('should match file older than ageDays', () => {
+    const rule: Rule = {
+      id: '4',
+      type: 'date',
+      ageDays: 10,
+      isActive: true,
+      priority: 0,
+      destination: '/old'
+    }
+    const now = new Date()
+    const fiveDaysOld = new Date(now.getTime() - 5 * 24 * 60 * 60 * 1000)
+    const fifteenDaysOld = new Date(now.getTime() - 15 * 24 * 60 * 60 * 1000)
+
+    const newFile = { ...mockFile, modifiedAt: fiveDaysOld }
+    const oldFile = { ...mockFile, modifiedAt: fifteenDaysOld }
+
+    expect(matchRule(newFile, rule)).toBe(false)
+    expect(matchRule(oldFile, rule)).toBe(true)
+  })
+
+  it('should not match if ageDays is missing', () => {
+    const rule: Rule = {
+      id: '5',
+      type: 'date',
+      isActive: true,
+      priority: 0,
+      destination: '/old'
+    }
+    const now = new Date()
+    const oldFile = { ...mockFile, modifiedAt: new Date(now.getTime() - 100 * 24 * 60 * 60 * 1000) }
+    expect(matchRule(oldFile, rule)).toBe(false)
+  })
+})

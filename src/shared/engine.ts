@@ -16,19 +16,15 @@ export function matchRule(file: FileEntry, rule: Rule): boolean {
       }
     case 'size':
       if (rule.sizeMin && file.size < rule.sizeMin) return false
-      // if (rule.sizeMax && file.size > rule.sizeMax) return false; // This line was commented out in the provided edit, keeping it as is.
+      if (rule.sizeMax && file.size > rule.sizeMax) return false
       return true
     case 'category':
       return rule.categories ? rule.categories.includes(file.category) : false
     case 'date':
-      // TODO: Implement date matching logic if needed later (e.g. older than X)
-      // For now, MVP requirements didn't specify date matching criteria details, just sorting by date.
-      // Chaierdescharges says: "date (année/mois)" under "Types de règles MVP".
-      // Assuming this implies "destination based on date" (which is handled in resolveDestination)
-      // OR matching files from a specific date. Let's start with returning false or true depending on spec clarification.
-      // Re-reading: "date (année/mois)" in list of rules. It likely means "match if date is X" OR "use date for sorting".
-      // Given the destination templates support {year}, {month}, 'date' rule type might be for filtering "older than" or "from year X".
-      // Let's implement basics if match params exist. For now, skipping complex logic, returning false to avoid false positives.
+      if (rule.ageDays && file.modifiedAt) {
+        const cutoff = Date.now() - rule.ageDays * 24 * 60 * 60 * 1000
+        return file.modifiedAt.getTime() < cutoff
+      }
       return false
     case 'fallback':
       return true

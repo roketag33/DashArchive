@@ -59,7 +59,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
     handleStartEdit(newRule)
   }
 
-  const handleChange = (field: keyof Rule, value: string | string[]): void => {
+  const handleChange = (field: keyof Rule, value: string | string[] | number): void => {
     setEditForm((prev) => ({ ...prev, [field]: value }))
   }
 
@@ -127,17 +127,81 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                         <option value="extension">Extension</option>
                         <option value="name">Name Pattern</option>
                         <option value="size">Size</option>
+                        <option value="date">Date (Age)</option>
+                        <option value="category">Category</option>
                         <option value="fallback">Fallback</option>
                       </select>
                     </div>
-                    <div>
-                      <label className="block text-xs font-bold mb-1">Extensions (comma sep)</label>
-                      <input
-                        className="border w-full p-1 rounded"
-                        value={editForm.extensions?.join(', ') || ''}
-                        onChange={(e) => handleArrayChange(e.target.value)}
-                        disabled={editForm.type !== 'extension'}
-                      />
+                    <div className="col-span-2">
+                      <label className="block text-xs font-bold mb-1">Type Specific Config</label>
+
+                      {editForm.type === 'extension' && (
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            Extensions (comma sep)
+                          </label>
+                          <input
+                            className="border w-full p-1 rounded"
+                            value={editForm.extensions?.join(', ') || ''}
+                            onChange={(e) => handleArrayChange(e.target.value)}
+                          />
+                        </div>
+                      )}
+
+                      {editForm.type === 'name' && (
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            Name Regex Pattern
+                          </label>
+                          <input
+                            className="border w-full p-1 rounded font-mono text-sm"
+                            placeholder="^report_.*"
+                            value={editForm.namePattern || ''}
+                            onChange={(e) => handleChange('namePattern', e.target.value)}
+                          />
+                        </div>
+                      )}
+
+                      {editForm.type === 'size' && (
+                        <div className="flex gap-2">
+                          <div className="flex-1">
+                            <label className="block text-xs text-gray-500 mb-1">
+                              Min Size (bytes)
+                            </label>
+                            <input
+                              type="number"
+                              className="border w-full p-1 rounded"
+                              value={editForm.sizeMin || ''}
+                              onChange={(e) => handleChange('sizeMin', parseInt(e.target.value))}
+                            />
+                          </div>
+                          <div className="flex-1">
+                            <label className="block text-xs text-gray-500 mb-1">
+                              Max Size (bytes)
+                            </label>
+                            <input
+                              type="number"
+                              className="border w-full p-1 rounded"
+                              value={editForm.sizeMax || ''}
+                              onChange={(e) => handleChange('sizeMax', parseInt(e.target.value))}
+                            />
+                          </div>
+                        </div>
+                      )}
+
+                      {editForm.type === 'date' && (
+                        <div>
+                          <label className="block text-xs text-gray-500 mb-1">
+                            Older than (days)
+                          </label>
+                          <input
+                            type="number"
+                            className="border w-full p-1 rounded"
+                            value={editForm.ageDays || ''}
+                            onChange={(e) => handleChange('ageDays', parseInt(e.target.value))}
+                          />
+                        </div>
+                      )}
                     </div>
                     <div className="col-span-2 flex justify-end gap-2 mt-2">
                       <button onClick={handleCancelEdit} className="text-gray-500 text-sm">
