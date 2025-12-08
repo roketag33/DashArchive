@@ -1,7 +1,4 @@
 import { defineConfig } from '@playwright/test'
-import path from 'path'
-
-const _electron = require('playwright')._electron
 
 export default defineConfig({
   testDir: './tests/e2e',

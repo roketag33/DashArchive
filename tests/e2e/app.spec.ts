@@ -1,9 +1,9 @@
-import { test, expect, _electron as electron } from '@playwright/test'
+import { test, expect, _electron as electron, ElectronApplication, Page } from '@playwright/test'
 import { join } from 'path'
 
 test.describe('Application Launch', () => {
-  let app: any
-  let window: any
+  let app: ElectronApplication
+  let window: Page
 
   test.beforeEach(async () => {
     // Build path should be your main entry point or the built app
@@ -25,7 +25,6 @@ test.describe('Application Launch', () => {
   })
 
   test('should launch and show correct title', async () => {
-    const title = await window.title()
     // Depending on how title is set (index.html or main process)
     // Check index.html or App.tsx for title
     // App.tsx has "File Organizer" in h1, html title might be "Electron App" default

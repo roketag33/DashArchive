@@ -1,11 +1,11 @@
-import { test, expect, _electron as electron } from '@playwright/test'
+import { test, expect, _electron as electron, ElectronApplication, Page } from '@playwright/test'
 import { join } from 'path'
 import fs from 'fs'
 import os from 'os'
 
 test.describe('Comprehensive Scenarios', () => {
-  let app: any
-  let page: any
+  let app: ElectronApplication
+  let page: Page
   let tempDir: string
 
   test.beforeAll(() => {
@@ -51,6 +51,7 @@ test.describe('Comprehensive Scenarios', () => {
     // 1. Mock the dialog to return our tempDir
     // The first argument to app.evaluate is the electron module
     await app.evaluate(
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       async (electron: any, { tempDir }: { tempDir: string }) => {
         const { ipcMain } = electron
         // Remove existing handler to override
@@ -135,7 +136,7 @@ test.describe('Comprehensive Scenarios', () => {
           return { theme: 'light', rules: [] }
         })
         ipcMain.removeHandler('save-settings')
-        ipcMain.handle('save-settings', (_: any, newSettings: any) => {
+        ipcMain.handle('save-settings', (_: unknown, newSettings: unknown) => {
           return newSettings
         })
 

@@ -34,7 +34,7 @@ export interface ButtonProps
 }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, asChild = false, ...props }, ref) => {
+  ({ className, variant, size, ...props }, ref) => {
     // Basic fallback for Slot if we don't install @radix-ui/react-slot, but let's assume standard button for now if complexity arises
     // Installing radix-ui slot is common but for minimal setup we can skip if not needed.
     // However, I requested `Slot` in imports. I should probably remove it if I didn't install it.
@@ -47,4 +47,5 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
 )
 Button.displayName = 'Button'
 
+// eslint-disable-next-line react-refresh/only-export-components
 export { Button, buttonVariants }
