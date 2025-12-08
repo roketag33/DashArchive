@@ -5,7 +5,7 @@ import { Input } from './ui/input'
 import { Switch } from './ui/switch'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card'
 import { Badge } from './ui/badge'
-import { X, Plus, Trash2, Edit2, Save } from 'lucide-react'
+import { X, Plus, Trash2, Edit2, Save, FolderOpen } from 'lucide-react'
 
 interface Props {
   settings: AppSettings
@@ -78,6 +78,14 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
     setEditForm((prev) => ({ ...prev, extensions: arr }))
   }
 
+  const handleSelectDestination = async (): Promise<void> => {
+    // @ts-ignore (api exposed in preload)
+    const path = await window.api.selectFolder()
+    if (path) {
+      handleChange('destination', path)
+    }
+  }
+
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in-0">
       <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col p-0 shadow-lg">
@@ -138,10 +146,20 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                           </div>
                           <div className="grid gap-2">
                             <label className="text-sm font-medium">Destination</label>
-                            <Input
-                              value={editForm.destination || ''}
-                              onChange={(e) => handleChange('destination', e.target.value)}
-                            />
+                            <div className="flex gap-2">
+                              <Input
+                                value={editForm.destination || ''}
+                                onChange={(e) => handleChange('destination', e.target.value)}
+                              />
+                              <Button
+                                variant="outline"
+                                size="icon"
+                                onClick={handleSelectDestination}
+                                title="Select destination folder"
+                              >
+                                <FolderOpen className="h-4 w-4" />
+                              </Button>
+                            </div>
                           </div>
                           <div className="grid gap-2">
                             <label className="text-sm font-medium">Type</label>

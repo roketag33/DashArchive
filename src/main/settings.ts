@@ -1,10 +1,10 @@
 import Store from 'electron-store'
 import { AppSettings } from '../shared/types'
-import { defaultRules } from './defaultRules'
+import { getDefaultRules } from './defaultRules'
 
 // Define the schema or default values
 const defaults: AppSettings = {
-  rules: defaultRules,
+  rules: getDefaultRules(),
   theme: 'light',
   language: 'en',
   firstRun: true
