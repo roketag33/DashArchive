@@ -1,5 +1,10 @@
 import React from 'react'
 import { Plan } from '../../../shared/types'
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
+import { Button } from './ui/button'
+
+import { Badge } from './ui/badge'
+import { ArrowRight } from 'lucide-react'
 
 interface Props {
   plan: Plan
@@ -11,72 +16,78 @@ interface Props {
 export function PlanPreview({ plan, onConfirm, onCancel, isExecuting }: Props): React.JSX.Element {
   const validMoves = plan.items.filter((i) => i.status === 'ok')
   const conflicts = plan.items.filter((i) => i.status === 'conflict')
-  // const warnings = plan.items.filter(i => i.warning);
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6 max-w-4xl mx-auto">
-      <h2 className="text-xl font-bold mb-4">Review Organization Plan</h2>
-
-      <div className="flex gap-4 mb-6">
-        <div className="bg-blue-50 p-3 rounded text-center flex-1">
-          <div className="text-2xl font-bold text-blue-600">{validMoves.length}</div>
-          <div className="text-sm text-gray-600">Files to Move</div>
+    <Card className="max-w-4xl mx-auto shadow-lg">
+      <CardHeader>
+        <CardTitle>Review Organization Plan</CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-6">
+        <div className="flex gap-4">
+          <Card className="flex-1 bg-secondary/20 border-secondary">
+            <CardContent className="p-4 text-center">
+              <div className="text-2xl font-bold text-primary">{validMoves.length}</div>
+              <div className="text-sm text-muted-foreground">Files to Move</div>
+            </CardContent>
+          </Card>
+          {conflicts.length > 0 && (
+            <Card className="flex-1 bg-yellow-500/10 border-yellow-500/20">
+              <CardContent className="p-4 text-center">
+                <div className="text-2xl font-bold text-yellow-600">{conflicts.length}</div>
+                <div className="text-sm text-muted-foreground">Conflicts</div>
+              </CardContent>
+            </Card>
+          )}
         </div>
-        {conflicts.length > 0 && (
-          <div className="bg-yellow-50 p-3 rounded text-center flex-1">
-            <div className="text-2xl font-bold text-yellow-600">{conflicts.length}</div>
-            <div className="text-sm text-gray-600">Conflicts (will be renamed)</div>
-          </div>
-        )}
-      </div>
 
-      <div className="border rounded max-h-[400px] overflow-auto mb-6">
-        <table className="w-full text-sm text-left">
-          <thead className="bg-gray-50 sticky top-0">
-            <tr>
-              <th className="p-2">File</th>
-              <th className="p-2">Current Location</th>
-              <th className="p-2">New Location</th>
-            </tr>
-          </thead>
-          <tbody>
-            {plan.items.map((item) => (
-              <tr key={item.id} className="border-t hover:bg-gray-50">
-                <td className="p-2 font-medium">{item.file.name}</td>
-                <td className="p-2 text-gray-500 truncate max-w-[150px]" title={item.file.path}>
-                  {item.file.path}
-                </td>
-                <td
-                  className="p-2 text-blue-600 truncate max-w-[250px]"
-                  title={item.destinationPath}
-                >
-                  {item.destinationPath}
-                  {item.status === 'conflict' && (
-                    <span className="text-yellow-500 text-xs ml-2">(rename)</span>
-                  )}
-                </td>
+        <div className="border rounded-md max-h-[400px] overflow-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="bg-muted/50 sticky top-0">
+              <tr>
+                <th className="p-3 font-medium text-muted-foreground">File</th>
+                <th className="p-3 font-medium text-muted-foreground">Current Location</th>
+                <th className="p-3 font-medium text-muted-foreground">Target</th>
               </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+            </thead>
+            <tbody className="divide-y">
+              {plan.items.map((item) => (
+                <tr key={item.id} className="hover:bg-muted/50 transition-colors">
+                  <td className="p-3 font-medium">{item.file.name}</td>
+                  <td
+                    className="p-3 text-muted-foreground truncate max-w-[150px]"
+                    title={item.file.path}
+                  >
+                    {item.file.path}
+                  </td>
+                  <td className="p-3">
+                    <div
+                      className="flex items-center gap-2 text-primary truncate max-w-[250px]"
+                      title={item.destinationPath}
+                    >
+                      <ArrowRight className="w-3 h-3 text-muted-foreground" />
+                      {item.destinationPath}
+                      {item.status === 'conflict' && (
+                        <Badge variant="destructive" className="ml-2 text-[10px] h-5">
+                          Rename
+                        </Badge>
+                      )}
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
 
-      <div className="flex justify-end gap-3">
-        <button
-          onClick={onCancel}
-          disabled={isExecuting}
-          className="px-4 py-2 border rounded text-gray-700 hover:bg-gray-50 disabled:opacity-50"
-        >
-          Cancel
-        </button>
-        <button
-          onClick={onConfirm}
-          disabled={isExecuting || plan.items.length === 0}
-          className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 flex items-center gap-2"
-        >
-          {isExecuting ? 'Organizing...' : 'Confirm & Organize'}
-        </button>
-      </div>
-    </div>
+        <div className="flex justify-end gap-3 pt-2">
+          <Button variant="outline" onClick={onCancel} disabled={isExecuting}>
+            Cancel
+          </Button>
+          <Button onClick={onConfirm} disabled={isExecuting || plan.items.length === 0}>
+            {isExecuting ? 'Organizing...' : 'Confirm & Organize'}
+          </Button>
+        </div>
+      </CardContent>
+    </Card>
   )
 }

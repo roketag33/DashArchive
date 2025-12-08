@@ -1,4 +1,7 @@
 import React from 'react'
+import { Button } from './ui/button'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card'
+import { FolderOpen } from 'lucide-react'
 
 interface Props {
   onSelect: (path: string) => void
@@ -7,7 +10,7 @@ interface Props {
 
 export function FolderSelector({ onSelect, isLoading }: Props): React.JSX.Element {
   const handleSelect = async (): Promise<void> => {
-    // @ts-ignore : Window.api is defined in preload but TS cleanup is pending
+    // @ts-ignore : Window.api is defined in preload
     const path = await window.api.selectFolder()
     if (path) {
       onSelect(path)
@@ -31,7 +34,6 @@ export function FolderSelector({ onSelect, isLoading }: Props): React.JSX.Elemen
     setIsDragging(false)
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
-      // In Electron, File object has a 'path' property
       const file = e.dataTransfer.files[0]
       // @ts-ignore : 'path' exists on File in Electron
       const path = file.path
@@ -42,24 +44,38 @@ export function FolderSelector({ onSelect, isLoading }: Props): React.JSX.Elemen
   }
 
   return (
-    <div
-      className={`p-8 rounded-lg shadow-sm text-center border-2 border-dashed transition-colors ${
-        isDragging ? 'border-blue-500 bg-blue-50' : 'border-gray-300 bg-gray-50'
-      }`}
-      onDragOver={handleDragOver}
-      onDragLeave={handleDragLeave}
-      onDrop={handleDrop}
-    >
-      <h2 className="text-xl font-semibold mb-2">Organize your files</h2>
-      <p className="text-gray-500 mb-6">Drag and drop a folder here, or click to select</p>
-
-      <button
-        onClick={handleSelect}
-        disabled={isLoading}
-        className="px-6 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 disabled:opacity-50 transition-colors shadow-sm"
+    <div className="flex items-center justify-center min-h-[50vh] p-4">
+      <Card
+        className={`w-full max-w-md transition-all duration-200 cursor-pointer border-2 border-dashed ${
+          isDragging
+            ? 'border-primary ring-2 ring-primary/20 bg-accent'
+            : 'border-muted-foreground/25 hover:border-primary/50'
+        }`}
+        onDragOver={handleDragOver}
+        onDragLeave={handleDragLeave}
+        onDrop={handleDrop}
+        onClick={handleSelect} // Click anywhere to select
       >
-        {isLoading ? 'Scanning...' : 'Choose Folder'}
-      </button>
+        <CardHeader className="text-center">
+          <div className="mx-auto bg-primary/10 p-4 rounded-full mb-2">
+            <FolderOpen className="w-10 h-10 text-primary" />
+          </div>
+          <CardTitle>Organize your files</CardTitle>
+          <CardDescription>Drag and drop a folder here, or click to browse</CardDescription>
+        </CardHeader>
+        <CardContent className="flex justify-center pb-8">
+          <Button
+            onClick={(e) => {
+              e.stopPropagation() // Prevent double trigger
+              handleSelect()
+            }}
+            disabled={isLoading}
+            data-testid="select-folder-btn"
+          >
+            {isLoading ? 'Scanning...' : 'Choose Folder'}
+          </Button>
+        </CardContent>
+      </Card>
     </div>
   )
 }

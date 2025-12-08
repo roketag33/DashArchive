@@ -1,21 +1,21 @@
-import { defineConfig } from '@playwright/test';
-import path from 'path';
+import { defineConfig } from '@playwright/test'
+import path from 'path'
 
-const _electron = require('playwright')._electron;
+const _electron = require('playwright')._electron
 
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 30000,
   retries: 0,
   use: {
-    trace: 'on-first-retry',
+    trace: 'on-first-retry'
   },
   projects: [
     {
       name: 'electron',
       use: {
-         // This configuration is usually handled inside the test for Electron
-      },
-    },
-  ],
-});
+        // This configuration is usually handled inside the test for Electron
+      }
+    }
+  ]
+})
