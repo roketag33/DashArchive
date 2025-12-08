@@ -1,8 +1,9 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { FolderSelector } from './components/FolderSelector'
 import { FileList } from './components/FileList'
 import { PlanPreview } from './components/PlanPreview'
-import { FileEntry, Plan, ExecutionResult } from '../../shared/types'
+import { SettingsPanel } from './components/SettingsPanel' // Import SettingsPanel
+import { FileEntry, Plan, ExecutionResult, AppSettings } from '../../shared/types'
 import electronLogo from './assets/electron.svg'
 
 function App(): React.JSX.Element {
@@ -12,6 +13,36 @@ function App(): React.JSX.Element {
   const [plan, setPlan] = useState<Plan | null>(null)
   const [executionResult, setExecutionResult] = useState<ExecutionResult | null>(null)
   const [isExecuting, setIsExecuting] = useState(false)
+
+  // Settings State
+  const [settings, setSettings] = useState<AppSettings | null>(null)
+  const [showSettings, setShowSettings] = useState(false)
+
+  useEffect(() => {
+    loadSettings()
+  }, [])
+
+  const loadSettings = async (): Promise<void> => {
+    try {
+      // @ts-ignore - Window.api is defined in preload
+      const s = await window.api.getSettings()
+      setSettings(s)
+    } catch (e) {
+      console.error('Failed to load settings', e)
+    }
+  }
+
+  const handleSaveSettings = async (newSettings: AppSettings): Promise<void> => {
+    try {
+      // @ts-ignore - Window.api is defined in preload
+      const saved = await window.api.saveSettings(newSettings)
+      setSettings(saved)
+      setShowSettings(false)
+    } catch (e) {
+      console.error('Failed to save settings', e)
+      alert('Failed to save settings')
+    }
+  }
 
   const handleFolderSelect = async (path: string): Promise<void> => {
     setSelectedPath(path)
@@ -73,18 +104,32 @@ function App(): React.JSX.Element {
 
   return (
     <div className="container mx-auto p-4 max-w-4xl">
-      <header
-        className="flex items-center gap-4 mb-8 border-b pb-4 cursor-pointer"
-        onClick={handleReset}
-      >
-        <img src={electronLogo} className="h-10 w-10 animate-spin-slow" alt="logo" />
-        <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
-          File Organizer
-        </h1>
+      <header className="flex items-center justify-between mb-8 border-b pb-4">
+        <div className="flex items-center gap-4 cursor-pointer" onClick={handleReset}>
+          <img src={electronLogo} className="h-10 w-10 animate-spin-slow" alt="logo" />
+          <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
+            File Organizer
+          </h1>
+        </div>
+        <button
+          onClick={() => setShowSettings(true)}
+          className="text-gray-600 hover:text-blue-600 p-2"
+          title="Settings"
+        >
+          ⚙️
+        </button>
       </header>
 
       <main className="space-y-6">
-        {!plan && !executionResult && (
+        {showSettings && settings && (
+          <SettingsPanel
+            settings={settings}
+            onSave={handleSaveSettings}
+            onClose={() => setShowSettings(false)}
+          />
+        )}
+
+        {!plan && !executionResult && !showSettings && (
           <>
             <FolderSelector onSelect={handleFolderSelect} isLoading={scanning} />
 
@@ -108,7 +153,7 @@ function App(): React.JSX.Element {
           </>
         )}
 
-        {plan && (
+        {plan && !showSettings && (
           <PlanPreview
             plan={plan}
             onConfirm={handleExecutePlan}
@@ -117,7 +162,7 @@ function App(): React.JSX.Element {
           />
         )}
 
-        {executionResult && (
+        {executionResult && !showSettings && (
           <div className="bg-white p-6 rounded shadow text-center">
             <div
               className={`text-6xl mb-4 ${executionResult.success ? 'text-green-500' : 'text-orange-500'}`}

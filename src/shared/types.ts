@@ -61,3 +61,10 @@ export interface ExecutionResult {
   failed: number
   errors: Array<{ file: string; error: string }>
 }
+
+export interface AppSettings {
+  rules: Rule[]
+  theme: 'light' | 'dark'
+  language: string
+  firstRun: boolean
+}

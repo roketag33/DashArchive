@@ -3,7 +3,7 @@ import { join } from 'path'
 import { scanDirectory } from './scanner'
 import { buildPlan } from '../shared/planner'
 import { executePlan } from './executor'
-import { defaultRules } from './defaultRules'
+import { getSettings, saveSettings } from './settings'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 
@@ -72,12 +72,20 @@ app.whenReady().then(() => {
   })
 
   ipcMain.handle('generate-plan', (_, files) => {
-    // In a real app, we might merge user rules with default rules
-    return buildPlan(files, defaultRules)
+    const rules = getSettings().rules
+    return buildPlan(files, rules)
   })
 
   ipcMain.handle('execute-plan', async (_, plan) => {
     return await executePlan(plan)
+  })
+
+  ipcMain.handle('get-settings', () => {
+    return getSettings()
+  })
+
+  ipcMain.handle('save-settings', (_, settings) => {
+    return saveSettings(settings)
   })
 
   createWindow()
