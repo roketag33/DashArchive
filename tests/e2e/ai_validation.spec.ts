@@ -16,6 +16,8 @@ test.describe('AI Rules Lifecycle & Validation', () => {
     
     // Open Settings
     await window.click('button[title="Settings"]')
+    // Wait for modal to render and fetch settings
+    await expect(window.locator('text=Manage your organization rules')).toBeVisible()
   })
 
   test.afterEach(async () => {

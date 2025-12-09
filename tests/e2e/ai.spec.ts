@@ -27,7 +27,9 @@ test.describe('AI Settings UI', () => {
     await expect(window.locator('text=Manage your organization rules')).toBeVisible()
 
     // Add Rule
-    await window.click('[data-testid="add-rule-btn"]')
+    const addBtn = window.locator('[data-testid="add-rule-btn"]')
+    await addBtn.waitFor()
+    await addBtn.click()
     
     // Switch to AI Mode
     await window.click('[data-testid="rule-mode-ai"]')
@@ -62,7 +64,9 @@ test.describe('AI Settings UI', () => {
 
   test('should allow Magic Suggest button interaction', async () => {
     await window.click('button[title="Settings"]')
-    await window.click('[data-testid="add-rule-btn"]')
+    const addBtn = window.locator('[data-testid="add-rule-btn"]')
+    await addBtn.waitFor()
+    await addBtn.click()
     await window.click('[data-testid="rule-mode-ai"]')
 
     // Magic Wand button
