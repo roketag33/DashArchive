@@ -65,6 +65,7 @@ export async function undoPlan(plan: Plan): Promise<ExecutionResult> {
         file: item.destinationPath,
         error: (error as Error).message || String(error)
       })
+      console.error(`Undo failed for ${item.destinationPath}:`, error)
       result.success = false
     }
   }

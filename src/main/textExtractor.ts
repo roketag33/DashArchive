@@ -1,7 +1,8 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
 // eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdf = require('pdf-parse')
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const pdfLib = require('pdf-parse')
 import mammoth from 'mammoth'
 
 import { createWorker } from 'tesseract.js'
@@ -39,7 +40,9 @@ export async function extractText(filePath: string): Promise<string> {
 
 async function extractPdf(filePath: string): Promise<string> {
   const buffer = await fs.readFile(filePath)
-  const data = await pdf(buffer)
+  // Handle CommonJS/ESM interop
+  const parse = typeof pdfLib === 'function' ? pdfLib : pdfLib.default
+  const data = await parse(buffer)
   return data.text
 }
 
