@@ -8,9 +8,12 @@ test.describe('AI Settings UI', () => {
   test.beforeEach(async () => {
     const mainPath = join(__dirname, '../../out/main/index.js')
     app = await electron.launch({
-      args: [mainPath]
+      args: [mainPath],
+      env: { ...process.env, NODE_ENV: 'test' }
     })
     window = await app.firstWindow()
+    // Wait for app to be ready
+    await window.waitForLoadState('domcontentloaded')
   })
 
   test.afterEach(async () => {
@@ -25,29 +28,35 @@ test.describe('AI Settings UI', () => {
     await expect(window.locator('text=Manage your organization rules')).toBeVisible()
 
     // Add Rule
-    await window.click('text=Add Rule')
+    await window.click('button:has-text("Add Rule")')
     
     // Switch to AI Mode
-    await window.click('text=AI Smart Sort')
+    // Use partial match and stricter selector
+    const aiModeBtn = window.locator('button', { hasText: 'AI Smart Sort' })
+    await expect(aiModeBtn).toBeVisible()
+    await aiModeBtn.click()
 
     // Check if input placeholder changes or Quick Tags appear
     const input = window.locator('input[placeholder*="Categories"]')
     await expect(input).toBeVisible()
 
-    // Click a Quick Tag (e.g., "Invoice")
-    await window.click('text=Invoice')
+    // Click a Quick Tag (e.g., "Invoice") - assuming Badge is clickable
+    await window.click('.badge:has-text("Invoice")', { force: true }) // force if badge has restricted pointer events?
+    // Actually Badge in Setup has onClick, so it's fine.
+    // Use text locator which is standard
+    await window.locator('div', { hasText: 'Invoice' }).last().click()
     
     // Check input value
     await expect(input).toHaveValue('Invoice')
 
     // Click another tag
-    await window.click('text=Receipt')
+    await window.locator('div', { hasText: 'Receipt' }).last().click()
     
     // Check appended value
     await expect(input).toHaveValue('Invoice, Receipt')
 
     // Click "Invoice" again to remove it
-    await window.click('text=Invoice')
+    await window.locator('div', { hasText: 'Invoice' }).last().click()
     await expect(input).toHaveValue('Receipt')
 
     // Set other fields
@@ -55,7 +64,7 @@ test.describe('AI Settings UI', () => {
     await window.fill('input[placeholder="Destination Folder"]', 'AI_Docs')
 
     // Save
-    await window.click('text=Save')
+    await window.click('button:has-text("Save")')
 
     // Verify Rule appears in list
     await expect(window.locator('text=My AI Rule')).toBeVisible()
@@ -64,10 +73,10 @@ test.describe('AI Settings UI', () => {
 
   test('should allow Magic Suggest button interaction', async () => {
     await window.click('button[title="Settings"]')
-    await window.click('text=Add Rule')
-    await window.click('text=AI Smart Sort')
+    await window.click('button:has-text("Add Rule")')
+    await window.locator('button', { hasText: 'AI Smart Sort' }).click()
 
-    // Magic Wand button
+    // Magic Wand button. It has title "✨ Magic Suggest from Folder"
     const wandBtn = window.locator('button[title*="Magic Suggest"]')
     await expect(wandBtn).toBeVisible()
     await expect(wandBtn).toBeEnabled()
