@@ -196,18 +196,36 @@ function App(): React.JSX.Element {
               <FolderSelector onSelect={handleFolderSelect} isLoading={scanning} />
 
               {selectedPath && (
-                <div className="bg-blue-50 dark:bg-blue-900/30 px-4 py-2 rounded text-blue-700 dark:text-blue-300 text-sm flex justify-between items-center">
-                  <span>
-                    Selected: <span className="font-mono">{selectedPath}</span>
-                  </span>
+                <div className="mt-4 p-4 rounded-lg border bg-card text-card-foreground shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
+                  <div className="flex items-center gap-2 overflow-hidden max-w-full">
+                    <span className="text-sm font-medium whitespace-nowrap">Selected:</span>
+                    <span className="font-mono text-sm bg-muted px-2 py-1 rounded truncate" title={selectedPath}>
+                      {selectedPath}
+                    </span>
+                  </div>
                   {files.length > 0 && (
                     <button
                       onClick={handleGeneratePlan}
-                      className="bg-green-600 text-white px-4 py-1 rounded hover:bg-green-700 text-sm font-bold"
+                      className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded text-sm font-medium transition-colors"
                     >
                       Organize {files.length} Files
                     </button>
                   )}
+                </div>
+              )}
+
+              {scanning && (
+                <div className="text-center py-8 text-muted-foreground animate-pulse">
+                  Scanning folder...
+                </div>
+              )}
+
+              {!scanning && selectedPath && files.length === 0 && (
+                <div className="text-center py-12 border-2 border-dashed rounded-lg">
+                  <p className="text-lg font-medium text-muted-foreground">No matching files found</p>
+                  <p className="text-sm text-muted-foreground mt-1">
+                    Try selecting a different folder or check if the folder is empty.
+                  </p>
                 </div>
               )}
 
@@ -260,7 +278,7 @@ function App(): React.JSX.Element {
           )}
         </main>
       </div>
-    </div>
+    </div >
   )
 }
 
