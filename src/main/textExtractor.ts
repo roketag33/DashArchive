@@ -4,6 +4,8 @@ import * as path from 'path'
 const pdf = require('pdf-parse')
 import mammoth from 'mammoth'
 
+import { createWorker } from 'tesseract.js'
+
 export async function extractText(filePath: string): Promise<string> {
   const ext = path.extname(filePath).toLowerCase().slice(1)
 
@@ -18,6 +20,12 @@ export async function extractText(filePath: string): Promise<string> {
       case 'json':
       case 'csv':
         return await extractPlain(filePath)
+      case 'jpg':
+      case 'jpeg':
+      case 'png':
+      case 'bmp':
+      case 'webp':
+        return await extractImage(filePath)
       default:
         // For other files, return empty string or maybe file name?
         // Content-based sorting implies we need content.
@@ -43,4 +51,11 @@ async function extractDocx(filePath: string): Promise<string> {
 
 async function extractPlain(filePath: string): Promise<string> {
   return await fs.readFile(filePath, 'utf-8')
+}
+
+async function extractImage(filePath: string): Promise<string> {
+  const worker = await createWorker('eng+fra')
+  const { data: { text } } = await worker.recognize(filePath)
+  await worker.terminate()
+  return text
 }
