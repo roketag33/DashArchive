@@ -155,7 +155,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <h3 className="text-lg font-medium">Rules ({rules.length})</h3>
-              <Button onClick={handleAddRule} size="sm">
+              <Button onClick={handleAddRule} size="sm" data-testid="add-rule-btn">
                 <Plus className="mr-2 h-4 w-4" /> Add Rule
               </Button>
             </div>
@@ -198,12 +198,14 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                             <label className="text-sm font-medium">Rule Mode</label>
                             <div className="flex p-1 bg-muted rounded-lg">
                               <button
+                                data-testid="rule-mode-ai"
                                 className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${editForm.type === 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                 onClick={() => handleChange('type', 'ai')}
                               >
                                 🧠 AI Smart Sort
                               </button>
                               <button
+                                data-testid="rule-mode-manual"
                                 className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${editForm.type !== 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                 onClick={() => handleChange('type', 'extension')}
                               >
@@ -229,6 +231,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                   onClick={handleSuggestCategories}
                                   title="✨ Magic Suggest from Folder"
                                   className="shrink-0"
+                                  data-testid="magic-suggest-btn"
                                 >
                                   <Wand2 className="h-4 w-4" />
                                 </Button>
@@ -350,10 +353,10 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                           )}
                         </div>
                         <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm" onClick={handleCancelEdit}>
+                          <Button variant="outline" size="sm" onClick={handleCancelEdit} data-testid="cancel-rule-btn">
                             Cancel
                           </Button>
-                          <Button size="sm" onClick={handleSaveEdit}>
+                          <Button size="sm" onClick={handleSaveEdit} data-testid="save-rule-btn">
                             <Save className="mr-2 h-4 w-4" /> Save
                           </Button>
                         </div>
@@ -401,6 +404,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                             size="icon"
                             onClick={() => handleDelete(rule.id)}
                             className="text-destructive hover:text-destructive"
+                            data-testid="delete-rule-btn"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>

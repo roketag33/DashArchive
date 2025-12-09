@@ -25,17 +25,16 @@ test.describe('AI Rules Lifecycle & Validation', () => {
   })
 
   test('should validate empty AI fields', async () => {
-    await window.click('button:has-text("Add Rule")')
+    await window.click('[data-testid="add-rule-btn"]')
     
     // Switch to AI
-    const aiBtn = window.locator('button', { hasText: 'AI Smart Sort' })
-    await aiBtn.click()
+    await window.click('[data-testid="rule-mode-ai"]')
     
     // Clear name
     await window.fill('input[placeholder="Rule Name"]', '')
     
     // Attempt save
-    await window.click('button:has-text("Save")')
+    await window.click('[data-testid="save-rule-btn"]')
     
     // Modal should stay open (inputs visible)
     const nameInput = window.locator('input[placeholder="Rule Name"]')
@@ -43,19 +42,13 @@ test.describe('AI Rules Lifecycle & Validation', () => {
     
     // Fix to be valid
     await window.fill('input[placeholder="Rule Name"]', 'Valid Name')
-    // Ensure AI prompts are somehow empty or filled? 
-    // If validation requires prompts, we might need to handle it.
-    // For now, assume Name is required.
-    
-    // If we click save now, it might close if valid.
-    // Let's just verify invalid state kept it open.
+    // Attempt save again if needed, or just verify state
   })
 
   test('should delete an AI rule', async () => {
     // Create a rule first
-    await window.click('button:has-text("Add Rule")')
-    const aiBtn = window.locator('button', { hasText: 'AI Smart Sort' })
-    await aiBtn.click()
+    await window.click('[data-testid="add-rule-btn"]')
+    await window.click('[data-testid="rule-mode-ai"]')
 
     await window.fill('input[placeholder="Rule Name"]', 'Delete Me')
     await window.fill('input[placeholder="Destination Folder"]', 'Trash')
@@ -63,22 +56,15 @@ test.describe('AI Rules Lifecycle & Validation', () => {
     // Add a tag to make it valid
     await window.locator('div', { hasText: 'Invoice' }).last().click()
     
-    await window.click('button:has-text("Save")')
+    await window.click('[data-testid="save-rule-btn"]')
 
     // Verify created
     const ruleRow = window.locator('div', { hasText: 'Delete Me' }).first()
     await expect(ruleRow).toBeVisible()
 
     // Delete
-    // The delete button is usually an icon button.
-    // We can use the row locator to find the button inside it.
-    // Assuming the Trash2 icon is inside a button with specific title or no title but identifiable.
-    // In SettingsPanel, it's `Button variant="ghost" size="icon" onClick={() => handleDelete(rule.id)}`. It contains <Trash2>.
-    // It doesn't have a title in the code provided?
-    // Wait, the code says: `<Button ... className="text-destructive ..."><Trash2 .../></Button>`
-    // We can target by the class or SVG.
-    // Or simpler: The button with text-destructive class inside the row.
-    const deleteBtn = ruleRow.locator('button.text-destructive')
+    // Find the delete button within the row
+    const deleteBtn = ruleRow.locator('[data-testid="delete-rule-btn"]')
     await deleteBtn.click()
 
     // Verify gone
