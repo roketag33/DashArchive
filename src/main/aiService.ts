@@ -1,4 +1,3 @@
-import { pipeline } from '@xenova/transformers'
 import { extractText } from './textExtractor'
 
 import { COMMON_CATEGORIES } from '../shared/constants'
@@ -31,6 +30,7 @@ class AIService {
 
     this.isLoading = true
     try {
+      const { pipeline } = await import('@xenova/transformers')
       this.classifier = await pipeline('zero-shot-classification', this.modelName)
     } catch (e) {
       console.error('Failed to load AI model', e)

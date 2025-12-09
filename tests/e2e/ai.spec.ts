@@ -1,14 +1,19 @@
 import { test, expect, _electron as electron, ElectronApplication, Page } from '@playwright/test'
 import { join } from 'path'
+import { mkdtemp, rm } from 'fs/promises'
+import { tmpdir } from 'os'
 
 test.describe('AI Settings UI', () => {
   let app: ElectronApplication
   let window: Page
+  let userDataDir: string
+
 
   test.beforeEach(async () => {
+    userDataDir = await mkdtemp(join(tmpdir(), 'electron-test-'))
     const mainPath = join(__dirname, '../../out/main/index.js')
     app = await electron.launch({
-      args: [mainPath],
+      args: [mainPath, `--user-data-dir=${userDataDir}`],
       env: { ...process.env, NODE_ENV: 'test' }
     })
     window = await app.firstWindow()
@@ -18,6 +23,9 @@ test.describe('AI Settings UI', () => {
   test.afterEach(async () => {
     if (app) {
       await app.close()
+    }
+    if (userDataDir) {
+      await rm(userDataDir, { recursive: true, force: true }).catch(() => {})
     }
   })
 
@@ -32,27 +40,27 @@ test.describe('AI Settings UI', () => {
     await addBtn.click()
     
     // Switch to AI Mode
-    await window.click('[data-testid="rule-mode-ai"]')
+    await window.click('[data-testid="rule-mode-ai"]', { force: true })
 
     // Check if input placeholder changes or Quick Tags appear
-    const input = window.locator('input[placeholder*="Categories"]')
+    const input = window.locator('[data-testid="ai-categories-input"]')
     await expect(input).toBeVisible()
 
     // Click a Quick Tag
-    await window.locator('div', { hasText: 'Invoice' }).last().click()
+    await window.click('[data-testid="quick-tag-Invoice"]', { force: true })
     
     // Check input value
     await expect(input).toHaveValue('Invoice')
 
     // Click another tag
-    await window.locator('div', { hasText: 'Receipt' }).last().click()
+    await window.click('[data-testid="quick-tag-Receipt"]', { force: true })
     
     // Check appended value
     await expect(input).toHaveValue('Invoice, Receipt')
 
     // Set other fields
-    await window.fill('input[placeholder="Rule Name"]', 'My AI Rule')
-    await window.fill('input[placeholder="Destination Folder"]', 'AI_Docs')
+    await window.locator('[data-testid="rule-name-input"]').fill('My AI Rule', { force: true })
+    await window.locator('[data-testid="rule-dest-input"]').fill('AI_Docs', { force: true })
 
     // Save
     await window.click('[data-testid="save-rule-btn"]')

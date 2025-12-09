@@ -46,6 +46,10 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
 
   const handleSaveEdit = (): void => {
     if (!editingRuleId || !editForm) return
+    if (!editForm.name || editForm.name.trim() === '') {
+      // alert('Rule name cannot be empty') // Optional: could show UI error
+      return
+    }
 
     setRules(rules.map((r) => (r.id === editingRuleId ? ({ ...r, ...editForm } as Rule) : r)))
     setEditingRuleId(null)
@@ -173,8 +177,10 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                           <div className="grid gap-2">
                             <label className="text-sm font-medium">Name</label>
                             <Input
-                              value={editForm.name || ''}
+                              placeholder="Rule Name"
+                              value={editForm.name}
                               onChange={(e) => handleChange('name', e.target.value)}
+                              data-testid="rule-name-input"
                             />
                           </div>
                           <div className="grid gap-2">
@@ -183,6 +189,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                               <Input
                                 value={editForm.destination || ''}
                                 onChange={(e) => handleChange('destination', e.target.value)}
+                                data-testid="rule-dest-input"
                               />
                               <Button
                                 variant="outline"
@@ -223,6 +230,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                     placeholder="Categories e.g. Invoice, Contract, Personal"
                                     value={editForm.aiPrompts?.join(', ') || ''}
                                     onChange={(e) => handleAiPromptsChange(e.target.value)}
+                                    data-testid="ai-categories-input"
                                   />
                                 </div>
                                 <Button
@@ -258,6 +266,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                         }))
                                       }
                                     }}
+                                    data-testid={`quick-tag-${cat}`}
                                   >
                                     {editForm.aiPrompts?.includes(cat) ? '✓ ' : '+ '}
                                     {cat}

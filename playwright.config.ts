@@ -1,5 +1,9 @@
 import { defineConfig } from '@playwright/test'
 
+// Ensure Electron runs as binary, not Node
+delete process.env.ELECTRON_RUN_AS_NODE
+
+
 export default defineConfig({
   testDir: './tests/e2e',
   timeout: 30000,
