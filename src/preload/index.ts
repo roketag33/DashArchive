@@ -12,7 +12,9 @@ const api = {
   saveSettings: (settings: Partial<AppSettings>): Promise<AppSettings> =>
     ipcRenderer.invoke('save-settings', settings),
   getHistory: (): Promise<JournalEntry[]> => ipcRenderer.invoke('get-history'),
-  undoPlan: (plan: Plan): Promise<ExecutionResult> => ipcRenderer.invoke('undo-plan', plan)
+  undoPlan: (plan: Plan): Promise<ExecutionResult> => ipcRenderer.invoke('undo-plan', plan),
+  suggestAiCategories: (path: string): Promise<string[]> =>
+    ipcRenderer.invoke('ai-suggest-categories', path)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

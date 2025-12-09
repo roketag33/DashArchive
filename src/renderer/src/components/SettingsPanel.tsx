@@ -5,7 +5,7 @@ import { Input } from './ui/input'
 import { Switch } from './ui/switch'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card'
 import { Badge } from './ui/badge'
-import { X, Plus, Trash2, Edit2, Save, FolderOpen } from 'lucide-react'
+import { X, Plus, Trash2, Edit2, Save, FolderOpen, Wand2 } from 'lucide-react'
 
 interface Props {
   settings: AppSettings
@@ -91,6 +91,30 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
     const path = await window.api.selectFolder()
     if (path) {
       handleChange('destination', path)
+    }
+  }
+
+  const handleSuggestCategories = async (): Promise<void> => {
+    // @ts-ignore
+    const folder = await window.api.selectFolder()
+    if (!folder) return
+
+    // Show loading state could be here, but for now blocking sync is 'ok' for MVP.
+    // Ideally use a toast or loading state on button.
+    try {
+      // @ts-ignore
+      const suggestions = await window.api.suggestAiCategories(folder)
+      if (suggestions && suggestions.length > 0) {
+        const current = editForm.aiPrompts || []
+        // Merge unique
+        const combined = Array.from(new Set([...current, ...suggestions]))
+        setEditForm((prev) => ({ ...prev, aiPrompts: combined }))
+      } else {
+        alert('No common document categories found in sample.')
+      }
+    } catch (e) {
+      console.error(e)
+      alert('Failed to analyze folder.')
     }
   }
 
@@ -232,11 +256,24 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                             )}
                             {editForm.type === 'ai' && (
                               <div className="grid gap-2">
-                                <Input
-                                  placeholder="Categories e.g. Invoice, Contract, Personal"
-                                  value={editForm.aiPrompts?.join(', ') || ''}
-                                  onChange={(e) => handleAiPromptsChange(e.target.value)}
-                                />
+                                <div className="flex gap-2 items-end">
+                                  <div className="grid gap-2 flex-1">
+                                    <Input
+                                      placeholder="Categories e.g. Invoice, Contract, Personal"
+                                      value={editForm.aiPrompts?.join(', ') || ''}
+                                      onChange={(e) => handleAiPromptsChange(e.target.value)}
+                                    />
+                                  </div>
+                                  <Button
+                                    variant="outline"
+                                    size="icon"
+                                    onClick={handleSuggestCategories}
+                                    title="✨ Magic Suggest from Folder"
+                                    className="shrink-0"
+                                  >
+                                    <Wand2 className="h-4 w-4" />
+                                  </Button>
+                                </div>
                                 <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-900">
                                   <strong>Note:</strong> First run will download the AI model
                                   (~50MB). Processing will be slower than standard rules.

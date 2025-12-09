@@ -9,6 +9,7 @@ interface CustomAPI {
   saveSettings: (settings: Partial<AppSettings>) => Promise<AppSettings>
   getHistory: () => Promise<JournalEntry[]>
   undoPlan: (plan: Plan) => Promise<ExecutionResult>
+  suggestAiCategories: (folderPath: string) => Promise<string[]>
 }
 
 declare global {

@@ -1,5 +1,7 @@
 import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
+import * as nodePath from 'path'
+import * as fs from 'fs/promises'
 import { scanDirectory } from './scanner'
 import { buildPlan } from '../shared/planner'
 import { executePlan, undoPlan } from './executor'
@@ -9,6 +11,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { extractText } from './textExtractor'
 import { aiService } from './aiService'
+import { FileEntry } from '../shared/types'
 
 function createWindow(): void {
   // Create the browser window.
@@ -74,7 +77,23 @@ app.whenReady().then(() => {
     return await scanDirectory(path)
   })
 
-  ipcMain.handle('generate-plan', async (_, files) => {
+  ipcMain.handle('ai-suggest-categories', async (_, folderPath: string) => {
+    try {
+      // Quick scan for first 5 files
+      const dir = await fs.readdir(folderPath, { withFileTypes: true })
+      const files = dir
+        .filter((d) => d.isFile() && !d.name.startsWith('.'))
+        .map((d) => nodePath.join(folderPath, d.name))
+        .slice(0, 5)
+      
+      return await aiService.suggestCategories(files)
+    } catch (error) {
+      console.error('Failed to suggest categories', error)
+      return []
+    }
+  })
+
+  ipcMain.handle('generate-plan', async (_, files: FileEntry[]) => {
     const rules = getSettings().rules
     return await buildPlan(files, rules, extractText, (text, labels) =>
       aiService.classify(text, labels)
