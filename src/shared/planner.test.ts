@@ -50,32 +50,52 @@ describe('Plan Builder', () => {
     const move1 = plan.items.find((i) => i.file.name === 'img1.jpg')
     expect(move1).toBeDefined()
     expect(move1?.ruleId).toBe('r1') // Img rule
-    expect(move1?.destinationPath).toBe('Images/img1.jpg')
+    expect(move1?.destinationPath).toBe('/src/Images/img1.jpg')
 
     const move2 = plan.items.find((i) => i.file.name === 'doc.pdf')
     expect(move2).toBeDefined()
-    expect(move2?.ruleId).toBe('r2') // Fallback rule
-    expect(move2?.destinationPath).toBe('Others/doc.pdf')
+    expect(move2?.ruleId).toBe('r2') // Fallback rule in mock
+    expect(move2?.destinationPath).toBe('/src/Others/doc.pdf') // Relative to /src/doc.pdf
   })
 
   it('should handle conflict resolution renaming', async () => {
-    // Two files resulting in same destination
-    // File 1: conflict.jpg -> Images/conflict.jpg
-    // File 2: conflict.jpg (different folder but same name) -> Images/conflict.jpg -> Images/conflict (1).jpg
+    // File 1: conflict.jpg -> /source/Images/conflict.jpg
+    // File 2: sub/conflict.jpg -> /source/sub/Images/conflict.jpg (Relative to source!)
+    
+    // Note: With "Relative to Source" logic, they go to different folders, so NO CONFLICT!
+    // Unless we force them to same folder.
+    // In this test setup, they go to different folders:
+    // /source/Images/conflict.jpg
+    // /source/sub/Images/conflict.jpg
+    // So 'conflict (1)' logic won't trigger if they are in different dirs.
+    // To test conflict, we need them to resolve to SAME destination.
+    // e.g. both files in same source dir.
+    
+    const files: FileEntry[] = [
+      { path: '/source/conflict.jpg', name: 'conflict.jpg', extension: 'jpg', size: 100, createdAt: new Date(), modifiedAt: new Date(), category: 'image' },
+      { path: '/source/conflict.jpg', name: 'conflict_copy.jpg', extension: 'jpg', size: 100, createdAt: new Date(), modifiedAt: new Date(), category: 'image' } 
+      // Wait, paths must be unique usually.
+      // Let's use same directory.
+    ]
+    // Actually, conflict resolution happens if dest paths match.
+    // If I want to test conflict, I'll use files in SAME dir.
+    
+    const file1: FileEntry = { path: '/source/conflict.jpg', name: 'conflict.jpg', extension: 'jpg', size: 100, createdAt: new Date(), modifiedAt: new Date(), category: 'image' }
+    const file2: FileEntry = { path: '/source/other_conflict.jpg', name: 'conflict.jpg', extension: 'jpg', size: 100, createdAt: new Date(), modifiedAt: new Date(), category: 'image' }
+    // Rule maps both to 'Images/conflict.jpg' (since name is {name} and both are unnamed? No rule uses {name}?)
+    // Wait, resolveDestination uses file.name if pattern doesn't have {name}.
+    // If rule dest is 'Images', dest is 'Images/conflict.jpg'.
+    // If both files are named 'conflict.jpg', dest is same IF they are in same dir.
+    
+    const inputFiles = [file1, file2]
+    const plan = await buildPlan(inputFiles, mockRules)
 
-    // Determine order: plan builder preserves order of input files
-    const file1 = { ...mockFile1, name: 'conflict.jpg', path: '/source/conflict.jpg' }
-    const file2 = { ...mockFile1, name: 'conflict.jpg', path: '/source/sub/conflict.jpg' }
-
-    const plan = await buildPlan([file1, file2], mockRules)
-
-    expect(plan.totalFiles).toBe(2)
-
+    expect(plan.items).toHaveLength(2)
     const item1 = plan.items.find((i) => i.file.path === '/source/conflict.jpg')
-    const item2 = plan.items.find((i) => i.file.path === '/source/sub/conflict.jpg')
+    const item2 = plan.items.find((i) => i.file.path === '/source/other_conflict.jpg')
 
-    expect(item1?.destinationPath).toBe('Images/conflict.jpg')
-    expect(item2?.destinationPath).toBe('Images/conflict (1).jpg')
+    expect(item1?.destinationPath).toBe('/source/Images/conflict.jpg')
+    expect(item2?.destinationPath).toBe('/source/Images/conflict (1).jpg')
     expect(item2?.status).toBe('ok')
   })
 

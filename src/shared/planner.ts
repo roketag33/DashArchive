@@ -1,6 +1,7 @@
 import { Plan, FileEntry, Rule, PlanItem } from './types'
 import { matchRule, resolveDestination } from './engine'
 import { getNextAvailableName } from './conflict'
+import * as path from 'path'
 
 export async function buildPlan(
   files: FileEntry[],
@@ -28,17 +29,24 @@ export async function buildPlan(
 
     if (matchedRule) {
       const initialDest = resolveDestination(file, matchedRule)
+      
+      // Ensure absolute path
+      let absoluteDest = initialDest
+      if (!path.isAbsolute(initialDest)) {
+        absoluteDest = path.join(path.dirname(file.path), initialDest)
+      }
+
       // Handle conflicts
-      const finalDest = getNextAvailableName(initialDest, existingDestinations)
+      const finalDest = getNextAvailableName(absoluteDest, existingDestinations)
 
       existingDestinations.add(finalDest)
 
       items.push({
-        id: Math.random().toString(36).substring(2, 15), // Simple ID for now to avoid crypto issues in test env without setup
+        id: Math.random().toString(36).substring(2, 15),
         file,
         ruleId: matchedRule.id,
         destinationPath: finalDest,
-        status: 'ok' // Conflict resolved via renaming is 'ok' for execution
+        status: 'ok'
       })
     }
   }
