@@ -40,7 +40,7 @@ appImage:
 npmRebuild: false
 publish:
   provider: github
-  owner: electron-user
-  repo: electron-file-organizer
+  owner: roketag33
+  repo: DashArchive
 electronDownload:
   mirror: https://npmmirror.com/mirrors/electron/
