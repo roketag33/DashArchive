@@ -41,33 +41,33 @@ export function PlanPreview({ plan, onConfirm, onCancel, isExecuting }: Props): 
         </div>
 
         <div className="border rounded-md max-h-[400px] overflow-auto">
-          <table className="w-full text-sm text-left">
+          <table className="w-full text-sm text-left table-fixed">
             <thead className="bg-muted/50 sticky top-0">
               <tr>
-                <th className="p-3 font-medium text-muted-foreground">File</th>
-                <th className="p-3 font-medium text-muted-foreground">Current Location</th>
-                <th className="p-3 font-medium text-muted-foreground">Target</th>
+                <th className="p-3 font-medium text-muted-foreground w-[25%]">File</th>
+                <th className="p-3 font-medium text-muted-foreground w-[35%]">Current Location</th>
+                <th className="p-3 font-medium text-muted-foreground w-[40%]">Target</th>
               </tr>
             </thead>
             <tbody className="divide-y">
               {plan.items.map((item) => (
                 <tr key={item.id} className="hover:bg-muted/50 transition-colors">
-                  <td className="p-3 font-medium">{item.file.name}</td>
+                  <td className="p-3 font-medium truncate" title={item.file.name}>{item.file.name}</td>
                   <td
-                    className="p-3 text-muted-foreground truncate max-w-[150px]"
+                    className="p-3 text-muted-foreground truncate"
                     title={item.file.path}
                   >
                     {item.file.path}
                   </td>
                   <td className="p-3">
                     <div
-                      className="flex items-center gap-2 text-primary truncate max-w-[250px]"
+                      className="flex items-center gap-2 text-primary truncate"
                       title={item.destinationPath}
                     >
-                      <ArrowRight className="w-3 h-3 text-muted-foreground" />
-                      {item.destinationPath}
+                      <ArrowRight className="w-3 h-3 text-muted-foreground shrink-0" />
+                      <span className="truncate">{item.destinationPath}</span>
                       {item.status === 'conflict' && (
-                        <Badge variant="destructive" className="ml-2 text-[10px] h-5">
+                        <Badge variant="destructive" className="ml-2 text-[10px] h-5 shrink-0">
                           Rename
                         </Badge>
                       )}

@@ -33,15 +33,30 @@ export async function extractText(filePath: string): Promise<string> {
         return ''
     }
   } catch (error) {
-    console.error(`Failed to extract text from ${filePath}`, error)
+    // Suppress ENOENT logs (expected if file is moved/deleted during scan)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if ((error as any).code !== 'ENOENT') {
+      console.error(`Failed to extract text from ${filePath}`, error)
+    }
     return ''
   }
 }
 
 async function extractPdf(filePath: string): Promise<string> {
   const buffer = await fs.readFile(filePath)
-  // Handle CommonJS/ESM interop
-  const parse = typeof pdfLib === 'function' ? pdfLib : pdfLib.default
+  // Robust import handling for pdf-parse in Electron environment
+  // It might be a default export, or the module itself, or nested.
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  let parse: any = pdfLib
+  if (typeof parse !== 'function' && parse.default) {
+    parse = parse.default
+  }
+  
+  if (typeof parse !== 'function') {
+    console.error('pdf-parse is not a function:', pdfLib)
+    return '' // Fail gracefully for now
+  }
+
   const data = await parse(buffer)
   return data.text
 }
