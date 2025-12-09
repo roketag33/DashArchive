@@ -5,12 +5,13 @@ import { COMMON_CATEGORIES } from '../shared/constants'
 class AIService {
   private static instance: AIService
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  private classifier: any = null
+  private classifier: any | null = null
   private modelName = 'Xenova/mobilebert-uncased-mnli' // Fast and small
   private isLoading = false
 
-  // eslint-disable-next-line @typescript-eslint/no-empty-function
-  private constructor() {}
+  private constructor() {
+    // Singleton
+  }
 
   public static getInstance(): AIService {
     if (!AIService.instance) {

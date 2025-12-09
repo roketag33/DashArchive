@@ -1,8 +1,8 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
 
-// eslint-disable-next-line @typescript-eslint/no-require-imports
-const pdfLib = require('pdf-parse')
+// @ts-ignore : pdf-parse lacks proper ESM exports
+import * as pdfLib from 'pdf-parse'
 import mammoth from 'mammoth'
 
 import { createWorker } from 'tesseract.js'
@@ -28,14 +28,10 @@ export async function extractText(filePath: string): Promise<string> {
       case 'webp':
         return await extractImage(filePath)
       default:
-        // For other files, return empty string or maybe file name?
-        // Content-based sorting implies we need content.
         return ''
     }
   } catch (error) {
-    // Suppress ENOENT logs (expected if file is moved/deleted during scan)
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    if ((error as any).code !== 'ENOENT') {
+    if ((error as { code?: string }).code !== 'ENOENT') {
       console.error(`Failed to extract text from ${filePath}`, error)
     }
     return ''
@@ -44,17 +40,14 @@ export async function extractText(filePath: string): Promise<string> {
 
 async function extractPdf(filePath: string): Promise<string> {
   const buffer = await fs.readFile(filePath)
-  // Robust import handling for pdf-parse in Electron environment
-  // It might be a default export, or the module itself, or nested.
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  let parse: any = pdfLib
-  if (typeof parse !== 'function' && parse.default) {
-    parse = parse.default
-  }
+
+  // Robust import handling for pdf-parse
+  // @ts-ignore - commonjs import
+  let parse = pdfLib.default || pdfLib
 
   if (typeof parse !== 'function') {
-    console.error('pdf-parse is not a function:', pdfLib)
-    return '' // Fail gracefully for now
+    // @ts-ignore - commonjs import
+    parse = pdfLib
   }
 
   const data = await parse(buffer)
