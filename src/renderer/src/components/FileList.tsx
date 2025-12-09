@@ -75,27 +75,37 @@ export function FileList({ files }: Props): React.JSX.Element {
           <table className="w-full text-sm text-left">
             <thead className="bg-muted/50 sticky top-0">
               <tr>
-                <th className="p-3 font-medium text-muted-foreground">Name</th>
-                <th className="p-3 font-medium text-muted-foreground">Category</th>
-                <th className="p-3 font-medium text-muted-foreground">Size (KB)</th>
+                <th className="p-3 font-medium text-muted-foreground w-[30%]">Name</th>
+                <th className="p-3 font-medium text-muted-foreground w-[25%]">Folder</th>
+                <th className="p-3 font-medium text-muted-foreground w-[25%]">Category</th>
+                <th className="p-3 font-medium text-muted-foreground w-[20%]">Size (KB)</th>
               </tr>
             </thead>
             <tbody className="divide-y">
-              {files.map((file, idx) => (
-                <tr key={idx} className="hover:bg-muted/50 transition-colors">
-                  <td className="p-3 truncate max-w-[200px]" title={file.name}>
-                    {file.name}
-                  </td>
-                  <td className="p-3">
-                    <Badge variant="outline" className={getCategoryBadgeStyle(file.category)}>
-                      {file.category}
-                    </Badge>
-                  </td>
-                  <td className="p-3 font-mono text-muted-foreground">
-                    {(file.size / 1024).toFixed(1)}
-                  </td>
-                </tr>
-              ))}
+              {files.map((file, idx) => {
+                // simple parent extraction
+                const parts = file.path.split(/[/\\]/)
+                const parent = parts.length > 1 ? parts[parts.length - 2] : ''
+
+                return (
+                  <tr key={idx} className="hover:bg-muted/50 transition-colors">
+                    <td className="p-3 truncate max-w-[200px]" title={file.name}>
+                      {file.name}
+                    </td>
+                    <td className="p-3 truncate max-w-[150px] text-muted-foreground text-xs" title={file.path}>
+                      {parent}
+                    </td>
+                    <td className="p-3">
+                      <Badge variant="outline" className={getCategoryBadgeStyle(file.category)}>
+                        {file.category}
+                      </Badge>
+                    </td>
+                    <td className="p-3 font-mono text-muted-foreground">
+                      {(file.size / 1024).toFixed(1)}
+                    </td>
+                  </tr>
+                )
+              })}
             </tbody>
           </table>
         </div>
