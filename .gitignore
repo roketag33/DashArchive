@@ -8,3 +8,5 @@ out
 coverage
 *.log
 test-results
+.eslintcache
+debug.png
