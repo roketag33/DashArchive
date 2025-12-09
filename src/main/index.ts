@@ -85,7 +85,7 @@ app.whenReady().then(() => {
         .filter((d) => d.isFile() && !d.name.startsWith('.'))
         .map((d) => nodePath.join(folderPath, d.name))
         .slice(0, 5)
-      
+
       return await aiService.suggestCategories(files)
     } catch (error) {
       console.error('Failed to suggest categories', error)

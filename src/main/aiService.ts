@@ -73,7 +73,7 @@ class AIService {
         if (!text || text.length < 10) continue
 
         const result = await this.classifier(text.slice(0, 1000), COMMON_CATEGORIES)
-        
+
         // Take top 2 if score is decent
         if (result.scores[0] > 0.3) suggestions.add(result.labels[0])
         if (result.scores[1] > 0.3) suggestions.add(result.labels[1])

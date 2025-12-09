@@ -199,7 +199,10 @@ function App(): React.JSX.Element {
                 <div className="mt-4 p-4 rounded-lg border bg-card text-card-foreground shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
                   <div className="flex items-center gap-2 overflow-hidden max-w-full">
                     <span className="text-sm font-medium whitespace-nowrap">Selected:</span>
-                    <span className="font-mono text-sm bg-muted px-2 py-1 rounded truncate" title={selectedPath}>
+                    <span
+                      className="font-mono text-sm bg-muted px-2 py-1 rounded truncate"
+                      title={selectedPath}
+                    >
                       {selectedPath}
                     </span>
                   </div>
@@ -222,7 +225,9 @@ function App(): React.JSX.Element {
 
               {!scanning && selectedPath && files.length === 0 && (
                 <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                  <p className="text-lg font-medium text-muted-foreground">No matching files found</p>
+                  <p className="text-lg font-medium text-muted-foreground">
+                    No matching files found
+                  </p>
                   <p className="text-sm text-muted-foreground mt-1">
                     Try selecting a different folder or check if the folder is empty.
                   </p>
@@ -278,7 +283,7 @@ function App(): React.JSX.Element {
           )}
         </main>
       </div>
-    </div >
+    </div>
   )
 }
 

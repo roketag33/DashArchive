@@ -8,7 +8,6 @@ test.describe('AI Settings UI', () => {
   let window: Page
   let userDataDir: string
 
-
   test.beforeEach(async () => {
     userDataDir = await mkdtemp(join(tmpdir(), 'electron-test-'))
     const mainPath = join(__dirname, '../../out/main/index.js')
@@ -38,7 +37,7 @@ test.describe('AI Settings UI', () => {
     const addBtn = window.locator('[data-testid="add-rule-btn"]')
     await addBtn.waitFor()
     await addBtn.click()
-    
+
     // Switch to AI Mode
     await window.click('[data-testid="rule-mode-ai"]', { force: true })
 
@@ -48,13 +47,13 @@ test.describe('AI Settings UI', () => {
 
     // Click a Quick Tag
     await window.click('[data-testid="quick-tag-Invoice"]', { force: true })
-    
+
     // Check input value
     await expect(input).toHaveValue('Invoice')
 
     // Click another tag
     await window.click('[data-testid="quick-tag-Receipt"]', { force: true })
-    
+
     // Check appended value
     await expect(input).toHaveValue('Invoice, Receipt')
 

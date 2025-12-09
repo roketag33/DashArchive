@@ -100,14 +100,14 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
   }
 
   const handleSuggestCategories = async (): Promise<void> => {
-    // @ts-ignore
+    // @ts-ignore - api exposed in preload
     const folder = await window.api.selectFolder()
     if (!folder) return
 
     // Show loading state could be here, but for now blocking sync is 'ok' for MVP.
     // Ideally use a toast or loading state on button.
     try {
-      // @ts-ignore
+      // @ts-ignore - api exposed in preload
       const suggestions = await window.api.suggestAiCategories(folder)
       if (suggestions && suggestions.length > 0) {
         const current = editForm.aiPrompts || []
@@ -274,8 +274,8 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                 ))}
                               </div>
                               <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-900 mt-2">
-                                <strong>Note:</strong> First run will download the AI model
-                                (~50MB). Processing will be slower than standard rules.
+                                <strong>Note:</strong> First run will download the AI model (~50MB).
+                                Processing will be slower than standard rules.
                               </div>
                             </div>
                           ) : (
@@ -305,7 +305,9 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                       value={editForm.extensions?.join(', ') || ''}
                                       onChange={(e) => handleArrayChange(e.target.value)}
                                     />
-                                    <p className="text-xs text-muted-foreground">Comma separated list of extensions.</p>
+                                    <p className="text-xs text-muted-foreground">
+                                      Comma separated list of extensions.
+                                    </p>
                                   </div>
                                 )}
                                 {editForm.type === 'name' && (
@@ -320,7 +322,9 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                 )}
                                 {editForm.type === 'size' && (
                                   <div className="grid gap-2">
-                                    <label className="text-sm font-medium">Size Range (Bytes)</label>
+                                    <label className="text-sm font-medium">
+                                      Size Range (Bytes)
+                                    </label>
                                     <div className="flex gap-2">
                                       <Input
                                         type="number"
@@ -348,7 +352,9 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                       type="number"
                                       placeholder="Days old"
                                       value={editForm.ageDays || ''}
-                                      onChange={(e) => handleChange('ageDays', parseInt(e.target.value))}
+                                      onChange={(e) =>
+                                        handleChange('ageDays', parseInt(e.target.value))
+                                      }
                                     />
                                   </div>
                                 )}
@@ -362,7 +368,12 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                           )}
                         </div>
                         <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm" onClick={handleCancelEdit} data-testid="cancel-rule-btn">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={handleCancelEdit}
+                            data-testid="cancel-rule-btn"
+                          >
                             Cancel
                           </Button>
                           <Button size="sm" onClick={handleSaveEdit} data-testid="save-rule-btn">

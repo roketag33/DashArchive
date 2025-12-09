@@ -17,7 +17,7 @@ test.describe('AI Rules Lifecycle & Validation', () => {
     })
     window = await app.firstWindow()
     await window.waitForLoadState('domcontentloaded')
-    
+
     // Open Settings
     await window.click('button[title="Settings"]')
     // Wait for modal to render and fetch settings
@@ -35,20 +35,20 @@ test.describe('AI Rules Lifecycle & Validation', () => {
 
   test('should validate empty AI fields', async () => {
     await window.click('[data-testid="add-rule-btn"]', { force: true })
-    
+
     // Switch to AI
     await window.click('[data-testid="rule-mode-ai"]', { force: true })
-    
+
     // Clear name
     await window.fill('[data-testid="rule-name-input"]', '')
-    
+
     // Attempt save
     await window.click('[data-testid="save-rule-btn"]')
-    
+
     // Modal should stay open (inputs visible)
     const nameInput = window.locator('[data-testid="rule-name-input"]')
     await expect(nameInput).toBeVisible()
-    
+
     // Fix to be valid
     await window.fill('[data-testid="rule-name-input"]', 'Valid Name')
     // Attempt save again if needed, or just verify state
@@ -61,10 +61,10 @@ test.describe('AI Rules Lifecycle & Validation', () => {
 
     await window.locator('[data-testid="rule-name-input"]').fill('Delete Me', { force: true })
     await window.locator('[data-testid="rule-dest-input"]').fill('Trash', { force: true })
-    
+
     // Add a tag to make it valid
     await window.click('[data-testid="quick-tag-Invoice"]', { force: true })
-    
+
     await window.click('[data-testid="save-rule-btn"]', { force: true })
 
     // Verify created

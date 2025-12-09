@@ -52,11 +52,10 @@ export function PlanPreview({ plan, onConfirm, onCancel, isExecuting }: Props): 
             <tbody className="divide-y">
               {plan.items.map((item) => (
                 <tr key={item.id} className="hover:bg-muted/50 transition-colors">
-                  <td className="p-3 font-medium truncate" title={item.file.name}>{item.file.name}</td>
-                  <td
-                    className="p-3 text-muted-foreground truncate"
-                    title={item.file.path}
-                  >
+                  <td className="p-3 font-medium truncate" title={item.file.name}>
+                    {item.file.name}
+                  </td>
+                  <td className="p-3 text-muted-foreground truncate" title={item.file.path}>
                     {item.file.path}
                   </td>
                   <td className="p-3">

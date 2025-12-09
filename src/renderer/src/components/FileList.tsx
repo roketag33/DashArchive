@@ -92,7 +92,10 @@ export function FileList({ files }: Props): React.JSX.Element {
                     <td className="p-3 truncate max-w-[200px]" title={file.name}>
                       {file.name}
                     </td>
-                    <td className="p-3 truncate max-w-[150px] text-muted-foreground text-xs" title={file.path}>
+                    <td
+                      className="p-3 truncate max-w-[150px] text-muted-foreground text-xs"
+                      title={file.path}
+                    >
                       {parent}
                     </td>
                     <td className="p-3">

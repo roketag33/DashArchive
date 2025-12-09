@@ -61,7 +61,7 @@ describe('Plan Builder', () => {
   it('should handle conflict resolution renaming', async () => {
     // File 1: conflict.jpg -> /source/Images/conflict.jpg
     // File 2: sub/conflict.jpg -> /source/sub/Images/conflict.jpg (Relative to source!)
-    
+
     // Note: With "Relative to Source" logic, they go to different folders, so NO CONFLICT!
     // Unless we force them to same folder.
     // In this test setup, they go to different folders:
@@ -69,14 +69,30 @@ describe('Plan Builder', () => {
     // /source/sub/Images/conflict.jpg
     // So 'conflict (1)' logic won't trigger if they are in different dirs.
     // To test conflict, we need them to resolve to SAME destination.
-    
-    const file1: FileEntry = { path: '/source/conflict.jpg', name: 'conflict.jpg', extension: 'jpg', size: 100, createdAt: new Date(), modifiedAt: new Date(), category: 'image' }
-    const file2: FileEntry = { path: '/source/other_conflict.jpg', name: 'conflict.jpg', extension: 'jpg', size: 100, createdAt: new Date(), modifiedAt: new Date(), category: 'image' }
+
+    const file1: FileEntry = {
+      path: '/source/conflict.jpg',
+      name: 'conflict.jpg',
+      extension: 'jpg',
+      size: 100,
+      createdAt: new Date(),
+      modifiedAt: new Date(),
+      category: 'image'
+    }
+    const file2: FileEntry = {
+      path: '/source/other_conflict.jpg',
+      name: 'conflict.jpg',
+      extension: 'jpg',
+      size: 100,
+      createdAt: new Date(),
+      modifiedAt: new Date(),
+      category: 'image'
+    }
     // Rule maps both to 'Images/conflict.jpg' (since name is {name} and both are unnamed? No rule uses {name}?)
     // Wait, resolveDestination uses file.name if pattern doesn't have {name}.
     // If rule dest is 'Images', dest is 'Images/conflict.jpg'.
     // If both files are named 'conflict.jpg', dest is same IF they are in same dir.
-    
+
     const inputFiles = [file1, file2]
     const plan = await buildPlan(inputFiles, mockRules)
 

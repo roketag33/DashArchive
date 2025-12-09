@@ -1,6 +1,6 @@
 import * as fs from 'fs/promises'
 import * as path from 'path'
-// eslint-disable-next-line @typescript-eslint/no-require-imports
+
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const pdfLib = require('pdf-parse')
 import mammoth from 'mammoth'
@@ -51,7 +51,7 @@ async function extractPdf(filePath: string): Promise<string> {
   if (typeof parse !== 'function' && parse.default) {
     parse = parse.default
   }
-  
+
   if (typeof parse !== 'function') {
     console.error('pdf-parse is not a function:', pdfLib)
     return '' // Fail gracefully for now
@@ -73,7 +73,9 @@ async function extractPlain(filePath: string): Promise<string> {
 
 async function extractImage(filePath: string): Promise<string> {
   const worker = await createWorker('eng+fra')
-  const { data: { text } } = await worker.recognize(filePath)
+  const {
+    data: { text }
+  } = await worker.recognize(filePath)
   await worker.terminate()
   return text
 }

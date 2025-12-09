@@ -29,7 +29,7 @@ export async function buildPlan(
 
     if (matchedRule) {
       const initialDest = resolveDestination(file, matchedRule)
-      
+
       // Ensure absolute path
       let absoluteDest = initialDest
       if (!path.isAbsolute(initialDest)) {
