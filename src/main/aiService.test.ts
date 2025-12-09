@@ -1,11 +1,9 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect } from 'vitest'
 import { aiService } from './aiService'
-import * as textExtractor from './textExtractor'
-
 // Mock dependencies
-vi.mock('./textExtractor', () => ({
-  extractText: vi.fn()
-}))
+// vi.mock('./textExtractor', () => ({
+//   extractText: vi.fn()
+// }))
 
 // We need to mock the pipeline loader inside aiService which is tricky as it's private/internal.
 // However, aiService uses @xenova/transformers pipeline. We can mock that module?

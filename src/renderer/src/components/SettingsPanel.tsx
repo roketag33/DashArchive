@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react'
 import { Rule, AppSettings } from '../../../shared/types'
+import { COMMON_CATEGORIES } from '../../../shared/constants'
 import { Button } from './ui/button'
 import { Input } from './ui/input'
 import { Switch } from './ui/switch'
@@ -217,7 +218,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                               <div className="flex gap-2 items-end">
                                 <div className="grid gap-2 flex-1">
                                   <Input
-                                    placeholder="e.g. Invoice, Contract, Personal, Receipt"
+                                    placeholder="Categories e.g. Invoice, Contract, Personal"
                                     value={editForm.aiPrompts?.join(', ') || ''}
                                     onChange={(e) => handleAiPromptsChange(e.target.value)}
                                   />
@@ -227,18 +228,42 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                   size="icon"
                                   onClick={handleSuggestCategories}
                                   title="✨ Magic Suggest from Folder"
-                                  className="shrink-0 bg-background"
+                                  className="shrink-0"
                                 >
                                   <Wand2 className="h-4 w-4" />
                                 </Button>
                               </div>
-                              <div className="text-xs text-muted-foreground flex gap-2 items-start mt-2">
-                                <div className="bg-yellow-100 dark:bg-yellow-900/40 p-1 rounded text-yellow-700 dark:text-yellow-400">
-                                  ⚠️
-                                </div>
-                                <div>
-                                  <strong>Local AI Model:</strong> First run downloads ~50MB. Analysis takes 1-2s per file.
-                                </div>
+                              <div className="flex flex-wrap gap-1.5 mt-2">
+                                {COMMON_CATEGORIES.map((cat) => (
+                                  <Badge
+                                    key={cat}
+                                    variant={
+                                      editForm.aiPrompts?.includes(cat) ? 'default' : 'outline'
+                                    }
+                                    className="cursor-pointer hover:bg-primary/90 transition-colors"
+                                    onClick={() => {
+                                      const current = editForm.aiPrompts || []
+                                      if (!current.includes(cat)) {
+                                        setEditForm((prev) => ({
+                                          ...prev,
+                                          aiPrompts: [...current, cat]
+                                        }))
+                                      } else {
+                                        setEditForm((prev) => ({
+                                          ...prev,
+                                          aiPrompts: current.filter((c) => c !== cat)
+                                        }))
+                                      }
+                                    }}
+                                  >
+                                    {editForm.aiPrompts?.includes(cat) ? '✓ ' : '+ '}
+                                    {cat}
+                                  </Badge>
+                                ))}
+                              </div>
+                              <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-900 mt-2">
+                                <strong>Note:</strong> First run will download the AI model
+                                (~50MB). Processing will be slower than standard rules.
                               </div>
                             </div>
                           ) : (

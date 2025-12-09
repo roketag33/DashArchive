@@ -69,16 +69,6 @@ describe('Plan Builder', () => {
     // /source/sub/Images/conflict.jpg
     // So 'conflict (1)' logic won't trigger if they are in different dirs.
     // To test conflict, we need them to resolve to SAME destination.
-    // e.g. both files in same source dir.
-    
-    const files: FileEntry[] = [
-      { path: '/source/conflict.jpg', name: 'conflict.jpg', extension: 'jpg', size: 100, createdAt: new Date(), modifiedAt: new Date(), category: 'image' },
-      { path: '/source/conflict.jpg', name: 'conflict_copy.jpg', extension: 'jpg', size: 100, createdAt: new Date(), modifiedAt: new Date(), category: 'image' } 
-      // Wait, paths must be unique usually.
-      // Let's use same directory.
-    ]
-    // Actually, conflict resolution happens if dest paths match.
-    // If I want to test conflict, I'll use files in SAME dir.
     
     const file1: FileEntry = { path: '/source/conflict.jpg', name: 'conflict.jpg', extension: 'jpg', size: 100, createdAt: new Date(), modifiedAt: new Date(), category: 'image' }
     const file2: FileEntry = { path: '/source/other_conflict.jpg', name: 'conflict.jpg', extension: 'jpg', size: 100, createdAt: new Date(), modifiedAt: new Date(), category: 'image' }

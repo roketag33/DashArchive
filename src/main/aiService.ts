@@ -1,17 +1,7 @@
 import { pipeline } from '@xenova/transformers'
 import { extractText } from './textExtractor'
 
-const COMMON_CATEGORIES = [
-  'Invoice', 'Facture', 'Receipt', 'Ticket', 'Bill',
-  'Resume', 'CV', 'Curriculum Vitae',
-  'Contract', 'Contrat', 'Agreement',
-  'Bank Statement', 'Relevé Bancaire', 'Finance',
-  'Tax', 'Impôt',
-  'ID', 'Passport', 'Passeport', 'Identity',
-  'Course', 'Cours', 'Homework', 'Devoir', 'Slide',
-  'Code', 'Source', 'Script',
-  'Image', 'Photo', 'Screenshot', 'Picture'
-]
+import { COMMON_CATEGORIES } from '../shared/constants'
 
 class AIService {
   private static instance: AIService
