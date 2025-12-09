@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import * as nodePath from 'path'
 import * as fs from 'fs/promises'
+import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
 import { scanDirectory } from './scanner'
 import { buildPlan } from '../shared/planner'
@@ -18,6 +19,11 @@ import { FileEntry } from '../shared/types'
 log.transports.file.level = 'info'
 log.info('App starting...')
 Object.assign(console, log.functions) // Capture console.log
+
+// Setup Auto Updater
+autoUpdater.logger = log
+// autoUpdater.autoDownload = true // Default is true
+autoUpdater.disableWebInstaller = true
 
 function createWindow(): void {
   // Create the browser window.
@@ -61,6 +67,11 @@ app.whenReady().then(() => {
   electronApp.setAppUserModelId('com.electron')
   
   createMenu() // Apply native menu
+
+  // Check for updates
+  if (!is.dev) {
+    autoUpdater.checkForUpdatesAndNotify()
+  }
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
