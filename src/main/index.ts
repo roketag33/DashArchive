@@ -2,6 +2,7 @@ import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
 import { join } from 'path'
 import * as nodePath from 'path'
 import * as fs from 'fs/promises'
+import log from 'electron-log'
 import { scanDirectory } from './scanner'
 import { buildPlan } from '../shared/planner'
 import { executePlan, undoPlan } from './executor'
@@ -12,6 +13,11 @@ import icon from '../../resources/icon.png?asset'
 import { extractText } from './textExtractor'
 import { aiService } from './aiService'
 import { FileEntry } from '../shared/types'
+
+// Setup logger
+log.transports.file.level = 'info'
+log.info('App starting...')
+Object.assign(console, log.functions) // Capture console.log
 
 function createWindow(): void {
   // Create the browser window.
@@ -45,12 +51,16 @@ function createWindow(): void {
   }
 }
 
+import { createMenu } from './menu'
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
+  
+  createMenu() // Apply native menu
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
