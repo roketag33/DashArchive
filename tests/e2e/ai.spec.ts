@@ -1,66 +1,75 @@
-import { test, expect } from '@playwright/test'
+import { test, expect, _electron as electron, ElectronApplication, Page } from '@playwright/test'
+import { join } from 'path'
 
 test.describe('AI Settings UI', () => {
-  test.beforeEach(async ({ page }) => {
-    // Launch app
-    await page.goto('/')
+  let app: ElectronApplication
+  let window: Page
+
+  test.beforeEach(async () => {
+    const mainPath = join(__dirname, '../../out/main/index.js')
+    app = await electron.launch({
+      args: [mainPath]
+    })
+    window = await app.firstWindow()
   })
 
-  test('should allow creating an AI rule with Quick Tags', async ({ page }) => {
+  test.afterEach(async () => {
+    if (app) {
+      await app.close()
+    }
+  })
+
+  test('should allow creating an AI rule with Quick Tags', async () => {
     // Open Settings
-    await page.click('button[title="Settings"]')
-    await expect(page.locator('text=Manage your organization rules')).toBeVisible()
+    await window.click('button[title="Settings"]')
+    await expect(window.locator('text=Manage your organization rules')).toBeVisible()
 
     // Add Rule
-    await page.click('text=Add Rule')
+    await window.click('text=Add Rule')
     
-    // Switch to AI Mode (if rule mode selector exists, assuming default is manual or extension)
-    // The "Rule Mode" selector has "AI Smart Sort" text
-    await page.click('text=AI Smart Sort')
+    // Switch to AI Mode
+    await window.click('text=AI Smart Sort')
 
     // Check if input placeholder changes or Quick Tags appear
-    const input = page.locator('input[placeholder*="Categories"]')
+    const input = window.locator('input[placeholder*="Categories"]')
     await expect(input).toBeVisible()
 
     // Click a Quick Tag (e.g., "Invoice")
-    await page.click('text=Invoice')
+    await window.click('text=Invoice')
     
     // Check input value
     await expect(input).toHaveValue('Invoice')
 
     // Click another tag
-    await page.click('text=Receipt')
+    await window.click('text=Receipt')
     
     // Check appended value
     await expect(input).toHaveValue('Invoice, Receipt')
 
     // Click "Invoice" again to remove it
-    await page.click('text=Invoice')
+    await window.click('text=Invoice')
     await expect(input).toHaveValue('Receipt')
 
     // Set other fields
-    await page.fill('input[placeholder="Rule Name"]', 'My AI Rule')
-    await page.fill('input[placeholder="Destination Folder"]', 'AI_Docs')
+    await window.fill('input[placeholder="Rule Name"]', 'My AI Rule')
+    await window.fill('input[placeholder="Destination Folder"]', 'AI_Docs')
 
     // Save
-    await page.click('text=Save')
+    await window.click('text=Save')
 
     // Verify Rule appears in list
-    await expect(page.locator('text=My AI Rule')).toBeVisible()
-    await expect(page.locator('text=AI_Docs')).toBeVisible()
+    await expect(window.locator('text=My AI Rule')).toBeVisible()
+    await expect(window.locator('text=AI_Docs')).toBeVisible()
   })
 
-  test('should allow Magic Suggest button interaction', async ({ page }) => {
-    await page.click('button[title="Settings"]')
-    await page.click('text=Add Rule')
-    await page.click('text=AI Smart Sort')
+  test('should allow Magic Suggest button interaction', async () => {
+    await window.click('button[title="Settings"]')
+    await window.click('text=Add Rule')
+    await window.click('text=AI Smart Sort')
 
     // Magic Wand button
-    const wandBtn = page.locator('button[title*="Magic Suggest"]')
+    const wandBtn = window.locator('button[title*="Magic Suggest"]')
     await expect(wandBtn).toBeVisible()
-    
-    // Note: Clicking it triggers IPC which might fail or do nothing in mockless E2E if folders aren't set up.
-    // We mainly verify the UI element exists and is clickable.
     await expect(wandBtn).toBeEnabled()
   })
 })
