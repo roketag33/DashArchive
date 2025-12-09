@@ -194,93 +194,134 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                             </div>
                           </div>
                           <div className="grid gap-2">
-                            <label className="text-sm font-medium">Type</label>
-                            <select
-                              className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                              value={editForm.type || 'extension'}
-                              onChange={(e) => handleChange('type', e.target.value)}
-                            >
-                              <option value="extension">Extension</option>
-                              <option value="name">Name Pattern</option>
-                              <option value="size">Size</option>
-                              <option value="date">Date (Age)</option>
-                              <option value="category">Category</option>
-                              <option value="ai">AI Smart Sort (Local)</option>
-                              <option value="fallback">Fallback</option>
-                            </select>
+                            <label className="text-sm font-medium">Rule Mode</label>
+                            <div className="flex p-1 bg-muted rounded-lg">
+                              <button
+                                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${editForm.type === 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                onClick={() => handleChange('type', 'ai')}
+                              >
+                                🧠 AI Smart Sort
+                              </button>
+                              <button
+                                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${editForm.type !== 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                onClick={() => handleChange('type', 'extension')}
+                              >
+                                🛠️ Manual Criteria
+                              </button>
+                            </div>
                           </div>
 
-                          <div className="grid gap-2 col-span-2">
-                            <label className="text-sm font-medium">Configuration</label>
-                            {editForm.type === 'extension' && (
-                              <Input
-                                placeholder="e.g. txt, md, json"
-                                value={editForm.extensions?.join(', ') || ''}
-                                onChange={(e) => handleArrayChange(e.target.value)}
-                              />
-                            )}
-                            {editForm.type === 'name' && (
-                              <Input
-                                placeholder="Regex Pattern e.g. ^report_.*"
-                                value={editForm.namePattern || ''}
-                                onChange={(e) => handleChange('namePattern', e.target.value)}
-                              />
-                            )}
-                            {editForm.type === 'size' && (
-                              <div className="flex gap-2">
-                                <Input
-                                  type="number"
-                                  placeholder="Min bytes"
-                                  value={editForm.sizeMin || ''}
-                                  onChange={(e) =>
-                                    handleChange('sizeMin', parseInt(e.target.value))
-                                  }
-                                />
-                                <Input
-                                  type="number"
-                                  placeholder="Max bytes"
-                                  value={editForm.sizeMax || ''}
-                                  onChange={(e) =>
-                                    handleChange('sizeMax', parseInt(e.target.value))
-                                  }
-                                />
+                          {editForm.type === 'ai' ? (
+                            <div className="grid gap-2 col-span-2 bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/50">
+                              <label className="text-sm font-medium">Categories to Match</label>
+                              <div className="flex gap-2 items-end">
+                                <div className="grid gap-2 flex-1">
+                                  <Input
+                                    placeholder="e.g. Invoice, Contract, Personal, Receipt"
+                                    value={editForm.aiPrompts?.join(', ') || ''}
+                                    onChange={(e) => handleAiPromptsChange(e.target.value)}
+                                  />
+                                </div>
+                                <Button
+                                  variant="outline"
+                                  size="icon"
+                                  onClick={handleSuggestCategories}
+                                  title="✨ Magic Suggest from Folder"
+                                  className="shrink-0 bg-background"
+                                >
+                                  <Wand2 className="h-4 w-4" />
+                                </Button>
                               </div>
-                            )}
-                            {editForm.type === 'date' && (
-                              <Input
-                                type="number"
-                                placeholder="Days old"
-                                value={editForm.ageDays || ''}
-                                onChange={(e) => handleChange('ageDays', parseInt(e.target.value))}
-                              />
-                            )}
-                            {editForm.type === 'ai' && (
+                              <div className="text-xs text-muted-foreground flex gap-2 items-start mt-2">
+                                <div className="bg-yellow-100 dark:bg-yellow-900/40 p-1 rounded text-yellow-700 dark:text-yellow-400">
+                                  ⚠️
+                                </div>
+                                <div>
+                                  <strong>Local AI Model:</strong> First run downloads ~50MB. Analysis takes 1-2s per file.
+                                </div>
+                              </div>
+                            </div>
+                          ) : (
+                            <div className="grid gap-4 col-span-2 border p-4 rounded-lg bg-muted/20">
                               <div className="grid gap-2">
-                                <div className="flex gap-2 items-end">
-                                  <div className="grid gap-2 flex-1">
+                                <label className="text-sm font-medium">Matching Condition</label>
+                                <select
+                                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                  value={editForm.type === 'ai' ? 'extension' : editForm.type}
+                                  onChange={(e) => handleChange('type', e.target.value)}
+                                >
+                                  <option value="extension">File Extension</option>
+                                  <option value="name">File Name (Regex)</option>
+                                  <option value="size">File Size</option>
+                                  <option value="date">File Date (Age)</option>
+                                  <option value="fallback">Everything Else (Fallback)</option>
+                                </select>
+                              </div>
+
+                              <div className="grid gap-2">
+                                {editForm.type === 'extension' && (
+                                  <div className="grid gap-2">
+                                    <label className="text-sm font-medium">Extensions</label>
                                     <Input
-                                      placeholder="Categories e.g. Invoice, Contract, Personal"
-                                      value={editForm.aiPrompts?.join(', ') || ''}
-                                      onChange={(e) => handleAiPromptsChange(e.target.value)}
+                                      placeholder="e.g. txt, md, json"
+                                      value={editForm.extensions?.join(', ') || ''}
+                                      onChange={(e) => handleArrayChange(e.target.value)}
+                                    />
+                                    <p className="text-xs text-muted-foreground">Comma separated list of extensions.</p>
+                                  </div>
+                                )}
+                                {editForm.type === 'name' && (
+                                  <div className="grid gap-2">
+                                    <label className="text-sm font-medium">Pattern</label>
+                                    <Input
+                                      placeholder="Regex Pattern e.g. ^report_.*"
+                                      value={editForm.namePattern || ''}
+                                      onChange={(e) => handleChange('namePattern', e.target.value)}
                                     />
                                   </div>
-                                  <Button
-                                    variant="outline"
-                                    size="icon"
-                                    onClick={handleSuggestCategories}
-                                    title="✨ Magic Suggest from Folder"
-                                    className="shrink-0"
-                                  >
-                                    <Wand2 className="h-4 w-4" />
-                                  </Button>
-                                </div>
-                                <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-900">
-                                  <strong>Note:</strong> First run will download the AI model
-                                  (~50MB). Processing will be slower than standard rules.
-                                </div>
+                                )}
+                                {editForm.type === 'size' && (
+                                  <div className="grid gap-2">
+                                    <label className="text-sm font-medium">Size Range (Bytes)</label>
+                                    <div className="flex gap-2">
+                                      <Input
+                                        type="number"
+                                        placeholder="Min"
+                                        value={editForm.sizeMin || ''}
+                                        onChange={(e) =>
+                                          handleChange('sizeMin', parseInt(e.target.value))
+                                        }
+                                      />
+                                      <Input
+                                        type="number"
+                                        placeholder="Max"
+                                        value={editForm.sizeMax || ''}
+                                        onChange={(e) =>
+                                          handleChange('sizeMax', parseInt(e.target.value))
+                                        }
+                                      />
+                                    </div>
+                                  </div>
+                                )}
+                                {editForm.type === 'date' && (
+                                  <div className="grid gap-2">
+                                    <label className="text-sm font-medium">Minimum Age</label>
+                                    <Input
+                                      type="number"
+                                      placeholder="Days old"
+                                      value={editForm.ageDays || ''}
+                                      onChange={(e) => handleChange('ageDays', parseInt(e.target.value))}
+                                    />
+                                  </div>
+                                )}
+                                {editForm.type === 'fallback' && (
+                                  <p className="text-sm text-muted-foreground italic">
+                                    Matches any file that was not matched by previous rules.
+                                  </p>
+                                )}
                               </div>
-                            )}
-                          </div>
+                            </div>
+                          )}
                         </div>
                         <div className="flex justify-end gap-2">
                           <Button variant="outline" size="sm" onClick={handleCancelEdit}>
