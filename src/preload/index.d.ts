@@ -10,6 +10,7 @@ interface CustomAPI {
   getHistory: () => Promise<JournalEntry[]>
   undoPlan: (plan: Plan) => Promise<ExecutionResult>
   suggestAiCategories: (folderPath: string) => Promise<string[]>
+  markReverted: (id: string) => Promise<void>
 }
 
 declare global {

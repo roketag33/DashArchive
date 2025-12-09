@@ -30,7 +30,6 @@ function App(): React.JSX.Element {
 
   const loadSettings = async (): Promise<void> => {
     try {
-      // @ts-ignore - Window.api is defined in preload
       const s = await window.api.getSettings()
       setSettings(s)
     } catch (e) {
@@ -40,7 +39,6 @@ function App(): React.JSX.Element {
 
   const loadHistory = async (): Promise<void> => {
     try {
-      // @ts-ignore - Window.api is defined in preload
       const h = await window.api.getHistory()
       setHistory(h)
     } catch (e) {
@@ -55,11 +53,10 @@ function App(): React.JSX.Element {
 
   const handleUndo = async (entry: JournalEntry): Promise<void> => {
     try {
-      // @ts-ignore - Window.api is defined in preload
       const result = await window.api.undoPlan(entry.plan)
       if (result.success) {
         // Refresh history to show 'reverted' status?
-        // @ts-ignore - Window.api is defined in preload
+
         await window.api.markReverted(entry.id)
         loadHistory()
         alert('Undo successful!')
@@ -76,7 +73,6 @@ function App(): React.JSX.Element {
 
   const handleSaveSettings = async (newSettings: AppSettings): Promise<void> => {
     try {
-      // @ts-ignore - Window.api is defined in preload
       const saved = await window.api.saveSettings(newSettings)
       setSettings(saved)
       setShowSettings(false)
@@ -93,7 +89,6 @@ function App(): React.JSX.Element {
     setPlan(null)
     setExecutionResult(null)
     try {
-      // @ts-ignore - Window.api is defined in preload
       const result = await window.api.scanFolder(path)
       setFiles(result)
     } catch (e) {
@@ -106,7 +101,6 @@ function App(): React.JSX.Element {
 
   const handleGeneratePlan = async (): Promise<void> => {
     try {
-      // @ts-ignore - Window.api is defined in preload
       const generatedPlan = await window.api.generatePlan(files)
       setPlan(generatedPlan)
     } catch (e) {
@@ -119,13 +113,11 @@ function App(): React.JSX.Element {
     if (!plan) return
     setIsExecuting(true)
     try {
-      // @ts-ignore - Window.api is defined in preload
       const result = await window.api.executePlan(plan)
       setExecutionResult(result)
       setPlan(null) // Clear plan to show result
       // Refresh files after execution?
       if (selectedPath) {
-        // @ts-ignore - Window.api is defined in preload
         const newFiles = await window.api.scanFolder(selectedPath)
         setFiles(newFiles)
       }

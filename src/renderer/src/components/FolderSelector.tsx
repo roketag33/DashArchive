@@ -10,7 +10,6 @@ interface Props {
 
 export function FolderSelector({ onSelect, isLoading }: Props): React.JSX.Element {
   const handleSelect = async (): Promise<void> => {
-    // @ts-ignore : Window.api is defined in preload
     const path = await window.api.selectFolder()
     if (path) {
       onSelect(path)
@@ -35,7 +34,7 @@ export function FolderSelector({ onSelect, isLoading }: Props): React.JSX.Elemen
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0]
-      // @ts-ignore : 'path' exists on File in Electron
+
       const path = file.path
       if (path) {
         onSelect(path)

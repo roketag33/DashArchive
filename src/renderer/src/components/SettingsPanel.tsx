@@ -92,7 +92,6 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
   }
 
   const handleSelectDestination = async (): Promise<void> => {
-    // @ts-ignore (api exposed in preload)
     const path = await window.api.selectFolder()
     if (path) {
       handleChange('destination', path)
@@ -100,14 +99,12 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
   }
 
   const handleSuggestCategories = async (): Promise<void> => {
-    // @ts-ignore - api exposed in preload
     const folder = await window.api.selectFolder()
     if (!folder) return
 
     // Show loading state could be here, but for now blocking sync is 'ok' for MVP.
     // Ideally use a toast or loading state on button.
     try {
-      // @ts-ignore - api exposed in preload
       const suggestions = await window.api.suggestAiCategories(folder)
       if (suggestions && suggestions.length > 0) {
         const current = editForm.aiPrompts || []

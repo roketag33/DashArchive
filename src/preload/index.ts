@@ -14,7 +14,8 @@ const api = {
   getHistory: (): Promise<JournalEntry[]> => ipcRenderer.invoke('get-history'),
   undoPlan: (plan: Plan): Promise<ExecutionResult> => ipcRenderer.invoke('undo-plan', plan),
   suggestAiCategories: (path: string): Promise<string[]> =>
-    ipcRenderer.invoke('ai-suggest-categories', path)
+    ipcRenderer.invoke('ai-suggest-categories', path),
+  markReverted: (id: string): Promise<void> => ipcRenderer.invoke('mark-reverted', id)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
