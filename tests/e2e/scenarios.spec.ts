@@ -32,7 +32,7 @@ test.describe('Comprehensive Scenarios', () => {
 
     const mainPath = join(__dirname, '../../out/main/index.js')
     app = await electron.launch({
-      args: [mainPath]
+      args: [mainPath, '--no-sandbox']
     })
     page = await app.firstWindow()
   })

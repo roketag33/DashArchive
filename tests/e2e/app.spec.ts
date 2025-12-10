@@ -13,7 +13,7 @@ test.describe('Application Launch', () => {
     // Let's assume testing against source for now:
     const mainPath = join(__dirname, '../../out/main/index.js')
     app = await electron.launch({
-      args: [mainPath]
+      args: [mainPath, '--no-sandbox']
     })
     window = await app.firstWindow()
   })

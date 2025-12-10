@@ -12,7 +12,7 @@ test.describe('AI Settings UI', () => {
     userDataDir = await mkdtemp(join(tmpdir(), 'electron-test-'))
     const mainPath = join(__dirname, '../../out/main/index.js')
     app = await electron.launch({
-      args: [mainPath, `--user-data-dir=${userDataDir}`],
+      args: [mainPath, '--no-sandbox', `--user-data-dir=${userDataDir}`],
       env: { ...process.env, NODE_ENV: 'test' }
     })
     window = await app.firstWindow()
