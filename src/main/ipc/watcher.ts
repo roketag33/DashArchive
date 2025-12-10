@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import { watcherService } from '../watcher'
+import { watcherService } from '../services/watcher'
 
 export function registerWatcherHandlers(): void {
   ipcMain.handle('watcher:start', (_, path: string) => {

@@ -1,6 +1,6 @@
 import { extractText } from './textExtractor'
 
-import { COMMON_CATEGORIES } from '../shared/constants'
+import { COMMON_CATEGORIES } from '../../shared/constants'
 
 class AIService {
   private static instance: AIService

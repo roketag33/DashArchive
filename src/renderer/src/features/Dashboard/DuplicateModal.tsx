@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react'
-import { FileEntry, DuplicateGroup } from '../../../shared/types'
-import { Button } from './ui/button'
-import { Card } from './ui/card'
+import { FileEntry, DuplicateGroup } from '../../../../shared/types'
+import { Button } from '../../components/ui/button'
+import { Card } from '../../components/ui/card'
 import { Trash2, AlertTriangle, X } from 'lucide-react'
 import clsx from 'clsx'
 

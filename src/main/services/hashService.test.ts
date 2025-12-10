@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import { join } from 'path'
 import * as fs from 'fs/promises'
 import { calculateFileHash, findDuplicates } from './hashService'
-import { FileEntry } from '../shared/types'
+import { FileEntry } from '../../shared/types'
 
 const TEST_DIR = join(__dirname, '../../test_duplicates')
 

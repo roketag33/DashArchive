@@ -1,5 +1,5 @@
 import Store from 'electron-store'
-import { JournalEntry, Plan } from '../shared/types'
+import { JournalEntry, Plan } from '../../shared/types'
 
 interface JournalStore {
   history: JournalEntry[]

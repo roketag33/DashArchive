@@ -1,9 +1,9 @@
 import React from 'react'
-import { Plan } from '../../../shared/types'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Button } from './ui/button'
+import { Plan } from '../../../../shared/types'
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { Button } from '../../components/ui/button'
 
-import { Badge } from './ui/badge'
+import { Badge } from '../../components/ui/badge'
 import { ArrowRight } from 'lucide-react'
 
 interface Props {

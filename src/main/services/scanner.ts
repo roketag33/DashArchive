@@ -1,7 +1,7 @@
-import { FileEntry } from '../shared/types'
+import { FileEntry } from '../../shared/types'
 import * as fs from 'fs/promises'
 import * as path from 'path'
-import { classifyFile } from '../shared/classification'
+import { classifyFile } from '../../shared/classification'
 
 export async function scanDirectory(dirPath: string): Promise<FileEntry[]> {
   const entries: FileEntry[] = []

@@ -1,4 +1,4 @@
-import { JournalEntry } from '../../../shared/types'
+import { JournalEntry } from '../../../../shared/types'
 
 interface Props {
   history: JournalEntry[]

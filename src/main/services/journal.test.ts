@@ -1,6 +1,6 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { addEntry, getHistory, markReverted, getEntry } from './journal'
-import { Plan } from '../shared/types'
+import { Plan } from '../../shared/types'
 
 // Mock electron-store
 // eslint-disable-next-line @typescript-eslint/no-explicit-any

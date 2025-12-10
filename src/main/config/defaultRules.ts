@@ -1,6 +1,6 @@
 import { app } from 'electron'
 import { join } from 'path'
-import { Rule } from '../shared/types'
+import { Rule } from '../../shared/types'
 
 export const getDefaultRules = (): Rule[] => {
   const baseDir = join(app.getPath('downloads'), 'FileOrganizer')

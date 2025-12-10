@@ -1,10 +1,10 @@
 import { ipcMain, shell } from 'electron'
 import { buildPlan } from '../../shared/planner'
-import { executePlan, undoPlan } from '../executor'
-import { getSettings, saveSettings } from '../settings'
-import { addEntry, getHistory, markReverted } from '../journal'
-import { extractText } from '../textExtractor'
-import { aiService } from '../aiService'
+import { executePlan, undoPlan } from '../services/executor'
+import { getSettings, saveSettings } from '../services/settings'
+import { addEntry, getHistory, markReverted } from '../services/journal'
+import { extractText } from '../services/textExtractor'
+import { aiService } from '../services/aiService'
 import { FileEntry } from '../../shared/types'
 
 export function registerPlanHandlers(): void {

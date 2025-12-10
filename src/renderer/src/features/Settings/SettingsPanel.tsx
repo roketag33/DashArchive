@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react'
-import { Rule, AppSettings } from '../../../shared/types'
-import { COMMON_CATEGORIES } from '../../../shared/constants'
-import { Button } from './ui/button'
-import { Input } from './ui/input'
-import { Switch } from './ui/switch'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from './ui/card'
-import { Badge } from './ui/badge'
+import { Rule, AppSettings } from '../../../../shared/types'
+import { COMMON_CATEGORIES } from '../../../../shared/constants'
+import { Button } from '../../components/ui/button'
+import { Input } from '../../components/ui/input'
+import { Switch } from '../../components/ui/switch'
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
+import { Badge } from '../../components/ui/badge'
 import { X, Plus, Trash2, Edit2, Save, FolderOpen, Wand2 } from 'lucide-react'
 
 interface Props {

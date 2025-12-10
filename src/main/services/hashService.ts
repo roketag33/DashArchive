@@ -1,6 +1,6 @@
 import { createHash } from 'crypto'
 import { createReadStream } from 'fs'
-import { FileEntry, DuplicateGroup } from '../shared/types'
+import { FileEntry, DuplicateGroup } from '../../shared/types'
 
 /**
  * Calculates the SHA-256 hash of a file.

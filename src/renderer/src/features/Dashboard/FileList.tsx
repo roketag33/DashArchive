@@ -1,7 +1,7 @@
 import React from 'react'
-import { FileEntry } from '../../../shared/types'
-import { Card, CardContent, CardHeader, CardTitle } from './ui/card'
-import { Badge } from './ui/badge'
+import { FileEntry } from '../../../../shared/types'
+import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
+import { Badge } from '../../components/ui/badge'
 import * as ReactWindow from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
 
