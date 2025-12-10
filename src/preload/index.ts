@@ -17,7 +17,8 @@ const api = {
     ipcRenderer.invoke('ai-suggest-categories', path),
   markReverted: (id: string): Promise<void> => ipcRenderer.invoke('mark-reverted', id),
   deleteFiles: (paths: string[]): Promise<void> => ipcRenderer.invoke('delete-files', paths),
-  findDuplicates: (files: FileEntry[]): Promise<FileEntry[][]> => ipcRenderer.invoke('find-duplicates', files)
+  findDuplicates: (files: FileEntry[]): Promise<FileEntry[][]> =>
+    ipcRenderer.invoke('find-duplicates', files)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

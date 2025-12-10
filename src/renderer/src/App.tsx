@@ -246,7 +246,7 @@ function App(): React.JSX.Element {
               onClose={() => setShowDuplicates(false)}
               onDelete={async (toDelete) => {
                 try {
-                  await window.api.deleteFiles(toDelete.map(f => f.path))
+                  await window.api.deleteFiles(toDelete.map((f) => f.path))
                   // Refresh
                   if (selectedPath) {
                     const newFiles = await window.api.scanFolder(selectedPath)
@@ -254,7 +254,7 @@ function App(): React.JSX.Element {
                   }
                 } catch (e) {
                   console.error(e)
-                  alert("Failed to delete duplicates")
+                  alert('Failed to delete duplicates')
                 }
               }}
             />

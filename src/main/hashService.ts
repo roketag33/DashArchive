@@ -39,7 +39,7 @@ export const findDuplicates = async (files: FileEntry[]): Promise<DuplicateGroup
   // 2. Hash collisions
   for (const [size, candidates] of sizeMap.entries()) {
     if (candidates.length < 2) continue
-    
+
     // Hash map for this specific size
     const hashMap = new Map<string, FileEntry[]>()
 

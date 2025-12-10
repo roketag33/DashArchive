@@ -66,7 +66,7 @@ import { createMenu } from './menu'
 app.whenReady().then(() => {
   // Set app user model id for windows
   electronApp.setAppUserModelId('com.electron')
-  
+
   createMenu() // Apply native menu
 
   // Check for updates

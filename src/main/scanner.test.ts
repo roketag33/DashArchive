@@ -36,6 +36,7 @@ describe('Scanner', () => {
       path: path.normalize('/test/dir/file1.txt'), // Normalize for OS specific separators
       name: 'file1.txt',
       extension: 'txt',
+      isDirectory: false,
       size: 1024,
       createdAt: mockStats.birthtime,
       modifiedAt: mockStats.mtime,

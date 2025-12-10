@@ -25,9 +25,7 @@ export function createMenu(): void {
     // { role: 'fileMenu' }
     {
       label: 'File',
-      submenu: [
-        { role: 'close' }
-      ] as MenuItemConstructorOptions[]
+      submenu: [{ role: 'close' }] as MenuItemConstructorOptions[]
     },
     // { role: 'editMenu' }
     {
@@ -66,12 +64,7 @@ export function createMenu(): void {
         { role: 'minimize' },
         { role: 'zoom' },
         ...(process.platform === 'darwin'
-          ? [
-              { type: 'separator' },
-              { role: 'front' },
-              { type: 'separator' },
-              { role: 'window' }
-            ]
+          ? [{ type: 'separator' }, { role: 'front' }, { type: 'separator' }, { role: 'window' }]
           : ([{ role: 'close' }] as MenuItemConstructorOptions[]))
       ] as MenuItemConstructorOptions[]
     },
@@ -93,15 +86,16 @@ export function createMenu(): void {
       ] as MenuItemConstructorOptions[]
     }
   ]
-  
+
   // Production specific: Remove DevTools/Reload from View menu if not dev
   if (!is.dev) {
-    const viewMenu = template.find(m => m.label === 'View')
+    const viewMenu = template.find((m) => m.label === 'View')
     if (viewMenu && viewMenu.submenu && Array.isArray(viewMenu.submenu)) {
-       // Filter out dev tools and reload
-       viewMenu.submenu = (viewMenu.submenu as MenuItemConstructorOptions[]).filter(
-         item => item.role !== 'toggleDevTools' && item.role !== 'reload' && item.role !== 'forceReload'
-       )
+      // Filter out dev tools and reload
+      viewMenu.submenu = (viewMenu.submenu as MenuItemConstructorOptions[]).filter(
+        (item) =>
+          item.role !== 'toggleDevTools' && item.role !== 'reload' && item.role !== 'forceReload'
+      )
     }
   }
 

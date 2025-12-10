@@ -31,18 +31,54 @@ describe('hashService', () => {
 
   it('should find duplicates', async () => {
     const files: FileEntry[] = [
-      { path: join(TEST_DIR, 'file1.txt'), name: 'file1.txt', size: 9, isDirectory: false, category: 'other', extension: '.txt', createdAt: new Date(), modifiedAt: new Date() },
-      { path: join(TEST_DIR, 'file2.txt'), name: 'file2.txt', size: 9, isDirectory: false, category: 'other', extension: '.txt', createdAt: new Date(), modifiedAt: new Date() },
-      { path: join(TEST_DIR, 'file3.txt'), name: 'file3.txt', size: 9, isDirectory: false, category: 'other', extension: '.txt', createdAt: new Date(), modifiedAt: new Date() },
-      { path: join(TEST_DIR, 'file4.txt'), name: 'file4.txt', size: 19, isDirectory: false, category: 'other', extension: '.txt', createdAt: new Date(), modifiedAt: new Date() },
+      {
+        path: join(TEST_DIR, 'file1.txt'),
+        name: 'file1.txt',
+        size: 9,
+        isDirectory: false,
+        category: 'other',
+        extension: '.txt',
+        createdAt: new Date(),
+        modifiedAt: new Date()
+      },
+      {
+        path: join(TEST_DIR, 'file2.txt'),
+        name: 'file2.txt',
+        size: 9,
+        isDirectory: false,
+        category: 'other',
+        extension: '.txt',
+        createdAt: new Date(),
+        modifiedAt: new Date()
+      },
+      {
+        path: join(TEST_DIR, 'file3.txt'),
+        name: 'file3.txt',
+        size: 9,
+        isDirectory: false,
+        category: 'other',
+        extension: '.txt',
+        createdAt: new Date(),
+        modifiedAt: new Date()
+      },
+      {
+        path: join(TEST_DIR, 'file4.txt'),
+        name: 'file4.txt',
+        size: 19,
+        isDirectory: false,
+        category: 'other',
+        extension: '.txt',
+        createdAt: new Date(),
+        modifiedAt: new Date()
+      }
     ]
 
     const results = await findDuplicates(files)
-    
+
     expect(results).toHaveLength(1) // Only one group (file1 + file2)
     expect(results[0].files).toHaveLength(2)
-    expect(results[0].files.map(f => f.name)).toContain('file1.txt')
-    expect(results[0].files.map(f => f.name)).toContain('file2.txt')
-    expect(results[0].files.map(f => f.name)).not.toContain('file3.txt')
+    expect(results[0].files.map((f) => f.name)).toContain('file1.txt')
+    expect(results[0].files.map((f) => f.name)).toContain('file2.txt')
+    expect(results[0].files.map((f) => f.name)).not.toContain('file3.txt')
   })
 })

@@ -10,7 +10,9 @@ interface CustomAPI {
   getHistory: () => Promise<JournalEntry[]>
   undoPlan: (plan: Plan) => Promise<ExecutionResult>
   suggestAiCategories: (folderPath: string) => Promise<string[]>
-  findDuplicates: (files: import('../shared/types').FileEntry[]) => Promise<import('../shared/types').DuplicateGroup[]>
+  findDuplicates: (
+    files: import('../shared/types').FileEntry[]
+  ) => Promise<import('../shared/types').DuplicateGroup[]>
   deleteFiles: (paths: string[]) => Promise<boolean>
   markReverted: (id: string) => Promise<void>
 }
