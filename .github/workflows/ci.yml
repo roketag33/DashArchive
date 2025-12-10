@@ -34,4 +34,4 @@ jobs:
         run: yarn build
 
       - name: Test
-        run: yarn test:all
+        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- yarn test:all
