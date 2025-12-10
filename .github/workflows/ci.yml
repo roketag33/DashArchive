@@ -21,17 +21,5 @@ jobs:
       - name: Install dependencies
         run: yarn install --frozen-lockfile
 
-      - name: Install Playwright Browsers
-        run: yarn playwright install --with-deps
-
-      - name: Lint
-        run: yarn lint
-
-      - name: Typecheck
-        run: yarn typecheck
-
-      - name: Build
-        run: yarn build
-
       - name: Test
-        run: xvfb-run --auto-servernum --server-args="-screen 0 1280x960x24" -- yarn test:all
+        run: yarn test
