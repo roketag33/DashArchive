@@ -13,6 +13,7 @@ import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { extractText } from './textExtractor'
 import { aiService } from './aiService'
+import { findDuplicates } from './hashService'
 import { FileEntry } from '../shared/types'
 
 // Setup logger
@@ -119,6 +120,17 @@ app.whenReady().then(() => {
     return await buildPlan(files, rules, extractText, (text, labels) =>
       aiService.classify(text, labels)
     )
+  })
+
+  ipcMain.handle('find-duplicates', async (_, files: FileEntry[]) => {
+    return await findDuplicates(files)
+  })
+
+  ipcMain.handle('delete-files', async (_, paths: string[]) => {
+    for (const path of paths) {
+      await shell.trashItem(path)
+    }
+    return true
   })
 
   ipcMain.handle('execute-plan', async (_, plan) => {

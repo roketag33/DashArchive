@@ -29,6 +29,7 @@ export async function scanDirectory(dirPath: string): Promise<FileEntry[]> {
             path: fullPath,
             name: dirent.name,
             extension: path.extname(dirent.name).slice(1).toLowerCase(), // remove dot
+            isDirectory: false,
             size: stats.size,
             createdAt: stats.birthtime,
             modifiedAt: stats.mtime,

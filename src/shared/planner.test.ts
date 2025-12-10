@@ -7,6 +7,7 @@ const mockFile1: FileEntry = {
   name: 'img1.jpg',
   extension: 'jpg',
   size: 100,
+  isDirectory: false,
   createdAt: new Date(),
   modifiedAt: new Date('2023-01-01'),
   category: 'image'
@@ -17,6 +18,7 @@ const mockFile2: FileEntry = {
   name: 'doc.pdf',
   extension: 'pdf',
   size: 100,
+  isDirectory: false,
   createdAt: new Date(),
   modifiedAt: new Date('2023-01-01'),
   category: 'document'
@@ -74,6 +76,7 @@ describe('Plan Builder', () => {
       path: '/source/conflict.jpg',
       name: 'conflict.jpg',
       extension: 'jpg',
+      isDirectory: false,
       size: 100,
       createdAt: new Date(),
       modifiedAt: new Date(),
@@ -83,6 +86,7 @@ describe('Plan Builder', () => {
       path: '/source/other_conflict.jpg',
       name: 'conflict.jpg',
       extension: 'jpg',
+      isDirectory: false,
       size: 100,
       createdAt: new Date(),
       modifiedAt: new Date(),

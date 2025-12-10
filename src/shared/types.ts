@@ -12,10 +12,19 @@ export interface FileEntry {
   path: string
   name: string
   extension: string
+  isDirectory: boolean
   size: number
   createdAt: Date
   modifiedAt: Date
+  content?: string
+  hash?: string
   category: FileCategory
+}
+
+export interface DuplicateGroup {
+  hash: string
+  size: number
+  files: FileEntry[]
 }
 
 export type RuleType = 'extension' | 'name' | 'size' | 'date' | 'category' | 'ai' | 'fallback'

@@ -7,6 +7,7 @@ const mockFile: FileEntry = {
   name: 'test.jpg',
   extension: 'jpg',
   size: 1024,
+  isDirectory: false,
   createdAt: new Date('2023-01-01'),
   modifiedAt: new Date('2023-05-15'),
   category: 'image'

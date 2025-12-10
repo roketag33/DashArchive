@@ -4,6 +4,7 @@ import { FileList } from './components/FileList'
 import { PlanPreview } from './components/PlanPreview'
 import { SettingsPanel } from './components/SettingsPanel'
 import { HistoryPanel } from './components/HistoryPanel'
+import { DuplicateModal } from './components/DuplicateModal'
 import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry } from '../../shared/types'
 import electronLogo from './assets/electron.svg'
 
@@ -22,6 +23,7 @@ function App(): React.JSX.Element {
   // History State
   const [history, setHistory] = useState<JournalEntry[]>([])
   const [showHistory, setShowHistory] = useState(false)
+  const [showDuplicates, setShowDuplicates] = useState(false)
 
   useEffect(() => {
     loadSettings()
@@ -199,12 +201,20 @@ function App(): React.JSX.Element {
                     </span>
                   </div>
                   {files.length > 0 && (
-                    <button
-                      onClick={handleGeneratePlan}
-                      className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded text-sm font-medium transition-colors"
-                    >
-                      Organize {files.length} Files
-                    </button>
+                    <>
+                      <button
+                        onClick={handleGeneratePlan}
+                        className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded text-sm font-medium transition-colors"
+                      >
+                        Organize {files.length} Files
+                      </button>
+                      <button
+                        onClick={() => setShowDuplicates(true)}
+                        className="bg-orange-100 text-orange-700 hover:bg-orange-200 px-4 py-2 rounded text-sm font-medium transition-colors border border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800"
+                      >
+                        👯 Clean Duplicates
+                      </button>
+                    </>
                   )}
                 </div>
               )}
@@ -228,6 +238,26 @@ function App(): React.JSX.Element {
 
               {files.length > 0 && <FileList files={files} />}
             </>
+          )}
+
+          {showDuplicates && (
+            <DuplicateModal
+              files={files}
+              onClose={() => setShowDuplicates(false)}
+              onDelete={async (toDelete) => {
+                try {
+                  await window.api.deleteFiles(toDelete.map(f => f.path))
+                  // Refresh
+                  if (selectedPath) {
+                    const newFiles = await window.api.scanFolder(selectedPath)
+                    setFiles(newFiles)
+                  }
+                } catch (e) {
+                  console.error(e)
+                  alert("Failed to delete duplicates")
+                }
+              }}
+            />
           )}
 
           {plan && !showSettings && !showHistory && (
