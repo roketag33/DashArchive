@@ -1,4 +1,4 @@
-import { Rule, FileEntry } from './types'
+import { Rule, FileEntry } from '../../../shared/types'
 
 export async function matchRule(
   file: FileEntry,

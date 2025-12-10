@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { matchRule, resolveDestination } from './engine'
-import { Rule, FileEntry } from './types'
+import { Rule, FileEntry } from '../../../shared/types'
 
 const mockFile: FileEntry = {
   path: '/Downloads/test.jpg',

@@ -5,7 +5,9 @@ import log from 'electron-log'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers } from './ipc'
-import { watcherService } from './services/watcher'
+import { watcherService } from './services/fs/watcher'
+// ...
+import { createMenu } from './services/core/menu'
 
 // Setup logger
 log.transports.file.level = 'info'
@@ -50,7 +52,8 @@ function createWindow(): void {
   }
 }
 
-import { createMenu } from './services/menu'
+// createMenu imported at top
+// createMenu imported at top
 
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.

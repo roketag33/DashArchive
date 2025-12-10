@@ -1,5 +1,5 @@
-import { FileCategory } from './types'
-import { EXTENSION_CATEGORY_MAP } from './constants'
+import { FileCategory } from '../../../shared/types'
+import { EXTENSION_CATEGORY_MAP } from '../../../shared/constants'
 
 export function classifyFile(filename: string): FileCategory {
   const parts = filename.split('.')

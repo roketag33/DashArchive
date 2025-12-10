@@ -1,4 +1,4 @@
-import { Plan, ExecutionResult } from '../../shared/types'
+import { Plan, ExecutionResult } from '../../../shared/types'
 import * as fs from 'fs/promises'
 import * as path from 'path'
 

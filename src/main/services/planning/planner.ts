@@ -1,4 +1,4 @@
-import { Plan, FileEntry, Rule, PlanItem } from './types'
+import { Plan, FileEntry, Rule, PlanItem } from '../../../shared/types'
 import { matchRule, resolveDestination } from './engine'
 import { getNextAvailableName } from './conflict'
 import * as path from 'path'

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { executePlan } from './executor'
 import * as fs from 'fs/promises'
-import { Plan, FileEntry } from '../../shared/types'
+import { Plan, FileEntry } from '../../../shared/types'
 import * as path from 'path'
 
 vi.mock('fs/promises')

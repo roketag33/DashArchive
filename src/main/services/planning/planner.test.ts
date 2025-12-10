@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { buildPlan } from './planner'
-import { FileEntry, Rule } from './types'
+import { FileEntry, Rule } from '../../../shared/types'
 
 const mockFile1: FileEntry = {
   path: '/src/img1.jpg',
