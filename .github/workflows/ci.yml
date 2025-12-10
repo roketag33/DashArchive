@@ -2,34 +2,33 @@ name: CI
 
 on:
   push:
-    branches: [ main ]
+    branches: [main]
   pull_request:
-    branches: [ main ]
+    branches: [main]
 
 jobs:
   check:
     runs-on: ubuntu-latest
-    
+
     steps:
       - uses: actions/checkout@v4
-      
+
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: 20
-          cache: 'npm'
-          
+          cache: 'yarn'
       - name: Install dependencies
-        run: npm ci
-        
+        run: yarn install --frozen-lockfile
+
       - name: Lint
-        run: npm run lint
-        
+        run: yarn lint
+
       - name: Typecheck
-        run: npm run typecheck
-        
+        run: yarn typecheck
+
       - name: Test
-        run: npm run test:all
-        
+        run: yarn test:all
+
       - name: Build
-        run: npm run build
+        run: yarn build

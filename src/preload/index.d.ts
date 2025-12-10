@@ -15,6 +15,10 @@ interface CustomAPI {
   ) => Promise<import('../shared/types').DuplicateGroup[]>
   deleteFiles: (paths: string[]) => Promise<boolean>
   markReverted: (id: string) => Promise<void>
+  startWatcher: (path: string) => Promise<void>
+  stopWatcher: () => Promise<void>
+  onFileAdded: (callback: (path: string) => void) => void
+  removeFileAddedListener: () => void
 }
 
 declare global {

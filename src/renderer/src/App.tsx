@@ -24,11 +24,27 @@ function App(): React.JSX.Element {
   const [history, setHistory] = useState<JournalEntry[]>([])
   const [showHistory, setShowHistory] = useState(false)
   const [showDuplicates, setShowDuplicates] = useState(false)
+  const [isWatching, setIsWatching] = useState(false)
 
   useEffect(() => {
     loadSettings()
     loadHistory()
-  }, [])
+
+    // Watcher listener
+    window.api.onFileAdded((path) => {
+      // Create a native notification (or toast)
+      new Notification('New File Detected', { body: path })
+      // Ideally refresh the list
+      if (selectedPath) {
+        // Debounce this in real app
+        window.api.scanFolder(selectedPath).then(setFiles)
+      }
+    })
+
+    return () => {
+      window.api.removeFileAddedListener()
+    }
+  }, [selectedPath])
 
   const loadSettings = async (): Promise<void> => {
     try {
@@ -300,6 +316,29 @@ function App(): React.JSX.Element {
                 className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
               >
                 Back to Dashboard
+              </button>
+            </div>
+          )}
+
+          {selectedPath && !scanning && !plan && !executionResult && (
+            <div className="fixed bottom-4 right-4 flex gap-2">
+              <button
+                onClick={() => {
+                  if (isWatching) {
+                    window.api.stopWatcher()
+                    setIsWatching(false)
+                  } else {
+                    window.api.startWatcher(selectedPath)
+                    setIsWatching(true)
+                  }
+                }}
+                className={`px-4 py-2 rounded shadow-lg font-medium transition-colors ${
+                  isWatching
+                    ? 'bg-green-600 text-white animate-pulse'
+                    : 'bg-gray-800 text-white hover:bg-gray-700'
+                }`}
+              >
+                {isWatching ? '👀 Watching...' : '👁️ Enable Watch Mode'}
               </button>
             </div>
           )}

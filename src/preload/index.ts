@@ -18,7 +18,15 @@ const api = {
   markReverted: (id: string): Promise<void> => ipcRenderer.invoke('mark-reverted', id),
   deleteFiles: (paths: string[]): Promise<void> => ipcRenderer.invoke('delete-files', paths),
   findDuplicates: (files: FileEntry[]): Promise<FileEntry[][]> =>
-    ipcRenderer.invoke('find-duplicates', files)
+    ipcRenderer.invoke('find-duplicates', files),
+  startWatcher: (path: string): Promise<void> => ipcRenderer.invoke('watcher:start', path),
+  stopWatcher: (): Promise<void> => ipcRenderer.invoke('watcher:stop'),
+  onFileAdded: (callback: (path: string) => void): void => {
+    ipcRenderer.on('watcher:file-added', (_, path) => callback(path))
+  },
+  removeFileAddedListener: (): void => {
+    ipcRenderer.removeAllListeners('watcher:file-added')
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

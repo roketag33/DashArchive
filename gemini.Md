@@ -13,50 +13,45 @@ Ton objectif est de livrer des fonctionnalités **fiables, simples, maintenables
 
 ### 1) DRY (Don’t Repeat Yourself)
 
-* Évite toute duplication de logique.
-* Si un comportement est utilisé à plusieurs endroits, **extrais une fonction/une classe/un module**.
-* Préfère une abstraction simple et locale à une généralisation excessive.
+- Évite toute duplication de logique.
+- Si un comportement est utilisé à plusieurs endroits, **extrais une fonction/une classe/un module**.
+- Préfère une abstraction simple et locale à une généralisation excessive.
 
 **Signaux de duplication** :
 
-* copiés-collés de blocs logiques,
-* branches conditionnelles identiques,
-* tests quasi identiques.
+- copiés-collés de blocs logiques,
+- branches conditionnelles identiques,
+- tests quasi identiques.
 
 ### 2) SOLID
 
 Applique SOLID **au bon niveau d’abstraction** :
 
-* **S — Single Responsibility** :
+- **S — Single Responsibility** :
+  - une unité de code = une responsabilité principale.
+  - si une fonction fait “ET ceci ET cela”, découpe.
 
-  * une unité de code = une responsabilité principale.
-  * si une fonction fait “ET ceci ET cela”, découpe.
+- **O — Open/Closed** :
+  - ajoute de la capacité sans réécrire le cœur.
+  - utilise composition, polymorphisme ou stratégies quand c’est justifié.
 
-* **O — Open/Closed** :
+- **L — Liskov** :
+  - une implémentation ne doit pas surprendre le code appelant.
 
-  * ajoute de la capacité sans réécrire le cœur.
-  * utilise composition, polymorphisme ou stratégies quand c’est justifié.
+- **I — Interface Segregation** :
+  - préfère plusieurs petites interfaces ciblées à une grosse.
 
-* **L — Liskov** :
-
-  * une implémentation ne doit pas surprendre le code appelant.
-
-* **I — Interface Segregation** :
-
-  * préfère plusieurs petites interfaces ciblées à une grosse.
-
-* **D — Dependency Inversion** :
-
-  * dépend de contrats stables, pas de détails volatils.
-  * injection de dépendances quand nécessaire.
+- **D — Dependency Inversion** :
+  - dépend de contrats stables, pas de détails volatils.
+  - injection de dépendances quand nécessaire.
 
 **Important** : SOLID ne doit pas conduire à une sur-architecture.
 
 ### 3) YAGNI (You Aren’t Gonna Need It)
 
-* N’implémente **que** ce qui est requis par l’histoire utilisateur actuelle.
-* Pas de framework interne, pas de système de plugin, pas de “future-proofing” sans besoin explicit.
-* Si une abstraction n’est utile qu’à une seule feature actuelle, elle est probablement trop tôt.
+- N’implémente **que** ce qui est requis par l’histoire utilisateur actuelle.
+- Pas de framework interne, pas de système de plugin, pas de “future-proofing” sans besoin explicit.
+- Si une abstraction n’est utile qu’à une seule feature actuelle, elle est probablement trop tôt.
 
 ---
 
@@ -64,9 +59,9 @@ Applique SOLID **au bon niveau d’abstraction** :
 
 ### Pourquoi
 
-* Garantir la fiabilité.
-* Clarifier le design avant de coder.
-* Réduire les régressions.
+- Garantir la fiabilité.
+- Clarifier le design avant de coder.
+- Réduire les régressions.
 
 ### Cycle attendu
 
@@ -76,43 +71,42 @@ Applique SOLID **au bon niveau d’abstraction** :
 
 ### Exigences
 
-* Chaque fonctionnalité doit être couverte par des tests pertinents.
-* Favorise :
+- Chaque fonctionnalité doit être couverte par des tests pertinents.
+- Favorise :
+  - tests unitaires pour la logique pure,
+  - tests d’intégration pour la colle,
+  - tests end-to-end seulement si la valeur est forte.
 
-  * tests unitaires pour la logique pure,
-  * tests d’intégration pour la colle,
-  * tests end-to-end seulement si la valeur est forte.
-* Les tests doivent être :
-
-  * déterministes,
-  * rapides,
-  * lisibles.
+- Les tests doivent être :
+  - déterministes,
+  - rapides,
+  - lisibles.
 
 ### Anti-patterns à éviter
 
-* tests qui dupliquent l’implémentation ligne par ligne,
-* mocks excessifs sans raison,
-* tests trop larges et fragiles.
+- tests qui dupliquent l’implémentation ligne par ligne,
+- mocks excessifs sans raison,
+- tests trop larges et fragiles.
 
 ---
 
 ## Style de code et lisibilité
 
-* Préfère des fonctions courtes et expressives.
-* Nomme précisément :
+- Préfère des fonctions courtes et expressives.
+- Nomme précisément :
+  - verbes pour les actions (`buildPlan`, `applyRule`),
+  - noms pour les données (`scanResult`, `operationLog`).
 
-  * verbes pour les actions (`buildPlan`, `applyRule`),
-  * noms pour les données (`scanResult`, `operationLog`).
-* Réduis la complexité cyclomatique.
-* Ajoute des commentaires **uniquement** quand l’intention n’est pas évidente.
+- Réduis la complexité cyclomatique.
+- Ajoute des commentaires **uniquement** quand l’intention n’est pas évidente.
 
 ---
 
 ## Architecture et modularité
 
-* Respecte la séparation des responsabilités.
-* Concentre la logique métier dans des modules testables.
-* L’UI/IO doit rester une fine couche.
+- Respecte la séparation des responsabilités.
+- Concentre la logique métier dans des modules testables.
+- L’UI/IO doit rester une fine couche.
 
 **Règle d’or** :
 
@@ -122,9 +116,9 @@ Applique SOLID **au bon niveau d’abstraction** :
 
 ## Gestion des erreurs
 
-* Anticipe les cas d’échec réalistes.
-* Privilégie l’échec explicite avec messages utiles.
-* Ne masque pas silencieusement une erreur critique.
+- Anticipe les cas d’échec réalistes.
+- Privilégie l’échec explicite avec messages utiles.
+- Ne masque pas silencieusement une erreur critique.
 
 ---
 
@@ -140,36 +134,35 @@ Exécute **dans cet ordre** :
 
 Utilise les commandes du projet (exemples typiques) :
 
-* `npm run lint`
-* `npm test` ou `npm run test`
-* `npm run build`
+- `npm run lint`
+- `npm test` ou `npm run test`
+- `npm run build`
 
 Si une étape échoue :
 
-* corrige la cause,
-* relance le cycle complet.
+- corrige la cause,
+- relance le cycle complet.
 
 ### Stratégie de commits
 
-* Commits **petits, logiques, fréquents**.
-* Idéalement : **un commit par nouvelle feature** ou sous-partie significative.
-* Un commit ne doit pas mélanger plusieurs intentions.
+- Commits **petits, logiques, fréquents**.
+- Idéalement : **un commit par nouvelle feature** ou sous-partie significative.
+- Un commit ne doit pas mélanger plusieurs intentions.
 
 ### Messages de commit
 
-* Préfère un format clair (inspiré Conventional Commits) :
-
-  * `feat: ...`
-  * `fix: ...`
-  * `refactor: ...`
-  * `test: ...`
-  * `chore: ...`
+- Préfère un format clair (inspiré Conventional Commits) :
+  - `feat: ...`
+  - `fix: ...`
+  - `refactor: ...`
+  - `test: ...`
+  - `chore: ...`
 
 **Exemples** :
 
-* `feat: add rule engine for extension-based sorting`
-* `test: cover conflict renaming strategy`
-* `refactor: extract plan builder to pure module`
+- `feat: add rule engine for extension-based sorting`
+- `test: cover conflict renaming strategy`
+- `refactor: extract plan builder to pure module`
 
 ---
 
@@ -177,15 +170,15 @@ Si une étape échoue :
 
 Pour chaque fonctionnalité :
 
-* [ ] Spécification minimale comprise et respectée.
-* [ ] Tests écrits d’abord (TDD).
-* [ ] Implémentation minimale.
-* [ ] Refactor pour DRY/SOLID.
-* [ ] Aucun ajout hors scope (YAGNI).
-* [ ] Lint OK.
-* [ ] Tests OK.
-* [ ] Build OK.
-* [ ] Commit unique et lisible.
+- [ ] Spécification minimale comprise et respectée.
+- [ ] Tests écrits d’abord (TDD).
+- [ ] Implémentation minimale.
+- [ ] Refactor pour DRY/SOLID.
+- [ ] Aucun ajout hors scope (YAGNI).
+- [ ] Lint OK.
+- [ ] Tests OK.
+- [ ] Build OK.
+- [ ] Commit unique et lisible.
 
 ---
 
@@ -193,21 +186,21 @@ Pour chaque fonctionnalité :
 
 Quand tu proposes une solution :
 
-* justifie le design choisi,
-* mentionne au moins une alternative et pourquoi elle est moins adaptée ici,
-* signale les risques et les garde-fous.
+- justifie le design choisi,
+- mentionne au moins une alternative et pourquoi elle est moins adaptée ici,
+- signale les risques et les garde-fous.
 
 Si une partie est incertaine :
 
-* indique clairement l’hypothèse.
+- indique clairement l’hypothèse.
 
 ---
 
 ## Règles d’économie et de simplicité
 
-* Priorise la solution la plus simple qui passe les tests.
-* N’introduis une abstraction que si elle réduit réellement la complexité.
-* Évite les dépendances externes si une solution standard suffit.
+- Priorise la solution la plus simple qui passe les tests.
+- N’introduis une abstraction que si elle réduit réellement la complexité.
+- Évite les dépendances externes si une solution standard suffit.
 
 ---
 

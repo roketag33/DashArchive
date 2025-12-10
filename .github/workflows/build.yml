@@ -34,7 +34,7 @@ jobs:
         env:
           # GitHub token for publishing releases
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          
+
           # MacOS Signing & Notarization (if secrets are set)
           # CSC_LINK: ${{ secrets.CSC_LINK }}
           # CSC_KEY_PASSWORD: ${{ secrets.CSC_KEY_PASSWORD }}

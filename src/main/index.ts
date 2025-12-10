@@ -5,6 +5,7 @@ import log from 'electron-log'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers } from './ipc'
+import { watcherService } from './watcher'
 
 // Setup logger
 log.transports.file.level = 'info'
@@ -32,6 +33,7 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+    watcherService.setWindow(mainWindow)
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
