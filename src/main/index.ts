@@ -1,20 +1,10 @@
-import { app, shell, BrowserWindow, ipcMain, dialog } from 'electron'
+import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
-import * as nodePath from 'path'
-import * as fs from 'fs/promises'
 import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
-import { scanDirectory } from './scanner'
-import { buildPlan } from '../shared/planner'
-import { executePlan, undoPlan } from './executor'
-import { getSettings, saveSettings } from './settings'
-import { addEntry, getHistory, markReverted } from './journal'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
-import { extractText } from './textExtractor'
-import { aiService } from './aiService'
-import { findDuplicates } from './hashService'
-import { FileEntry } from '../shared/types'
+import { registerIpcHandlers } from './ipc'
 
 // Setup logger
 log.transports.file.level = 'info'
@@ -36,7 +26,7 @@ function createWindow(): void {
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
-      sandbox: false
+      sandbox: true
     }
   })
 
@@ -84,89 +74,10 @@ app.whenReady().then(() => {
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))
 
-  ipcMain.handle('dialog:openDirectory', async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      properties: ['openDirectory']
-    })
-    if (canceled) {
-      return null
-    } else {
-      return filePaths[0]
-    }
-  })
+  // IPC test
+  ipcMain.on('ping', () => console.log('pong'))
 
-  ipcMain.handle('scan-folder', async (_, path) => {
-    return await scanDirectory(path)
-  })
-
-  ipcMain.handle('ai-suggest-categories', async (_, folderPath: string) => {
-    try {
-      // Quick scan for first 5 files
-      const dir = await fs.readdir(folderPath, { withFileTypes: true })
-      const files = dir
-        .filter((d) => d.isFile() && !d.name.startsWith('.'))
-        .map((d) => nodePath.join(folderPath, d.name))
-        .slice(0, 5)
-
-      return await aiService.suggestCategories(files)
-    } catch (error) {
-      console.error('Failed to suggest categories', error)
-      return []
-    }
-  })
-
-  ipcMain.handle('generate-plan', async (_, files: FileEntry[]) => {
-    const rules = getSettings().rules
-    return await buildPlan(files, rules, extractText, (text, labels) =>
-      aiService.classify(text, labels)
-    )
-  })
-
-  ipcMain.handle('find-duplicates', async (_, files: FileEntry[]) => {
-    return await findDuplicates(files)
-  })
-
-  ipcMain.handle('delete-files', async (_, paths: string[]) => {
-    for (const path of paths) {
-      await shell.trashItem(path)
-    }
-    return true
-  })
-
-  ipcMain.handle('execute-plan', async (_, plan) => {
-    const result = await executePlan(plan)
-    if (result.success) {
-      addEntry(plan)
-    }
-    return result
-  })
-
-  ipcMain.handle('get-history', () => {
-    return getHistory()
-  })
-
-  ipcMain.handle('undo-plan', async (_, plan) => {
-    const result = await undoPlan(plan)
-    if (result.success) {
-      // Find entry by plan content or pass ID?
-      // For simplicity, we assume the UI passes the plan attached to the entry.
-      // We probably need to mark it reverted.
-      // Ideally pass entryId to undo-plan. Use plan for now.
-    }
-    return result
-  })
-
-  ipcMain.handle('mark-reverted', (_, id) => {
-    markReverted(id)
-  })
-
-  ipcMain.handle('get-settings', () => {
-    return getSettings()
-  })
-
-  ipcMain.handle('save-settings', (_, settings) => {
-    return saveSettings(settings)
-  })
+  registerIpcHandlers()
 
   createWindow()
 
