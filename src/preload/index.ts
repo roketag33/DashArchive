@@ -35,13 +35,20 @@ const api = {
 if (process.contextIsolated) {
   try {
     contextBridge.exposeInMainWorld('electron', electronAPI)
-    contextBridge.exposeInMainWorld('api', api)
   } catch (error) {
-    console.error(error)
+    console.error('Failed to expose electronAPI:', error)
+  }
+
+  try {
+    contextBridge.exposeInMainWorld('api', api)
+    console.log('Preload: api exposed successfully')
+  } catch (error) {
+    console.error('Failed to expose api:', error)
   }
 } else {
   // @ts-ignore (define in dts)
   window.electron = electronAPI
   // @ts-ignore (define in dts)
   window.api = api
+  console.log('Preload: Context isolation disabled, APIs attached to window')
 }

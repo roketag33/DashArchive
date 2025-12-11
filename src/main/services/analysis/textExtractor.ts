@@ -41,16 +41,12 @@ export async function extractText(filePath: string): Promise<string> {
 async function extractPdf(filePath: string): Promise<string> {
   const buffer = await fs.readFile(filePath)
 
-  // Robust import handling for pdf-parse
-  // @ts-ignore - commonjs import
-  let parse = pdfLib.default || pdfLib
+  // @ts-ignore - mismatch between @types/pdf-parse and installed version
+  const { PDFParse } = pdfLib
 
-  if (typeof parse !== 'function') {
-    // @ts-ignore - commonjs import
-    parse = pdfLib
-  }
-
-  const data = await parse(buffer)
+  // @ts-ignore - API v2 usage
+  const parser = new PDFParse({ data: buffer })
+  const data = await parser.getText()
   return data.text
 }
 

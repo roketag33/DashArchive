@@ -2,11 +2,6 @@ import React from 'react'
 import { FileEntry } from '../../../../shared/types'
 import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
-import * as ReactWindow from 'react-window'
-import AutoSizer from 'react-virtualized-auto-sizer'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const List = (ReactWindow as any).FixedSizeList
 
 interface Props {
   files: FileEntry[]
@@ -26,42 +21,6 @@ export function FileList({ files }: Props): React.JSX.Element {
     },
     {} as Record<string, number>
   )
-
-  const Row = ({
-    index,
-    style
-  }: {
-    index: number
-    style: React.CSSProperties
-  }): React.JSX.Element => {
-    const file = files[index]
-    const parts = file.path.split(/[/\\]/)
-    const parent = parts.length > 1 ? parts[parts.length - 2] : ''
-
-    return (
-      <div
-        style={style}
-        className="flex items-center hover:bg-muted/50 transition-colors px-2 border-b last:border-0"
-      >
-        <div className="flex-1 min-w-0 pr-4">
-          <div className="truncate font-medium text-sm" title={file.name}>
-            {file.name}
-          </div>
-        </div>
-        <div className="w-[25%] truncate text-muted-foreground text-xs pr-4" title={file.path}>
-          {parent}
-        </div>
-        <div className="w-[20%] pr-4 uppercase">
-          <Badge variant="outline" className={getCategoryBadgeStyle(file.category)}>
-            {file.category}
-          </Badge>
-        </div>
-        <div className="w-[15%] text-right font-mono text-xs text-muted-foreground">
-          {(file.size / 1024).toFixed(1)} KB
-        </div>
-      </div>
-    )
-  }
 
   return (
     <div className="space-y-6 mt-4">
@@ -118,14 +77,37 @@ export function FileList({ files }: Props): React.JSX.Element {
           <div className="w-[20%]">Category</div>
           <div className="w-[15%] text-right pr-2">Size</div>
         </div>
-        <div className="flex-1">
-          <AutoSizer>
-            {({ height, width }) => (
-              <List height={height} itemCount={files.length} itemSize={50} width={width}>
-                {Row}
-              </List>
-            )}
-          </AutoSizer>
+        <div className="flex-1 min-h-0 overflow-auto">
+          {files.map((file) => {
+            const parts = file.path.split(/[/\\]/)
+            const parent = parts.length > 1 ? parts[parts.length - 2] : ''
+            return (
+              <div
+                key={file.path}
+                className="flex items-center hover:bg-muted/50 transition-colors px-2 border-b last:border-0 h-[50px]"
+              >
+                <div className="flex-1 min-w-0 pr-4">
+                  <div className="truncate font-medium text-sm" title={file.name}>
+                    {file.name}
+                  </div>
+                </div>
+                <div
+                  className="w-[25%] truncate text-muted-foreground text-xs pr-4"
+                  title={file.path}
+                >
+                  {parent}
+                </div>
+                <div className="w-[20%] pr-4 uppercase">
+                  <Badge variant="outline" className={getCategoryBadgeStyle(file.category)}>
+                    {file.category}
+                  </Badge>
+                </div>
+                <div className="w-[15%] text-right font-mono text-xs text-muted-foreground">
+                  {(file.size / 1024).toFixed(1)} KB
+                </div>
+              </div>
+            )
+          })}
         </div>
       </div>
     </div>
