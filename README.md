@@ -64,6 +64,20 @@ yarn build
 - **Tesseract.js** (OCR)
 - **Electron Builder** (Packaging)
 
+## 👥 Contributing
+
+Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+
+Please check out our [Contributing Guidelines](CONTRIBUTING.md) for details on how to join the project.
+
+## 🤝 Code of Conduct
+
+We are committed to providing a friendly, safe and welcoming environment for all. Please take a moment to read our [Code of Conduct](CODE_OF_CONDUCT.md).
+
+## 🛡️ Security
+
+If you discover a security vulnerability within DashArchive, please check our [Security Policy](SECURITY.md) for reporting instructions.
+
 ## 📝 License
 
-MIT
+Distributed under the MIT License. See [LICENSE](LICENSE) for more information.

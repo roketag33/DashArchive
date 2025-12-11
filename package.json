@@ -1,9 +1,26 @@
 {
-  "name": "test",
+  "name": "dash-archive",
+  "description": "Intelligent, privacy-focused file organizer powered by local AI",
   "version": "1.0.0",
   "main": "./out/main/index.js",
-  "author": "example.com",
-  "homepage": "https://electron-vite.org",
+  "author": "roketag33",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/roketag33/DashArchive.git"
+  },
+  "bugs": {
+    "url": "https://github.com/roketag33/DashArchive/issues"
+  },
+  "keywords": [
+    "electron",
+    "react",
+    "ai",
+    "local-first",
+    "file-organizer",
+    "privacy"
+  ],
+  "homepage": "https://github.com/roketag33/DashArchive#readme",
   "scripts": {
     "format": "prettier --write .",
     "lint": "eslint --cache .",
