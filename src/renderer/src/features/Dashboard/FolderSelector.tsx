@@ -1,20 +1,16 @@
 import React from 'react'
 import { Button } from '../../components/ui/button'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
-import { FolderOpen } from 'lucide-react'
+import { FolderOpen, Loader2 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
-interface Props {
+interface FolderSelectorProps {
   onSelect: (path: string) => void
   isLoading?: boolean
 }
 
-export function FolderSelector({ onSelect, isLoading }: Props): React.JSX.Element {
-  const handleSelect = async (): Promise<void> => {
-    const path = await window.api.selectFolder()
-    if (path) {
-      onSelect(path)
-    }
-  }
+export function FolderSelector({ onSelect, isLoading }: FolderSelectorProps): React.JSX.Element {
+  const { t } = useTranslation()
 
   const [isDragging, setIsDragging] = React.useState(false)
 
@@ -34,11 +30,21 @@ export function FolderSelector({ onSelect, isLoading }: Props): React.JSX.Elemen
 
     if (e.dataTransfer.files && e.dataTransfer.files.length > 0) {
       const file = e.dataTransfer.files[0]
-
       const path = file.path
       if (path) {
         onSelect(path)
       }
+    }
+  }
+
+  const handleSelect = async (): Promise<void> => {
+    try {
+      const path = await window.api.selectFolder()
+      if (path) {
+        onSelect(path)
+      }
+    } catch (e) {
+      console.error(e)
     }
   }
 
@@ -57,10 +63,14 @@ export function FolderSelector({ onSelect, isLoading }: Props): React.JSX.Elemen
       >
         <CardHeader className="text-center">
           <div className="mx-auto bg-primary/10 p-4 rounded-full mb-2">
-            <FolderOpen className="w-10 h-10 text-primary" />
+            {isLoading ? (
+              <Loader2 className="w-10 h-10 text-primary animate-spin" />
+            ) : (
+              <FolderOpen className="w-10 h-10 text-primary" />
+            )}
           </div>
-          <CardTitle>Organize your files</CardTitle>
-          <CardDescription>Drag and drop a folder here, or click to browse</CardDescription>
+          <CardTitle>{t('folderSelector.title')}</CardTitle>
+          <CardDescription>{t('folderSelector.description')}</CardDescription>
         </CardHeader>
         <CardContent className="flex justify-center pb-8">
           <Button
@@ -71,7 +81,7 @@ export function FolderSelector({ onSelect, isLoading }: Props): React.JSX.Elemen
             disabled={isLoading}
             data-testid="select-folder-btn"
           >
-            {isLoading ? 'Scanning...' : 'Choose Folder'}
+            {isLoading ? t('folderSelector.scanning') : t('folderSelector.button')}
           </Button>
         </CardContent>
       </Card>

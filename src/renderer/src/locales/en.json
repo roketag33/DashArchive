@@ -1,0 +1,102 @@
+{
+  "app": {
+    "title": "File Organizer",
+    "newFileDetected": "New File Detected",
+    "scanFolder": "Scanning folder...",
+    "noFiles": "No matching files found",
+    "tryDifferent": "Try selecting a different folder or check if the folder is empty.",
+    "organizeFiles": "Organize {{count}} Files",
+    "cleanDuplicates": "Clean Duplicates",
+    "watchMode": "Enable Watch Mode",
+    "watching": "Watching...",
+    "selected": "Selected",
+    "operationComplete": "Operation Complete",
+    "successMessage": "Successfully processed {{count}} files.",
+    "failureMessage": "Failed to move {{count}} files.",
+    "errors": "Errors",
+    "backToDashboard": "Back to Dashboard"
+  },
+  "folderSelector": {
+    "title": "Organize your files",
+    "description": "Drag and drop a folder here, or click to browse",
+    "button": "Choose Folder",
+    "scanning": "Scanning..."
+  },
+  "fileList": {
+    "storageOverview": "Storage Overview",
+    "files": "files",
+    "totalSize": "total size",
+    "distribution": "Distribution",
+    "headers": {
+      "name": "Name",
+      "folder": "Folder",
+      "category": "Category",
+      "size": "Size"
+    },
+    "noFiles": "No files found."
+  },
+  "history": {
+    "title": "History / Journal",
+    "noHistory": "No organization history yet.",
+    "reverted": "Reverted",
+    "processed": "Processed {{count}} files.",
+    "undo": "Undo",
+    "undoSuccess": "Undo successful!",
+    "undoFailed": "Undo failed"
+  },
+  "duplicates": {
+    "title": "Duplicate Detector",
+    "spaceReclaim": "Potential space to reclaim",
+    "scanning": "Scanning for clones...",
+    "noDuplicates": "No duplicates found!",
+    "cancel": "Cancel",
+    "deleteSelected": "Delete Selected ({{count}})",
+    "confirmDelete": "Delete {{count}} duplicate files?"
+  },
+  "settings": {
+    "title": "Settings",
+    "description": "Manage your organization rules and preferences.",
+    "preferences": {
+      "title": "Preferences",
+      "darkMode": "Dark Mode",
+      "darkModeDesc": "Enable dark theme for the interface"
+    },
+    "rules": {
+      "title": "Rules",
+      "add": "Add Rule",
+      "edit": {
+        "name": "Name",
+        "namePlaceholder": "Rule Name",
+        "ruleMode": "Rule Mode",
+        "aiSmartSort": "AI Smart Sort",
+        "manualCriteria": "Manual Criteria",
+        "matchingCondition": "Matching Condition",
+        "fileExtension": "File Extension",
+        "fileName": "File Name (Regex)",
+        "fileSize": "File Size",
+        "fileDate": "File Date (Age)",
+        "fallback": "Everything Else (Fallback)"
+      }
+    },
+    "saveChanges": "Save Changes",
+    "cancel": "Cancel",
+    "active": "Active",
+    "enable": "Enable",
+    "inactive": "Inactive",
+    "ruleName": "Name",
+    "destination": "Destination",
+    "ruleMode": "Rule Mode",
+    "aiSmartSort": "AI Smart Sort",
+    "manualCriteria": "Manual Criteria",
+    "categoriesMatch": "Categories to Match",
+    "magicSuggest": "Magic Suggest from Folder",
+    "aiNote": "Note: First run will download the AI model (~50MB). Processing will be slower than standard rules.",
+    "matchingCondition": "Matching Condition",
+    "extensions": "Extensions",
+    "pattern": "Pattern",
+    "sizeRange": "Size Range (Bytes)",
+    "minAge": "Minimum Age",
+    "daysOld": "Days old",
+    "fallback": "Everything Else (Fallback)"
+  }
+}

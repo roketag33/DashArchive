@@ -19,6 +19,7 @@ import {
   Check,
   ArrowRight
 } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
 interface Props {
   settings: AppSettings
@@ -27,6 +28,7 @@ interface Props {
 }
 
 export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.Element {
+  const { t } = useTranslation()
   const [rules, setRules] = useState<Rule[]>(settings.rules)
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null)
 
@@ -137,8 +139,8 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
       <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col p-0 shadow-lg">
         <CardHeader className="flex flex-row items-center justify-between border-b px-6 py-4">
           <div className="grid gap-1">
-            <CardTitle>Settings</CardTitle>
-            <CardDescription>Manage your organization rules and preferences.</CardDescription>
+            <CardTitle>{t('settings.title')}</CardTitle>
+            <CardDescription>{t('settings.description')}</CardDescription>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
             <X className="h-4 w-4" />
@@ -147,13 +149,15 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
 
         <div className="flex-1 overflow-auto p-6 space-y-6">
           <div className="space-y-4">
-            <h3 className="text-lg font-medium">Preferences</h3>
+            <h3 className="text-lg font-medium">{t('settings.preferences.title')}</h3>
             <div className="flex items-center justify-between rounded-lg border p-4 shadow-sm">
               <div className="space-y-0.5">
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
-                  Dark Mode
+                  {t('settings.preferences.darkMode')}
                 </label>
-                <p className="text-sm text-muted-foreground">Enable dark theme for the interface</p>
+                <p className="text-sm text-muted-foreground">
+                  {t('settings.preferences.darkModeDesc')}
+                </p>
               </div>
               <Switch
                 data-testid="dark-mode-toggle"
@@ -167,9 +171,11 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
 
           <div className="space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">Rules ({rules.length})</h3>
+              <h3 className="text-lg font-medium">
+                {t('settings.rules.title')} ({rules.length})
+              </h3>
               <Button onClick={handleAddRule} size="sm" data-testid="add-rule-btn">
-                <Plus className="mr-2 h-4 w-4" /> Add Rule
+                <Plus className="mr-2 h-4 w-4" /> {t('settings.rules.add')}
               </Button>
             </div>
 
@@ -184,9 +190,11 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                       <div className="grid gap-4">
                         <div className="grid grid-cols-2 gap-4">
                           <div className="grid gap-2">
-                            <label className="text-sm font-medium">Name</label>
+                            <label className="text-sm font-medium">
+                              {t('settings.rules.edit.name')}
+                            </label>
                             <Input
-                              placeholder="Rule Name"
+                              placeholder={t('settings.rules.edit.namePlaceholder')}
                               value={editForm.name}
                               onChange={(e) => handleChange('name', e.target.value)}
                               data-testid="rule-name-input"
@@ -211,21 +219,24 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                             </div>
                           </div>
                           <div className="grid gap-2">
-                            <label className="text-sm font-medium">Rule Mode</label>
+                            <label className="text-sm font-medium">
+                              {t('settings.rules.edit.ruleMode')}
+                            </label>
                             <div className="flex p-1 bg-muted rounded-lg">
                               <button
                                 data-testid="rule-mode-ai"
                                 className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type === 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                 onClick={() => handleChange('type', 'ai')}
                               >
-                                <Brain className="h-4 w-4" /> AI Smart Sort
+                                <Brain className="h-4 w-4" /> {t('settings.rules.edit.aiSmartSort')}
                               </button>
                               <button
                                 data-testid="rule-mode-manual"
                                 className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type !== 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                 onClick={() => handleChange('type', 'extension')}
                               >
-                                <Wrench className="h-4 w-4" /> Manual Criteria
+                                <Wrench className="h-4 w-4" />{' '}
+                                {t('settings.rules.edit.manualCriteria')}
                               </button>
                             </div>
                           </div>
@@ -292,17 +303,23 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                           ) : (
                             <div className="grid gap-4 col-span-2 border p-4 rounded-lg bg-muted/20">
                               <div className="grid gap-2">
-                                <label className="text-sm font-medium">Matching Condition</label>
+                                <label className="text-sm font-medium">
+                                  {t('settings.rules.edit.matchingCondition')}
+                                </label>
                                 <select
                                   className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
                                   value={editForm.type || 'extension'}
                                   onChange={(e) => handleChange('type', e.target.value)}
                                 >
-                                  <option value="extension">File Extension</option>
-                                  <option value="name">File Name (Regex)</option>
-                                  <option value="size">File Size</option>
-                                  <option value="date">File Date (Age)</option>
-                                  <option value="fallback">Everything Else (Fallback)</option>
+                                  <option value="extension">
+                                    {t('settings.rules.edit.fileExtension')}
+                                  </option>
+                                  <option value="name">{t('settings.rules.edit.fileName')}</option>
+                                  <option value="size">{t('settings.rules.edit.fileSize')}</option>
+                                  <option value="date">{t('settings.rules.edit.fileDate')}</option>
+                                  <option value="fallback">
+                                    {t('settings.rules.edit.fallback')}
+                                  </option>
                                 </select>
                               </div>
 
@@ -450,9 +467,9 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
 
         <div className="border-t p-4 flex justify-end gap-2 bg-muted/50 rounded-b-lg">
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t('settings.cancel')}
           </Button>
-          <Button onClick={handleSave}>Save Changes</Button>
+          <Button onClick={handleSave}>{t('settings.saveChanges')}</Button>
         </div>
       </Card>
     </div>

@@ -4,6 +4,7 @@ import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
 import { Trash2, AlertTriangle, X, Sparkles } from 'lucide-react'
 import clsx from 'clsx'
+import { useTranslation } from 'react-i18next'
 
 interface DuplicateModalProps {
   files: FileEntry[]
@@ -12,6 +13,7 @@ interface DuplicateModalProps {
 }
 
 export const DuplicateModal: React.FC<DuplicateModalProps> = ({ files, onClose, onDelete }) => {
+  const { t } = useTranslation()
   const [duplicates, setDuplicates] = useState<DuplicateGroup[]>([])
   const [loading, setLoading] = useState(true)
   const [selectedPaths, setSelectedPaths] = useState<Set<string>>(new Set())
@@ -57,7 +59,7 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({ files, onClose, 
       })
     })
 
-    if (confirm(`Delete ${toDelete.length} duplicate files?`)) {
+    if (confirm(t('duplicates.confirmDelete', { count: toDelete.length }))) {
       await onDelete(toDelete)
       onClose()
     }
@@ -75,10 +77,10 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({ files, onClose, 
           <div>
             <h2 className="text-xl font-bold flex items-center gap-2">
               <AlertTriangle className="w-5 h-5 text-yellow-500" />
-              Duplicate Detector
+              {t('duplicates.title')}
             </h2>
             <p className="text-sm text-muted-foreground">
-              Potential space to reclaim: {(totalWaste / 1024 / 1024).toFixed(2)} MB
+              {t('duplicates.spaceReclaim')}: {(totalWaste / 1024 / 1024).toFixed(2)} MB
             </p>
           </div>
           <Button variant="ghost" size="icon" onClick={onClose}>
@@ -88,11 +90,11 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({ files, onClose, 
 
         <div className="flex-1 overflow-auto p-4 space-y-6">
           {loading ? (
-            <div className="text-center py-10">Scanning for clones...</div>
+            <div className="text-center py-10">{t('duplicates.scanning')}</div>
           ) : duplicates.length === 0 ? (
             <div className="text-center py-10 text-muted-foreground flex flex-col items-center gap-2">
               <Sparkles className="w-8 h-8 text-yellow-500" />
-              <span>No duplicates found!</span>
+              <span>{t('duplicates.noDuplicates')}</span>
             </div>
           ) : (
             duplicates.map((group) => (
@@ -134,11 +136,11 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({ files, onClose, 
 
         <div className="p-4 border-t bg-muted/20 flex justify-end gap-2">
           <Button variant="outline" onClick={onClose}>
-            Cancel
+            {t('duplicates.cancel')}
           </Button>
           <Button variant="destructive" onClick={handleDelete} disabled={selectedPaths.size === 0}>
             <Trash2 className="w-4 h-4 mr-2" />
-            Delete Selected ({selectedPaths.size})
+            {t('duplicates.deleteSelected', { count: selectedPaths.size })}
           </Button>
         </div>
       </Card>

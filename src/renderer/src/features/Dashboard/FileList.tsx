@@ -1,20 +1,54 @@
 import React from 'react'
 import { FileEntry } from '../../../../shared/types'
-import { Card, CardContent, CardHeader, CardTitle } from '../../components/ui/card'
-import { Badge } from '../../components/ui/badge'
+import { FileIcon, ImageIcon, Music, Video, FileText, Code, Archive } from 'lucide-react'
+import { useTranslation } from 'react-i18next'
 
-interface Props {
+interface FileListProps {
   files: FileEntry[]
 }
 
-export function FileList({ files }: Props): React.JSX.Element {
+export function FileList({ files }: FileListProps): React.JSX.Element {
+  const { t } = useTranslation()
+
   if (files.length === 0) {
-    return <div className="text-muted-foreground text-center mt-4">No files found.</div>
+    return (
+      <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+        {t('fileList.noFiles')}
+      </div>
+    )
   }
 
-  // Summary stats
-  const totalSize = (files.reduce((acc, f) => acc + f.size, 0) / 1024 / 1024).toFixed(2)
-  const byCategory = files.reduce(
+  // Calculate stats
+  const totalSize = files.reduce((acc, f) => acc + f.size, 0)
+  const formatSize = (bytes: number): string => {
+    if (bytes === 0) return '0 B'
+    const k = 1024
+    const sizes = ['B', 'KB', 'MB', 'GB', 'TB']
+    const i = Math.floor(Math.log(bytes) / Math.log(k))
+    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
+  }
+
+  const getIcon = (category: string): React.ReactNode => {
+    switch (category.toLowerCase()) {
+      case 'image':
+        return <ImageIcon className="h-4 w-4 text-purple-500" />
+      case 'video':
+        return <Video className="h-4 w-4 text-red-500" />
+      case 'audio':
+        return <Music className="h-4 w-4 text-yellow-500" />
+      case 'document':
+        return <FileText className="h-4 w-4 text-blue-500" />
+      case 'code':
+        return <Code className="h-4 w-4 text-green-500" />
+      case 'archive':
+        return <Archive className="h-4 w-4 text-orange-500" />
+      default:
+        return <FileIcon className="h-4 w-4 text-gray-400" />
+    }
+  }
+
+  // Group by category for stats
+  const stats = files.reduce(
     (acc, f) => {
       acc[f.category] = (acc[f.category] || 0) + 1
       return acc
@@ -23,131 +57,93 @@ export function FileList({ files }: Props): React.JSX.Element {
   )
 
   return (
-    <div className="space-y-6 mt-4">
+    <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase">
-              Storage Overview
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="text-3xl font-bold">
-              {files.length}{' '}
-              <span className="text-lg font-normal text-muted-foreground">files</span>
-            </div>
-            <p className="text-xs text-muted-foreground mt-1">{totalSize} MB total size</p>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-medium text-muted-foreground uppercase">
-              Distribution
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            <div className="space-y-2">
-              {Object.entries(byCategory).map(([cat, count]) => {
-                const percentage = Math.round((count / files.length) * 100)
-                return (
-                  <div key={cat} className="flex items-center text-xs">
-                    <div className="w-20 font-medium capitalize truncate" title={cat}>
-                      {cat}
-                    </div>
-                    <div className="flex-1 h-2 bg-secondary rounded-full overflow-hidden mx-2">
-                      <div
-                        className={`h-full rounded-full ${getCategoryColorBar(cat)}`}
-                        style={{ width: `${percentage}%` }}
-                      ></div>
-                    </div>
-                    <div className="w-8 text-right text-muted-foreground">{count}</div>
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border dark:border-gray-700">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-2">
+            {t('fileList.storageOverview')}
+          </h3>
+          <div className="flex items-end gap-2">
+            <span className="text-3xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400">
+              {files.length}
+            </span>
+            <span className="text-sm text-gray-600 dark:text-gray-300 mb-1">
+              {t('fileList.files')}
+            </span>
+          </div>
+          <p className="text-xs text-gray-400 mt-1">
+            {formatSize(totalSize)} {t('fileList.totalSize')}
+          </p>
+        </div>
+        <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border dark:border-gray-700">
+          <h3 className="text-sm font-medium text-gray-500 dark:text-gray-400 mb-3">
+            {t('fileList.distribution')}
+          </h3>
+          <div className="space-y-2">
+            {Object.entries(stats)
+              .sort(([, a], [, b]) => b - a)
+              .slice(0, 3)
+              .map(([cat, count]) => (
+                <div key={cat} className="flex items-center text-xs">
+                  <span className="w-20 font-medium truncate capitalize text-gray-700 dark:text-gray-300">
+                    {cat}
+                  </span>
+                  <div className="flex-1 h-2 bg-gray-100 dark:bg-gray-700 rounded-full overflow-hidden mx-2">
+                    <div
+                      className="h-full bg-blue-500 rounded-full opacity-80"
+                      style={{ width: `${(count / files.length) * 100}% ` }}
+                    />
                   </div>
-                )
-              })}
-            </div>
-          </CardContent>
-        </Card>
+                  <span className="text-gray-500 dark:text-gray-400 px-1">{count}</span>
+                </div>
+              ))}
+          </div>
+        </div>
       </div>
 
-      <div className="border rounded-lg bg-background h-[500px] flex flex-col">
-        <div className="flex items-center px-2 py-3 bg-muted/50 border-b font-medium text-xs text-muted-foreground uppercase tracking-wider">
-          <div className="flex-1 pl-2">Name</div>
-          <div className="w-[25%]">Folder</div>
-          <div className="w-[20%]">Category</div>
-          <div className="w-[15%] text-right pr-2">Size</div>
-        </div>
-        <div className="flex-1 min-h-0 overflow-auto">
-          {files.map((file) => {
-            const parts = file.path.split(/[/\\]/)
-            const parent = parts.length > 1 ? parts[parts.length - 2] : ''
-            return (
-              <div
-                key={file.path}
-                className="flex items-center hover:bg-muted/50 transition-colors px-2 border-b last:border-0 h-[50px]"
-              >
-                <div className="flex-1 min-w-0 pr-4">
-                  <div className="truncate font-medium text-sm" title={file.name}>
-                    {file.name}
-                  </div>
-                </div>
-                <div
-                  className="w-[25%] truncate text-muted-foreground text-xs pr-4"
-                  title={file.path}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 overflow-hidden">
+        <div className="overflow-x-auto">
+          <table className="w-full text-sm text-left">
+            <thead className="text-xs text-gray-500 uppercase bg-gray-50 dark:bg-gray-900/50 dark:text-gray-400">
+              <tr>
+                <th className="px-4 py-3 font-medium">{t('fileList.headers.name')}</th>
+                <th className="px-4 py-3 font-medium">{t('fileList.headers.folder')}</th>
+                <th className="px-4 py-3 font-medium">{t('fileList.headers.category')}</th>
+                <th className="px-4 py-3 font-medium text-right">{t('fileList.headers.size')}</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
+              {files.slice(0, 50).map((file) => (
+                <tr
+                  key={file.path}
+                  className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors"
                 >
-                  {parent}
-                </div>
-                <div className="w-[20%] pr-4 uppercase">
-                  <Badge variant="outline" className={getCategoryBadgeStyle(file.category)}>
-                    {file.category}
-                  </Badge>
-                </div>
-                <div className="w-[15%] text-right font-mono text-xs text-muted-foreground">
-                  {(file.size / 1024).toFixed(1)} KB
-                </div>
-              </div>
-            )
-          })}
+                  <td className="px-4 py-3 font-medium text-gray-900 dark:text-white truncate max-w-[200px]">
+                    {file.name}
+                  </td>
+                  <td className="px-4 py-3 text-gray-500 dark:text-gray-400 truncate max-w-[150px]">
+                    {file.path.split('/').slice(-2, -1)[0]}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-50 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 capitalize border border-blue-100 dark:border-blue-800">
+                      {getIcon(file.category)}
+                      <span className="ml-1.5">{file.category}</span>
+                    </span>
+                  </td>
+                  <td className="px-4 py-3 text-right text-gray-500 dark:text-gray-400 font-mono text-xs">
+                    {formatSize(file.size)}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+          {files.length > 50 && (
+            <div className="px-4 py-3 text-center text-xs text-gray-500 border-t dark:border-gray-700">
+              And {files.length - 50} more files...
+            </div>
+          )}
         </div>
       </div>
     </div>
   )
-}
-
-function getCategoryBadgeStyle(cat: string): string {
-  switch (cat) {
-    case 'image':
-      return 'border-purple-200 text-purple-700 bg-purple-50 dark:bg-purple-900/10 dark:text-purple-400 dark:border-purple-800'
-    case 'video':
-      return 'border-pink-200 text-pink-700 bg-pink-50 dark:bg-pink-900/10 dark:text-pink-400 dark:border-pink-800'
-    case 'document':
-      return 'border-blue-200 text-blue-700 bg-blue-50 dark:bg-blue-900/10 dark:text-blue-400 dark:border-blue-800'
-    case 'archive':
-      return 'border-yellow-200 text-yellow-700 bg-yellow-50 dark:bg-yellow-900/10 dark:text-yellow-400 dark:border-yellow-800'
-    case 'dev':
-      return 'border-green-200 text-green-700 bg-green-50 dark:bg-green-900/10 dark:text-green-400 dark:border-green-800'
-    case 'executable':
-      return 'border-red-200 text-red-700 bg-red-50 dark:bg-red-900/10 dark:text-red-400 dark:border-red-800'
-    default:
-      return 'border-gray-200 text-gray-700 bg-gray-50 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-700'
-  }
-}
-
-function getCategoryColorBar(cat: string): string {
-  switch (cat) {
-    case 'image':
-      return 'bg-purple-500'
-    case 'video':
-      return 'bg-pink-500'
-    case 'document':
-      return 'bg-blue-500'
-    case 'archive':
-      return 'bg-yellow-500'
-    case 'dev':
-      return 'bg-green-500'
-    case 'executable':
-      return 'bg-red-500'
-    default:
-      return 'bg-gray-500'
-  }
 }

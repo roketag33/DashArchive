@@ -1,0 +1,102 @@
+{
+  "app": {
+    "title": "Organisateur de Fichiers",
+    "newFileDetected": "Nouveau Fichier Détecté",
+    "scanFolder": "Analyse du dossier...",
+    "noFiles": "Aucun fichier correspondant trouvé",
+    "tryDifferent": "Essayez de sélectionner un autre dossier ou vérifiez si le dossier est vide.",
+    "organizeFiles": "Organiser {{count}} Fichiers",
+    "cleanDuplicates": "Nettoyer les Doublons",
+    "watchMode": "Activer le Mode Surveillance",
+    "watching": "Surveillance...",
+    "selected": "Sélectionné",
+    "operationComplete": "Opération Terminée",
+    "successMessage": "{{count}} fichiers traités avec succès.",
+    "failureMessage": "Échec du déplacement de {{count}} fichiers.",
+    "errors": "Erreurs",
+    "backToDashboard": "Retour au Tableau de Bord"
+  },
+  "folderSelector": {
+    "title": "Organisez vos fichiers",
+    "description": "Glissez-déposez un dossier ici, ou cliquez pour parcourir",
+    "button": "Choisir un Dossier",
+    "scanning": "Analyse..."
+  },
+  "fileList": {
+    "storageOverview": "Aperçu du Stockage",
+    "files": "fichiers",
+    "totalSize": "taille totale",
+    "distribution": "Distribution",
+    "headers": {
+      "name": "Nom",
+      "folder": "Dossier",
+      "category": "Catégorie",
+      "size": "Taille"
+    },
+    "noFiles": "Aucun fichier trouvé."
+  },
+  "history": {
+    "title": "Historique / Journal",
+    "noHistory": "Aucun historique d'organisation pour le moment.",
+    "reverted": "Annulé",
+    "processed": "{{count}} fichiers traités.",
+    "undo": "Annuler",
+    "undoSuccess": "Annulation réussie !",
+    "undoFailed": "Échec de l'annulation"
+  },
+  "duplicates": {
+    "title": "Détecteur de Doublons",
+    "spaceReclaim": "Espace potentiel à récupérer",
+    "scanning": "Recherche de clones...",
+    "noDuplicates": "Aucun doublon trouvé !",
+    "cancel": "Annuler",
+    "deleteSelected": "Supprimer la Sélection ({{count}})",
+    "confirmDelete": "Supprimer {{count}} fichiers dupliqués ?"
+  },
+  "settings": {
+    "title": "Paramètres",
+    "description": "Gérez vos règles d'organisation et vos préférences.",
+    "preferences": {
+      "title": "Préférences",
+      "darkMode": "Mode Sombre",
+      "darkModeDesc": "Activer le thème sombre pour l'interface"
+    },
+    "rules": {
+      "title": "Règles",
+      "add": "Ajouter une Règle",
+      "edit": {
+        "name": "Nom",
+        "namePlaceholder": "Nom de la règle",
+        "ruleMode": "Mode de Règle",
+        "aiSmartSort": "Tri Intelligent IA",
+        "manualCriteria": "Critères Manuels",
+        "matchingCondition": "Condition de Correspondance",
+        "fileExtension": "Extension de Fichier",
+        "fileName": "Nom de Fichier (Regex)",
+        "fileSize": "Taille de Fichier",
+        "fileDate": "Date de Fichier (Âge)",
+        "fallback": "Tout le Reste (Par défaut)"
+      }
+    },
+    "saveChanges": "Enregistrer",
+    "cancel": "Annuler",
+    "active": "Actif",
+    "enable": "Activer",
+    "inactive": "Inactif",
+    "ruleName": "Nom",
+    "destination": "Destination",
+    "ruleMode": "Mode de Règle",
+    "aiSmartSort": "Tri Intelligent IA",
+    "manualCriteria": "Critères Manuels",
+    "categoriesMatch": "Catégories à Correspondre",
+    "magicSuggest": "Suggestion Magique depuis le Dossier",
+    "aiNote": "Note : La première exécution téléchargera le modèle IA (~50 Mo). Le traitement sera plus lent que les règles standard.",
+    "matchingCondition": "Condition de Correspondance",
+    "extensions": "Extensions",
+    "pattern": "Motif",
+    "sizeRange": "Plage de Taille (Octets)",
+    "minAge": "Âge Minimum",
+    "daysOld": "Jours",
+    "fallback": "Tout le Reste (Par défaut)"
+  }
+}

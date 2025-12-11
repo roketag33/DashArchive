@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { useTranslation } from 'react-i18next'
 import { FolderSelector } from './features/Dashboard/FolderSelector'
 import { FileList } from './features/Dashboard/FileList'
 import { PlanPreview } from './features/Dashboard/PlanPreview'
@@ -11,6 +12,7 @@ import { Button } from './components/ui/button'
 import { History, Settings, Copy, Check, TriangleAlert, Eye } from 'lucide-react'
 
 function App(): React.JSX.Element {
+  const { t, i18n } = useTranslation()
   const [files, setFiles] = useState<FileEntry[]>([])
   const [selectedPath, setSelectedPath] = useState<string | null>(null)
   const [scanning, setScanning] = useState(false)
@@ -165,21 +167,29 @@ function App(): React.JSX.Element {
           <div className="flex items-center gap-4 cursor-pointer" onClick={handleReset}>
             <img src={electronLogo} className="h-10 w-10 animate-spin-slow" alt="logo" />
             <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
-              File Organizer
+              {t('app.title')}
             </h1>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 items-center">
+            <select
+              onChange={(e) => i18n.changeLanguage(e.target.value)}
+              value={i18n.language}
+              className="bg-transparent border border-gray-300 dark:border-gray-600 rounded px-2 py-1 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+            >
+              <option value="en">🇺🇸 EN</option>
+              <option value="fr">🇫🇷 FR</option>
+            </select>
             <button
               onClick={handleShowHistory}
               className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 p-2"
-              title="History"
+              title={t('app.history')}
             >
               <History className="h-6 w-6" />
             </button>
             <button
               onClick={() => setShowSettings(true)}
               className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 p-2"
-              title="Settings"
+              title={t('app.settings')}
             >
               <Settings className="h-6 w-6" />
             </button>
@@ -210,7 +220,9 @@ function App(): React.JSX.Element {
               {selectedPath && (
                 <div className="mt-4 p-4 rounded-lg border bg-card text-card-foreground shadow-sm flex flex-col md:flex-row justify-between items-center gap-4">
                   <div className="flex items-center gap-2 overflow-hidden max-w-full">
-                    <span className="text-sm font-medium whitespace-nowrap">Selected:</span>
+                    <span className="text-sm font-medium whitespace-nowrap">
+                      {t('app.selected')}:
+                    </span>
                     <span
                       className="font-mono text-sm bg-muted px-2 py-1 rounded truncate"
                       title={selectedPath}
@@ -220,13 +232,15 @@ function App(): React.JSX.Element {
                   </div>
                   {files.length > 0 && (
                     <>
-                      <Button onClick={handleGeneratePlan}>Organize {files.length} Files</Button>
+                      <Button onClick={handleGeneratePlan}>
+                        {t('app.organizeFiles', { count: files.length })}
+                      </Button>
                       <Button
                         variant="outline"
                         onClick={() => setShowDuplicates(true)}
                         className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 border-orange-200 dark:text-orange-400 dark:hover:text-orange-300 dark:hover:bg-orange-900/20 dark:border-orange-800"
                       >
-                        <Copy className="h-4 w-4 mr-2" /> Clean Duplicates
+                        <Copy className="h-4 w-4 mr-2" /> {t('app.cleanDuplicates')}
                       </Button>
                     </>
                   )}
@@ -235,18 +249,14 @@ function App(): React.JSX.Element {
 
               {scanning && (
                 <div className="text-center py-8 text-muted-foreground animate-pulse">
-                  Scanning folder...
+                  {t('app.scanFolder')}
                 </div>
               )}
 
               {!scanning && selectedPath && files.length === 0 && (
                 <div className="text-center py-12 border-2 border-dashed rounded-lg">
-                  <p className="text-lg font-medium text-muted-foreground">
-                    No matching files found
-                  </p>
-                  <p className="text-sm text-muted-foreground mt-1">
-                    Try selecting a different folder or check if the folder is empty.
-                  </p>
+                  <p className="text-lg font-medium text-muted-foreground">{t('app.noFiles')}</p>
+                  <p className="text-sm text-muted-foreground mt-1">{t('app.tryDifferent')}</p>
                 </div>
               )}
 
@@ -294,15 +304,20 @@ function App(): React.JSX.Element {
                   <TriangleAlert className="h-16 w-16" />
                 )}
               </div>
-              <h2 className="text-2xl font-bold mb-2">Operation Complete</h2>
+              <h2 className="text-2xl font-bold mb-2">{t('app.operationComplete')}</h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
-                Successfully processed {executionResult.processed - executionResult.failed} files.
-                {executionResult.failed > 0 && ` Failed to move ${executionResult.failed} files.`}
+                {t('app.successMessage', {
+                  count: executionResult.processed - executionResult.failed
+                })}
+                {executionResult.failed > 0 &&
+                  ` ${t('app.failureMessage', { count: executionResult.failed })}`}
               </p>
 
               {executionResult.errors.length > 0 && (
                 <div className="text-left bg-red-50 dark:bg-red-900/20 p-4 rounded mb-6 max-h-[200px] overflow-auto">
-                  <h3 className="font-bold text-red-700 dark:text-red-400 mb-2">Errors:</h3>
+                  <h3 className="font-bold text-red-700 dark:text-red-400 mb-2">
+                    {t('app.errors')}:
+                  </h3>
                   <ul className="list-disc list-inside text-sm text-red-600 dark:text-red-300">
                     {executionResult.errors.map((err, idx) => (
                       <li key={idx}>
@@ -317,7 +332,7 @@ function App(): React.JSX.Element {
                 onClick={() => setExecutionResult(null)}
                 className="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700"
               >
-                Back to Dashboard
+                {t('app.backToDashboard')}
               </button>
             </div>
           )}
@@ -342,11 +357,11 @@ function App(): React.JSX.Element {
               >
                 {isWatching ? (
                   <>
-                    <Eye className="h-4 w-4" /> Watching...
+                    <Eye className="h-4 w-4" /> {t('app.watching')}
                   </>
                 ) : (
                   <>
-                    <Eye className="h-4 w-4" /> Enable Watch Mode
+                    <Eye className="h-4 w-4" /> {t('app.watchMode')}
                   </>
                 )}
               </button>
