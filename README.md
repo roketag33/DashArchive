@@ -2,14 +2,12 @@
 
 **DashArchive** is an intelligent, privacy-focused file organizer for macOS, Windows, and Linux. It automatically sorts your chaotic downloads and document folders using smart rules and local AI.
 
-![Build Status](https://github.com/roketag33/DashArchive/actions/workflows/build.yml/badge.svg)
-
 ## 📸 Screenshots
 
 <div align="center">
   <img src="docs/images/dashboard.png" alt="Dashboard View" width="800" />
   <br>
-  <em>The main dashboard: Organize your files with one click.</em>
+  <em>The Main Dashboard: Drag & drop folders to organize instantly.</em>
 </div>
 
 <br>
@@ -17,7 +15,23 @@
 <div align="center">
   <img src="docs/images/settings.png" alt="Settings View" width="800" />
   <br>
-  <em>Powerful settings: Configure AI rules and preferences.</em>
+  <em>Settings Panel: Customize your organization rules and preferences.</em>
+</div>
+
+<br>
+
+<div align="center">
+  <img src="docs/images/history.png" alt="History View" width="800" />
+  <br>
+  <em>History & Undo: Review past actions and revert changes safely.</em>
+</div>
+
+<br>
+
+<div align="center">
+  <img src="docs/images/classification.png" alt="Classification View" width="800" />
+  <br>
+  <em>AI Classification: Watch the local AI sort your document content.</em>
 </div>
 
 <br>
