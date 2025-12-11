@@ -162,11 +162,11 @@ function App(): React.JSX.Element {
     <div
       className={`min-h-screen transition-colors duration-200 ${settings?.theme === 'dark' ? 'dark bg-gray-900 text-white' : 'bg-white text-gray-900'}`}
     >
-      <div className="container mx-auto p-4 max-w-4xl">
-        <header className="flex items-center justify-between mb-8 border-b pb-4 dark:border-gray-700">
+      <header className="w-full border-b dark:border-gray-700 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-10">
+        <div className="container flex h-16 items-center justify-between px-4 md:px-8">
           <div className="flex items-center gap-4 cursor-pointer" onClick={handleReset}>
-            <img src={electronLogo} className="h-10 w-10 animate-spin-slow" alt="logo" />
-            <h1 className="text-2xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
+            <img src={electronLogo} className="h-8 w-8 animate-spin-slow" alt="logo" />
+            <h1 className="text-xl font-bold bg-gradient-to-r from-blue-600 to-teal-500 bg-clip-text text-transparent">
               {t('app.title')}
             </h1>
           </div>
@@ -184,18 +184,20 @@ function App(): React.JSX.Element {
               className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 p-2"
               title={t('app.history')}
             >
-              <History className="h-6 w-6" />
+              <History className="h-5 w-5" />
             </button>
             <button
               onClick={() => setShowSettings(true)}
               className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 p-2"
               title={t('app.settings')}
             >
-              <Settings className="h-6 w-6" />
+              <Settings className="h-5 w-5" />
             </button>
           </div>
-        </header>
+        </div>
+      </header>
 
+      <div className="container mx-auto p-4 max-w-4xl mt-6">
         <main className="space-y-6">
           {showSettings && settings && (
             <SettingsPanel
