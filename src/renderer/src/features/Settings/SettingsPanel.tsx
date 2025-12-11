@@ -6,7 +6,19 @@ import { Input } from '../../components/ui/input'
 import { Switch } from '../../components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
-import { X, Plus, Trash2, Edit2, Save, FolderOpen, Wand2 } from 'lucide-react'
+import {
+  X,
+  Plus,
+  Trash2,
+  Edit2,
+  Save,
+  FolderOpen,
+  Wand2,
+  Brain,
+  Wrench,
+  Check,
+  ArrowRight
+} from 'lucide-react'
 
 interface Props {
   settings: AppSettings
@@ -203,17 +215,17 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                             <div className="flex p-1 bg-muted rounded-lg">
                               <button
                                 data-testid="rule-mode-ai"
-                                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${editForm.type === 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type === 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                 onClick={() => handleChange('type', 'ai')}
                               >
-                                🧠 AI Smart Sort
+                                <Brain className="h-4 w-4" /> AI Smart Sort
                               </button>
                               <button
                                 data-testid="rule-mode-manual"
-                                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all ${editForm.type !== 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type !== 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                 onClick={() => handleChange('type', 'extension')}
                               >
-                                🛠️ Manual Criteria
+                                <Wrench className="h-4 w-4" /> Manual Criteria
                               </button>
                             </div>
                           </div>
@@ -234,7 +246,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                   variant="outline"
                                   size="icon"
                                   onClick={handleSuggestCategories}
-                                  title="✨ Magic Suggest from Folder"
+                                  title="Magic Suggest from Folder"
                                   className="shrink-0"
                                   data-testid="magic-suggest-btn"
                                 >
@@ -265,7 +277,9 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                     }}
                                     data-testid={`quick-tag-${cat}`}
                                   >
-                                    {editForm.aiPrompts?.includes(cat) ? '✓ ' : '+ '}
+                                    {editForm.aiPrompts?.includes(cat) && (
+                                      <Check className="h-3 w-3 mr-1 inline-block" />
+                                    )}
                                     {cat}
                                   </Badge>
                                 ))}
@@ -385,13 +399,13 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                             <Badge variant="outline">{rule.type}</Badge>
                             {!rule.isActive && <Badge variant="secondary">Inactive</Badge>}
                           </div>
-                          <div className="text-sm text-muted-foreground">
+                          <div className="text-sm text-muted-foreground flex items-center gap-1">
                             {rule.type === 'extension' && (
                               <span>Extensions: {rule.extensions?.join(', ')}</span>
                             )}
                             {rule.type === 'name' && <span>Pattern: {rule.namePattern}</span>}
                             {rule.type === 'ai' && <span>AI: {rule.aiPrompts?.join(', ')}</span>}
-                            <span className="mx-2">→</span>
+                            <ArrowRight className="h-3 w-3 mx-1" />
                             <span className="font-mono bg-muted px-1 py-0.5 rounded text-xs">
                               {rule.destination}
                             </span>

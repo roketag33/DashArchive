@@ -7,6 +7,7 @@ import { HistoryPanel } from './features/History/HistoryPanel'
 import { DuplicateModal } from './features/Dashboard/DuplicateModal'
 import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry } from '../../shared/types'
 import electronLogo from './assets/electron.svg'
+import { History, Settings, Copy, Check, TriangleAlert, Eye } from 'lucide-react'
 
 function App(): React.JSX.Element {
   const [files, setFiles] = useState<FileEntry[]>([])
@@ -172,14 +173,14 @@ function App(): React.JSX.Element {
               className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 p-2"
               title="History"
             >
-              🕒
+              <History className="h-6 w-6" />
             </button>
             <button
               onClick={() => setShowSettings(true)}
               className="text-gray-600 hover:text-blue-600 dark:text-gray-400 dark:hover:text-blue-400 p-2"
               title="Settings"
             >
-              ⚙️
+              <Settings className="h-6 w-6" />
             </button>
           </div>
         </header>
@@ -226,9 +227,9 @@ function App(): React.JSX.Element {
                       </button>
                       <button
                         onClick={() => setShowDuplicates(true)}
-                        className="bg-orange-100 text-orange-700 hover:bg-orange-200 px-4 py-2 rounded text-sm font-medium transition-colors border border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800"
+                        className="bg-orange-100 text-orange-700 hover:bg-orange-200 px-4 py-2 rounded text-sm font-medium transition-colors border border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800 flex items-center gap-2"
                       >
-                        👯 Clean Duplicates
+                        <Copy className="h-4 w-4" /> Clean Duplicates
                       </button>
                     </>
                   )}
@@ -288,9 +289,13 @@ function App(): React.JSX.Element {
           {executionResult && !showSettings && !showHistory && (
             <div className="bg-white dark:bg-gray-800 p-6 rounded shadow text-center">
               <div
-                className={`text-6xl mb-4 ${executionResult.success ? 'text-green-500' : 'text-orange-500'}`}
+                className={`flex justify-center mb-4 ${executionResult.success ? 'text-green-500' : 'text-orange-500'}`}
               >
-                {executionResult.success ? '✓' : '⚠'}
+                {executionResult.success ? (
+                  <Check className="h-16 w-16" />
+                ) : (
+                  <TriangleAlert className="h-16 w-16" />
+                )}
               </div>
               <h2 className="text-2xl font-bold mb-2">Operation Complete</h2>
               <p className="text-gray-600 dark:text-gray-300 mb-6">
@@ -332,13 +337,21 @@ function App(): React.JSX.Element {
                     setIsWatching(true)
                   }
                 }}
-                className={`px-4 py-2 rounded shadow-lg font-medium transition-colors ${
+                className={`px-4 py-2 rounded shadow-lg font-medium transition-colors flex items-center gap-2 ${
                   isWatching
                     ? 'bg-green-600 text-white animate-pulse'
                     : 'bg-gray-800 text-white hover:bg-gray-700'
                 }`}
               >
-                {isWatching ? '👀 Watching...' : '👁️ Enable Watch Mode'}
+                {isWatching ? (
+                  <>
+                    <Eye className="h-4 w-4" /> Watching...
+                  </>
+                ) : (
+                  <>
+                    <Eye className="h-4 w-4" /> Enable Watch Mode
+                  </>
+                )}
               </button>
             </div>
           )}

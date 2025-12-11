@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react'
 import { FileEntry, DuplicateGroup } from '../../../../shared/types'
 import { Button } from '../../components/ui/button'
 import { Card } from '../../components/ui/card'
-import { Trash2, AlertTriangle, X } from 'lucide-react'
+import { Trash2, AlertTriangle, X, Sparkles } from 'lucide-react'
 import clsx from 'clsx'
 
 interface DuplicateModalProps {
@@ -90,7 +90,10 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({ files, onClose, 
           {loading ? (
             <div className="text-center py-10">Scanning for clones...</div>
           ) : duplicates.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground">No duplicates found! 🎉</div>
+            <div className="text-center py-10 text-muted-foreground flex flex-col items-center gap-2">
+              <Sparkles className="w-8 h-8 text-yellow-500" />
+              <span>No duplicates found!</span>
+            </div>
           ) : (
             duplicates.map((group) => (
               <div key={group.hash} className="border rounded-lg p-3 bg-card/50">

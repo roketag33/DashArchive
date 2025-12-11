@@ -1,4 +1,5 @@
 import { JournalEntry } from '../../../../shared/types'
+import { X, RotateCcw } from 'lucide-react'
 
 interface Props {
   history: JournalEntry[]
@@ -13,7 +14,7 @@ export function HistoryPanel({ history, onUndo, onClose }: Props): React.JSX.Ele
         <div className="p-6 border-b flex justify-between items-center">
           <h2 className="text-xl font-bold">History / Journal</h2>
           <button onClick={onClose} className="text-gray-500 hover:text-gray-700">
-            ✕
+            <X className="h-6 w-6" />
           </button>
         </div>
 
@@ -44,8 +45,9 @@ export function HistoryPanel({ history, onUndo, onClose }: Props): React.JSX.Ele
                   {entry.status === 'revertible' && (
                     <button
                       onClick={() => onUndo(entry)}
-                      className="px-3 py-1 bg-gray-200 hover:bg-red-100 text-red-700 rounded text-sm transition-colors border border-gray-300 hover:border-red-200"
+                      className="px-3 py-1 bg-gray-200 hover:bg-red-100 text-red-700 rounded text-sm transition-colors border border-gray-300 hover:border-red-200 flex items-center gap-1"
                     >
+                      <RotateCcw className="h-3 w-3" />
                       Undo
                     </button>
                   )}
