@@ -14,6 +14,22 @@ log.transports.file.level = 'info'
 log.info('App starting...')
 Object.assign(console, log.functions) // Capture console.log
 
+// Fix BigInt serialization in electron-log
+// @ts-ignore - Patching JSON.stringify for BigInt support in logs
+const originalStringify = JSON.stringify
+JSON.stringify = function (value, replacer, space) {
+  return originalStringify(
+    value,
+    (key, val) => {
+      if (typeof val === 'bigint') {
+        return val.toString() + 'n'
+      }
+      return typeof replacer === 'function' ? replacer(key, val) : val
+    },
+    space
+  )
+}
+
 // Setup Auto Updater
 autoUpdater.logger = log
 // autoUpdater.autoDownload = true // Default is true
