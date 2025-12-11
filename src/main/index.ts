@@ -72,9 +72,6 @@ function createWindow(): void {
   }
 }
 
-// createMenu imported at top
-// createMenu imported at top
-
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -95,9 +92,6 @@ app.whenReady().then(() => {
   app.on('browser-window-created', (_, window) => {
     optimizer.watchWindowShortcuts(window)
   })
-
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
 
   // IPC test
   ipcMain.on('ping', () => console.log('pong'))

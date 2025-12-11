@@ -1,27 +1,15 @@
 import React, { useState, useEffect, useCallback } from 'react'
 import { Rule, AppSettings } from '../../../../shared/types'
-import { COMMON_CATEGORIES } from '../../../../shared/constants'
 import { Button } from '../../components/ui/button'
-import { Input } from '../../components/ui/input'
 import { Switch } from '../../components/ui/switch'
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
-import { Badge } from '../../components/ui/badge'
-import {
-  Plus,
-  Trash2,
-  Edit2,
-  Save,
-  FolderOpen,
-  Wand2,
-  Brain,
-  Wrench,
-  Check,
-  ArrowRight
-} from 'lucide-react'
+import { Card, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
+import { Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { useNavigate } from 'react-router-dom'
 import { toast } from 'sonner'
 import { useTheme } from 'next-themes'
+import { RuleList } from './RuleList'
+import { RuleEditor } from './RuleEditor'
 
 export function SettingsPanel(): React.JSX.Element {
   const { t } = useTranslation()
@@ -30,9 +18,7 @@ export function SettingsPanel(): React.JSX.Element {
   const [settings, setSettings] = useState<AppSettings | null>(null)
   const [rules, setRules] = useState<Rule[]>([])
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null)
-
-  // Form state for editing
-  const [editForm, setEditForm] = useState<Partial<Rule>>({})
+  const [isCreating, setIsCreating] = useState(false)
 
   const loadSettings = useCallback(async (): Promise<void> => {
     try {
@@ -50,7 +36,7 @@ export function SettingsPanel(): React.JSX.Element {
     loadSettings()
   }, [loadSettings])
 
-  const handleSave = async (): Promise<void> => {
+  const handleSaveAll = async (): Promise<void> => {
     if (!settings) return
     try {
       const newSettings = { ...settings, rules }
@@ -69,24 +55,22 @@ export function SettingsPanel(): React.JSX.Element {
 
   const handleStartEdit = (rule: Rule): void => {
     setEditingRuleId(rule.id)
-    setEditForm({ ...rule })
+    setIsCreating(false)
   }
 
   const handleCancelEdit = (): void => {
     setEditingRuleId(null)
-    setEditForm({})
+    setIsCreating(false)
   }
 
-  const handleSaveEdit = (): void => {
-    if (!editingRuleId || !editForm) return
-    if (!editForm.name || editForm.name.trim() === '') {
-      toast.error('Rule name cannot be empty')
-      return
+  const handleSaveRule = (updatedRule: Rule): void => {
+    if (isCreating) {
+      setRules([...rules, updatedRule])
+    } else {
+      setRules(rules.map((r) => (r.id === updatedRule.id ? updatedRule : r)))
     }
-
-    setRules(rules.map((r) => (r.id === editingRuleId ? ({ ...r, ...editForm } as Rule) : r)))
     setEditingRuleId(null)
-    setEditForm({})
+    setIsCreating(false)
   }
 
   const handleAddRule = (): void => {
@@ -99,61 +83,31 @@ export function SettingsPanel(): React.JSX.Element {
       extensions: ['txt'],
       destination: 'NewFolder'
     }
-    setRules([...rules, newRule])
-    handleStartEdit(newRule)
+    setIsCreating(true)
+    setEditingRuleId(newRule.id)
+    // We append nicely, but if we want inline creation, we need to handle it in List or separate block
+    // For now, let's just use the Editor directly if creating, or add to list and edit?
+    // Let's add to list (temporary state) to reuse List logic or show Editor above list.
+    // Easier: Show editor above list if creating.
+    // BUT: The newRule is not in 'rules' yet.
   }
 
-  const handleChange = (field: keyof Rule, value: string | string[] | number): void => {
-    setEditForm((prev) => ({ ...prev, [field]: value }))
-  }
-
-  // Helper for array inputs (extensions)
-  const handleArrayChange = (value: string): void => {
-    const arr = value
-      .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s)
-    setEditForm((prev) => ({ ...prev, extensions: arr }))
-  }
-
-  const handleAiPromptsChange = (value: string): void => {
-    const arr = value
-      .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s)
-    setEditForm((prev) => ({ ...prev, aiPrompts: arr }))
-  }
-
-  const handleSelectDestination = async (): Promise<void> => {
-    const path = await window.api.selectFolder()
-    if (path) {
-      handleChange('destination', path)
-    }
-  }
-
-  const handleSuggestCategories = async (): Promise<void> => {
-    const folder = await window.api.selectFolder()
-    if (!folder) return
-
-    toast.info('Analyzing folder...')
-    try {
-      const suggestions = await window.api.suggestAiCategories(folder)
-      if (suggestions && suggestions.length > 0) {
-        const current = editForm.aiPrompts || []
-        // Merge unique
-        const combined = Array.from(new Set([...current, ...suggestions]))
-        setEditForm((prev) => ({ ...prev, aiPrompts: combined }))
-        toast.success(`Added ${suggestions.length} categories`)
-      } else {
-        toast.info('No common document categories found in sample.')
-      }
-    } catch (e) {
-      console.error(e)
-      toast.error('Failed to analyze folder.')
-    }
+  const handleToggleActive = (rule: Rule): void => {
+    setRules(rules.map((r) => (r.id === rule.id ? { ...r, isActive: !r.isActive } : r)))
   }
 
   if (!settings) return <div className="p-8 text-center">Loading settings...</div>
+
+  // If creating, we need a dummy rule object to pass to Editor
+  const newRuleTemplate: Rule = {
+    id: 'temp-new',
+    name: '',
+    isActive: true,
+    priority: 0,
+    type: 'extension',
+    extensions: [],
+    destination: ''
+  }
 
   return (
     <div className="container max-w-4xl mx-auto py-6 animate-in fade-in-0 slide-in-from-bottom-4">
@@ -189,281 +143,32 @@ export function SettingsPanel(): React.JSX.Element {
               <h3 className="text-lg font-medium">
                 {t('settings.rules.title')} ({rules.length})
               </h3>
-              <Button onClick={handleAddRule} size="sm">
-                <Plus className="mr-2 h-4 w-4" /> {t('settings.rules.add')}
-              </Button>
+              {!isCreating && (
+                <Button onClick={handleAddRule} size="sm">
+                  <Plus className="mr-2 h-4 w-4" /> {t('settings.rules.add')}
+                </Button>
+              )}
             </div>
 
-            <div className="grid gap-4">
-              {rules.map((rule) => (
-                <Card
-                  key={rule.id}
-                  className={`transition-colors ${!rule.isActive ? 'opacity-60 bg-muted/50' : ''}`}
-                >
-                  <CardContent className="p-4">
-                    {editingRuleId === rule.id ? (
-                      <div className="grid gap-4">
-                        <div className="grid grid-cols-2 gap-4">
-                          <div className="grid gap-2">
-                            <label className="text-sm font-medium">
-                              {t('settings.rules.edit.name')}
-                            </label>
-                            <Input
-                              placeholder={t('settings.rules.edit.namePlaceholder')}
-                              value={editForm.name}
-                              onChange={(e) => handleChange('name', e.target.value)}
-                            />
-                          </div>
-                          <div className="grid gap-2">
-                            <label className="text-sm font-medium">Destination</label>
-                            <div className="flex gap-2">
-                              <Input
-                                value={editForm.destination || ''}
-                                onChange={(e) => handleChange('destination', e.target.value)}
-                              />
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={handleSelectDestination}
-                                title="Select destination folder"
-                              >
-                                <FolderOpen className="h-4 w-4" />
-                              </Button>
-                            </div>
-                          </div>
-                          <div className="grid gap-2">
-                            <label className="text-sm font-medium">
-                              {t('settings.rules.edit.ruleMode')}
-                            </label>
-                            <div className="flex p-1 bg-muted rounded-lg">
-                              <button
-                                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type === 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                                onClick={() => handleChange('type', 'ai')}
-                              >
-                                <Brain className="h-4 w-4" /> {t('settings.rules.edit.aiSmartSort')}
-                              </button>
-                              <button
-                                className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type !== 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-                                onClick={() => handleChange('type', 'extension')}
-                              >
-                                <Wrench className="h-4 w-4" />{' '}
-                                {t('settings.rules.edit.manualCriteria')}
-                              </button>
-                            </div>
-                          </div>
+            {isCreating && (
+              <div className="mb-4">
+                <RuleEditor
+                  initialRule={newRuleTemplate}
+                  onSave={handleSaveRule}
+                  onCancel={handleCancelEdit}
+                />
+              </div>
+            )}
 
-                          {editForm.type === 'ai' ? (
-                            <div className="grid gap-2 col-span-2 bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/50">
-                              <label className="text-sm font-medium">Categories to Match</label>
-                              <div className="flex gap-2 items-end">
-                                <div className="grid gap-2 flex-1">
-                                  <Input
-                                    placeholder="Categories e.g. Invoice, Contract, Personal"
-                                    value={editForm.aiPrompts?.join(', ') || ''}
-                                    onChange={(e) => handleAiPromptsChange(e.target.value)}
-                                  />
-                                </div>
-                                <Button
-                                  variant="outline"
-                                  size="icon"
-                                  onClick={handleSuggestCategories}
-                                  title="Magic Suggest from Folder"
-                                  className="shrink-0"
-                                >
-                                  <Wand2 className="h-4 w-4" />
-                                </Button>
-                              </div>
-                              <div className="flex flex-wrap gap-1.5 mt-2">
-                                {COMMON_CATEGORIES.map((cat) => (
-                                  <Badge
-                                    key={cat}
-                                    variant={
-                                      editForm.aiPrompts?.includes(cat) ? 'default' : 'outline'
-                                    }
-                                    className="cursor-pointer hover:bg-primary/90 transition-colors"
-                                    onClick={() => {
-                                      const current = editForm.aiPrompts || []
-                                      if (!current.includes(cat)) {
-                                        setEditForm((prev) => ({
-                                          ...prev,
-                                          aiPrompts: [...current, cat]
-                                        }))
-                                      } else {
-                                        setEditForm((prev) => ({
-                                          ...prev,
-                                          aiPrompts: current.filter((c) => c !== cat)
-                                        }))
-                                      }
-                                    }}
-                                  >
-                                    {editForm.aiPrompts?.includes(cat) && (
-                                      <Check className="h-3 w-3 mr-1 inline-block" />
-                                    )}
-                                    {cat}
-                                  </Badge>
-                                ))}
-                              </div>
-                              <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-900 mt-2">
-                                <strong>Note:</strong> First run will download the AI model (~50MB).
-                                Processing will be slower than standard rules.
-                              </div>
-                            </div>
-                          ) : (
-                            <div className="grid gap-4 col-span-2 border p-4 rounded-lg bg-muted/20">
-                              <div className="grid gap-2">
-                                <label className="text-sm font-medium">
-                                  {t('settings.rules.edit.matchingCondition')}
-                                </label>
-                                <select
-                                  className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                                  value={editForm.type || 'extension'}
-                                  onChange={(e) => handleChange('type', e.target.value)}
-                                >
-                                  <option value="extension">
-                                    {t('settings.rules.edit.fileExtension')}
-                                  </option>
-                                  <option value="name">{t('settings.rules.edit.fileName')}</option>
-                                  <option value="size">{t('settings.rules.edit.fileSize')}</option>
-                                  <option value="date">{t('settings.rules.edit.fileDate')}</option>
-                                  <option value="fallback">
-                                    {t('settings.rules.edit.fallback')}
-                                  </option>
-                                </select>
-                              </div>
-
-                              <div className="grid gap-2">
-                                {editForm.type === 'extension' && (
-                                  <div className="grid gap-2">
-                                    <label className="text-sm font-medium">Extensions</label>
-                                    <Input
-                                      placeholder="e.g. txt, md, json"
-                                      value={editForm.extensions?.join(', ') || ''}
-                                      onChange={(e) => handleArrayChange(e.target.value)}
-                                    />
-                                    <p className="text-xs text-muted-foreground">
-                                      Comma separated list of extensions.
-                                    </p>
-                                  </div>
-                                )}
-                                {editForm.type === 'name' && (
-                                  <div className="grid gap-2">
-                                    <label className="text-sm font-medium">Pattern</label>
-                                    <Input
-                                      placeholder="Regex Pattern e.g. ^report_.*"
-                                      value={editForm.namePattern || ''}
-                                      onChange={(e) => handleChange('namePattern', e.target.value)}
-                                    />
-                                  </div>
-                                )}
-                                {editForm.type === 'size' && (
-                                  <div className="grid gap-2">
-                                    <label className="text-sm font-medium">
-                                      Size Range (Bytes)
-                                    </label>
-                                    <div className="flex gap-2">
-                                      <Input
-                                        type="number"
-                                        placeholder="Min"
-                                        value={editForm.sizeMin || ''}
-                                        onChange={(e) =>
-                                          handleChange('sizeMin', parseInt(e.target.value))
-                                        }
-                                      />
-                                      <Input
-                                        type="number"
-                                        placeholder="Max"
-                                        value={editForm.sizeMax || ''}
-                                        onChange={(e) =>
-                                          handleChange('sizeMax', parseInt(e.target.value))
-                                        }
-                                      />
-                                    </div>
-                                  </div>
-                                )}
-                                {editForm.type === 'date' && (
-                                  <div className="grid gap-2">
-                                    <label className="text-sm font-medium">Minimum Age</label>
-                                    <Input
-                                      type="number"
-                                      placeholder="Days old"
-                                      value={editForm.ageDays || ''}
-                                      onChange={(e) =>
-                                        handleChange('ageDays', parseInt(e.target.value))
-                                      }
-                                    />
-                                  </div>
-                                )}
-                                {editForm.type === 'fallback' && (
-                                  <p className="text-sm text-muted-foreground italic">
-                                    Matches any file that was not matched by previous rules.
-                                  </p>
-                                )}
-                              </div>
-                            </div>
-                          )}
-                        </div>
-                        <div className="flex justify-end gap-2">
-                          <Button variant="outline" size="sm" onClick={handleCancelEdit}>
-                            Cancel
-                          </Button>
-                          <Button size="sm" onClick={handleSaveEdit}>
-                            <Save className="mr-2 h-4 w-4" /> Save
-                          </Button>
-                        </div>
-                      </div>
-                    ) : (
-                      <div className="flex items-center justify-between">
-                        <div className="grid gap-1">
-                          <div className="font-semibold flex items-center gap-2">
-                            {rule.name}
-                            <Badge variant="outline">{rule.type}</Badge>
-                            {!rule.isActive && <Badge variant="secondary">Inactive</Badge>}
-                          </div>
-                          <div className="text-sm text-muted-foreground flex items-center gap-1">
-                            {rule.type === 'extension' && (
-                              <span>Extensions: {rule.extensions?.join(', ')}</span>
-                            )}
-                            {rule.type === 'name' && <span>Pattern: {rule.namePattern}</span>}
-                            {rule.type === 'ai' && <span>AI: {rule.aiPrompts?.join(', ')}</span>}
-                            <ArrowRight className="h-3 w-3 mx-1" />
-                            <span className="font-mono bg-muted px-1 py-0.5 rounded text-xs">
-                              {rule.destination}
-                            </span>
-                          </div>
-                        </div>
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="ghost"
-                            size="sm"
-                            className={rule.isActive ? 'text-green-600' : 'text-muted-foreground'}
-                            onClick={() =>
-                              setRules(
-                                rules.map((r) =>
-                                  r.id === rule.id ? { ...r, isActive: !r.isActive } : r
-                                )
-                              )
-                            }
-                          >
-                            {rule.isActive ? 'Active' : 'Enable'}
-                          </Button>
-                          <Button variant="ghost" size="icon" onClick={() => handleStartEdit(rule)}>
-                            <Edit2 className="h-4 w-4" />
-                          </Button>
-                          <Button
-                            variant="ghost"
-                            size="icon"
-                            onClick={() => handleDelete(rule.id)}
-                            className="text-destructive hover:text-destructive"
-                          >
-                            <Trash2 className="h-4 w-4" />
-                          </Button>
-                        </div>
-                      </div>
-                    )}
-                  </CardContent>
-                </Card>
-              ))}
-            </div>
+            <RuleList
+              rules={rules}
+              editingRuleId={editingRuleId}
+              onEdit={handleStartEdit}
+              onCancelEdit={handleCancelEdit}
+              onSaveRule={handleSaveRule}
+              onDelete={handleDelete}
+              onToggleActive={handleToggleActive}
+            />
           </div>
         </div>
 
@@ -471,7 +176,7 @@ export function SettingsPanel(): React.JSX.Element {
           <Button variant="outline" onClick={() => navigate('/')}>
             {t('settings.cancel')}
           </Button>
-          <Button onClick={handleSave}>{t('settings.saveChanges')}</Button>
+          <Button onClick={handleSaveAll}>{t('settings.saveChanges')}</Button>
         </div>
       </Card>
     </div>

@@ -19,6 +19,7 @@ export interface FileEntry {
   content?: string
   hash?: string
   category: FileCategory
+  aiLabel?: string
 }
 
 export interface DuplicateGroup {
