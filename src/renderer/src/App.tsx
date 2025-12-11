@@ -7,6 +7,7 @@ import { HistoryPanel } from './features/History/HistoryPanel'
 import { DuplicateModal } from './features/Dashboard/DuplicateModal'
 import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry } from '../../shared/types'
 import electronLogo from './assets/electron.svg'
+import { Button } from './components/ui/button'
 import { History, Settings, Copy, Check, TriangleAlert, Eye } from 'lucide-react'
 
 function App(): React.JSX.Element {
@@ -219,18 +220,14 @@ function App(): React.JSX.Element {
                   </div>
                   {files.length > 0 && (
                     <>
-                      <button
-                        onClick={handleGeneratePlan}
-                        className="bg-primary text-primary-foreground hover:bg-primary/90 px-4 py-2 rounded text-sm font-medium transition-colors"
-                      >
-                        Organize {files.length} Files
-                      </button>
-                      <button
+                      <Button onClick={handleGeneratePlan}>Organize {files.length} Files</Button>
+                      <Button
+                        variant="outline"
                         onClick={() => setShowDuplicates(true)}
-                        className="bg-orange-100 text-orange-700 hover:bg-orange-200 px-4 py-2 rounded text-sm font-medium transition-colors border border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800 flex items-center gap-2"
+                        className="text-orange-600 hover:text-orange-700 hover:bg-orange-50 border-orange-200 dark:text-orange-400 dark:hover:text-orange-300 dark:hover:bg-orange-900/20 dark:border-orange-800"
                       >
-                        <Copy className="h-4 w-4" /> Clean Duplicates
-                      </button>
+                        <Copy className="h-4 w-4 mr-2" /> Clean Duplicates
+                      </Button>
                     </>
                   )}
                 </div>
