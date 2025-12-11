@@ -4,6 +4,24 @@
 
 ![Build Status](https://github.com/roketag33/DashArchive/actions/workflows/build.yml/badge.svg)
 
+## 📸 Screenshots
+
+<div align="center">
+  <img src="docs/images/dashboard.png" alt="Dashboard View" width="800" />
+  <br>
+  <em>The main dashboard: Organize your files with one click.</em>
+</div>
+
+<br>
+
+<div align="center">
+  <img src="docs/images/settings.png" alt="Settings View" width="800" />
+  <br>
+  <em>Powerful settings: Configure AI rules and preferences.</em>
+</div>
+
+<br>
+
 ## 🚀 Key Features
 
 - **🤖 Local AI Classification**: Uses on-device AI (MobileBERT) to analyze file content and suggest categories without your data ever leaving your computer.
