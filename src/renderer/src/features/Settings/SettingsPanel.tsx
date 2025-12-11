@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useCallback } from 'react'
 import { Rule, AppSettings } from '../../../../shared/types'
 import { COMMON_CATEGORIES } from '../../../../shared/constants'
 import { Button } from '../../components/ui/button'
@@ -7,7 +7,6 @@ import { Switch } from '../../components/ui/switch'
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
 import { Badge } from '../../components/ui/badge'
 import {
-  X,
   Plus,
   Trash2,
   Edit2,
@@ -20,28 +19,48 @@ import {
   ArrowRight
 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
+import { useNavigate } from 'react-router-dom'
+import { toast } from 'sonner'
+import { useTheme } from 'next-themes'
 
-interface Props {
-  settings: AppSettings
-  onSave: (settings: AppSettings) => void
-  onClose: () => void
-}
-
-export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.Element {
+export function SettingsPanel(): React.JSX.Element {
   const { t } = useTranslation()
-  const [rules, setRules] = useState<Rule[]>(settings.rules)
+  const navigate = useNavigate()
+  const { theme, setTheme } = useTheme()
+  const [settings, setSettings] = useState<AppSettings | null>(null)
+  const [rules, setRules] = useState<Rule[]>([])
   const [editingRuleId, setEditingRuleId] = useState<string | null>(null)
 
   // Form state for editing
   const [editForm, setEditForm] = useState<Partial<Rule>>({})
 
-  useEffect(() => {
-    setRules(settings.rules)
-  }, [settings])
+  const loadSettings = useCallback(async (): Promise<void> => {
+    try {
+      const s = await window.api.getSettings()
+      setSettings(s)
+      setRules(s.rules)
+    } catch (e) {
+      console.error(e)
+      toast.error('Failed to load settings')
+    }
+  }, [])
 
-  const handleSave = (): void => {
-    onSave({ ...settings, rules })
-    onClose()
+  useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
+    loadSettings()
+  }, [loadSettings])
+
+  const handleSave = async (): Promise<void> => {
+    if (!settings) return
+    try {
+      const newSettings = { ...settings, rules }
+      await window.api.saveSettings(newSettings)
+      toast.success(t('settings.saved'))
+      navigate('/')
+    } catch (e) {
+      console.error(e)
+      toast.error('Failed to save settings')
+    }
   }
 
   const handleDelete = (id: string): void => {
@@ -61,7 +80,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
   const handleSaveEdit = (): void => {
     if (!editingRuleId || !editForm) return
     if (!editForm.name || editForm.name.trim() === '') {
-      // alert('Rule name cannot be empty') // Optional: could show UI error
+      toast.error('Rule name cannot be empty')
       return
     }
 
@@ -116,8 +135,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
     const folder = await window.api.selectFolder()
     if (!folder) return
 
-    // Show loading state could be here, but for now blocking sync is 'ok' for MVP.
-    // Ideally use a toast or loading state on button.
+    toast.info('Analyzing folder...')
     try {
       const suggestions = await window.api.suggestAiCategories(folder)
       if (suggestions && suggestions.length > 0) {
@@ -125,26 +143,26 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
         // Merge unique
         const combined = Array.from(new Set([...current, ...suggestions]))
         setEditForm((prev) => ({ ...prev, aiPrompts: combined }))
+        toast.success(`Added ${suggestions.length} categories`)
       } else {
-        alert('No common document categories found in sample.')
+        toast.info('No common document categories found in sample.')
       }
     } catch (e) {
       console.error(e)
-      alert('Failed to analyze folder.')
+      toast.error('Failed to analyze folder.')
     }
   }
 
+  if (!settings) return <div className="p-8 text-center">Loading settings...</div>
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm animate-in fade-in-0">
-      <Card className="w-full max-w-4xl max-h-[90vh] flex flex-col p-0 shadow-lg">
+    <div className="container max-w-4xl mx-auto py-6 animate-in fade-in-0 slide-in-from-bottom-4">
+      <Card className="flex flex-col shadow-lg border-0 bg-background">
         <CardHeader className="flex flex-row items-center justify-between border-b px-6 py-4">
           <div className="grid gap-1">
             <CardTitle>{t('settings.title')}</CardTitle>
             <CardDescription>{t('settings.description')}</CardDescription>
           </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="h-4 w-4" />
-          </Button>
         </CardHeader>
 
         <div className="flex-1 overflow-auto p-6 space-y-6">
@@ -152,7 +170,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
             <h3 className="text-lg font-medium">{t('settings.preferences.title')}</h3>
             <div className="flex items-center justify-between rounded-lg border p-4 shadow-sm">
               <div className="space-y-0.5">
-                <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
+                <label className="text-sm font-medium leading-none">
                   {t('settings.preferences.darkMode')}
                 </label>
                 <p className="text-sm text-muted-foreground">
@@ -160,11 +178,8 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                 </p>
               </div>
               <Switch
-                data-testid="dark-mode-toggle"
-                checked={settings.theme === 'dark'}
-                onChange={(e) =>
-                  onSave({ ...settings, theme: e.target.checked ? 'dark' : 'light' })
-                }
+                checked={theme === 'dark'}
+                onChange={(e) => setTheme(e.target.checked ? 'dark' : 'light')}
               />
             </div>
           </div>
@@ -174,7 +189,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
               <h3 className="text-lg font-medium">
                 {t('settings.rules.title')} ({rules.length})
               </h3>
-              <Button onClick={handleAddRule} size="sm" data-testid="add-rule-btn">
+              <Button onClick={handleAddRule} size="sm">
                 <Plus className="mr-2 h-4 w-4" /> {t('settings.rules.add')}
               </Button>
             </div>
@@ -197,7 +212,6 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                               placeholder={t('settings.rules.edit.namePlaceholder')}
                               value={editForm.name}
                               onChange={(e) => handleChange('name', e.target.value)}
-                              data-testid="rule-name-input"
                             />
                           </div>
                           <div className="grid gap-2">
@@ -206,7 +220,6 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                               <Input
                                 value={editForm.destination || ''}
                                 onChange={(e) => handleChange('destination', e.target.value)}
-                                data-testid="rule-dest-input"
                               />
                               <Button
                                 variant="outline"
@@ -224,14 +237,12 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                             </label>
                             <div className="flex p-1 bg-muted rounded-lg">
                               <button
-                                data-testid="rule-mode-ai"
                                 className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type === 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                 onClick={() => handleChange('type', 'ai')}
                               >
                                 <Brain className="h-4 w-4" /> {t('settings.rules.edit.aiSmartSort')}
                               </button>
                               <button
-                                data-testid="rule-mode-manual"
                                 className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type !== 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
                                 onClick={() => handleChange('type', 'extension')}
                               >
@@ -250,7 +261,6 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                     placeholder="Categories e.g. Invoice, Contract, Personal"
                                     value={editForm.aiPrompts?.join(', ') || ''}
                                     onChange={(e) => handleAiPromptsChange(e.target.value)}
-                                    data-testid="ai-categories-input"
                                   />
                                 </div>
                                 <Button
@@ -259,7 +269,6 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                   onClick={handleSuggestCategories}
                                   title="Magic Suggest from Folder"
                                   className="shrink-0"
-                                  data-testid="magic-suggest-btn"
                                 >
                                   <Wand2 className="h-4 w-4" />
                                 </Button>
@@ -286,7 +295,6 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                                         }))
                                       }
                                     }}
-                                    data-testid={`quick-tag-${cat}`}
                                   >
                                     {editForm.aiPrompts?.includes(cat) && (
                                       <Check className="h-3 w-3 mr-1 inline-block" />
@@ -395,15 +403,10 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                           )}
                         </div>
                         <div className="flex justify-end gap-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={handleCancelEdit}
-                            data-testid="cancel-rule-btn"
-                          >
+                          <Button variant="outline" size="sm" onClick={handleCancelEdit}>
                             Cancel
                           </Button>
-                          <Button size="sm" onClick={handleSaveEdit} data-testid="save-rule-btn">
+                          <Button size="sm" onClick={handleSaveEdit}>
                             <Save className="mr-2 h-4 w-4" /> Save
                           </Button>
                         </div>
@@ -451,7 +454,6 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
                             size="icon"
                             onClick={() => handleDelete(rule.id)}
                             className="text-destructive hover:text-destructive"
-                            data-testid="delete-rule-btn"
                           >
                             <Trash2 className="h-4 w-4" />
                           </Button>
@@ -466,7 +468,7 @@ export function SettingsPanel({ settings, onSave, onClose }: Props): React.JSX.E
         </div>
 
         <div className="border-t p-4 flex justify-end gap-2 bg-muted/50 rounded-b-lg">
-          <Button variant="outline" onClick={onClose}>
+          <Button variant="outline" onClick={() => navigate('/')}>
             {t('settings.cancel')}
           </Button>
           <Button onClick={handleSave}>{t('settings.saveChanges')}</Button>
