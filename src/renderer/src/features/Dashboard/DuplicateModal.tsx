@@ -22,7 +22,7 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({ files, onClose, 
   useEffect(() => {
     const load = async (): Promise<void> => {
       try {
-        const result = await window.api.findDuplicates(files)
+        const result = (await window.api.findDuplicates(files)) as unknown as DuplicateGroup[]
         setDuplicates(result)
         // Auto-select duplicates (keep oldest by default)
         const autoSelected = new Set<string>()

@@ -29,9 +29,10 @@ export function HistoryPanel(): React.JSX.Element {
 
   const handleUndo = async (entry: JournalEntry): Promise<void> => {
     try {
-      const result = await window.api.undoPlan(entry.plan)
+      const result = await window.api.undoPlan(entry.plan, entry.id)
       if (result.success) {
-        await window.api.markReverted(entry.id)
+        // Optimistic refresh or wait? loadHistory() handles it.
+        // We explicitly removed the separate markReverted call because IPC handles it now.
         loadHistory()
         toast.success(t('history.undoSuccess'))
       } else {

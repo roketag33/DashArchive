@@ -1,4 +1,4 @@
-import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry } from '../shared/types'
+import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry, Rule } from '../shared/types'
 
 interface CustomAPI {
   selectFolder: () => Promise<string | null>
@@ -6,35 +6,31 @@ interface CustomAPI {
   generatePlan: (files: FileEntry[]) => Promise<Plan>
   executePlan: (plan: Plan) => Promise<ExecutionResult>
   getSettings: () => Promise<AppSettings>
-  getRules: () => Promise<import('../shared/types').Rule[]>
+  getRules: () => Promise<Rule[]>
   saveSettings: (settings: Partial<AppSettings>) => Promise<AppSettings>
   getHistory: () => Promise<JournalEntry[]>
-  undoPlan: (plan: Plan) => Promise<ExecutionResult>
-  suggestAiCategories: (folderPath: string) => Promise<string[]>
-  findDuplicates: (
-    files: import('../shared/types').FileEntry[]
-  ) => Promise<import('../shared/types').DuplicateGroup[]>
-  deleteFiles: (paths: string[]) => Promise<boolean>
+  undoPlan: (plan: Plan, entryId?: string) => Promise<ExecutionResult>
+  suggestAiCategories: (path: string) => Promise<string[]>
   markReverted: (id: string) => Promise<void>
+  deleteFiles: (paths: string[]) => Promise<void>
+  findDuplicates: (files: FileEntry[]) => Promise<FileEntry[][]>
   startWatcher: (path: string) => Promise<void>
   stopWatcher: () => Promise<void>
   onFileAdded: (callback: (path: string) => void) => void
   removeFileAddedListener: () => void
 
   // Folders
-  getFolders: () => Promise<import('../shared/types').Folder[]>
-  addFolder: (folder: {
-    name: string
-    path: string
-    autoWatch: boolean
-  }) => Promise<import('../shared/types').Folder>
-  updateFolder: (id: string, updates: Partial<import('../shared/types').Folder>) => Promise<void>
+  getFolders: () => Promise<import('./shared/types').Folder[]>
+  addFolder: (
+    folder: Omit<import('./shared/types').Folder, 'id' | 'createdAt' | 'updatedAt'>
+  ) => Promise<import('./shared/types').Folder>
+  updateFolder: (id: string, updates: Partial<import('./shared/types').Folder>) => Promise<void>
   deleteFolder: (id: string) => Promise<void>
-  getFolderRules: (folderId: string) => Promise<string[]>
+  getFolderRules: (folderId: string) => Promise<import('./shared/types').Rule[]>
   setFolderRules: (folderId: string, ruleIds: string[]) => Promise<void>
 
   // Stats
-  getStats: () => Promise<{ totalFiles: number; spaceSaved: number; activeRules: number }>
+  getStats: () => Promise<import('./main/services/core/stats').GlobalStats>
 }
 
 declare global {

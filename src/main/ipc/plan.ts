@@ -48,16 +48,18 @@ export function registerPlanHandlers(): void {
     return getHistory()
   })
 
-  ipcMain.handle('undo-plan', async (_, plan) => {
-    const result = await undoPlan(plan)
-    if (result.success) {
-      // Find entry by plan content or pass ID?
-      // For simplicity, we assume the UI passes the plan attached to the entry.
-      // We probably need to mark it reverted.
-      // Ideally pass entryId to undo-plan. Use plan for now.
+  ipcMain.handle(
+    'undo-plan',
+    async (_, { plan, entryId }: { plan: import('../../shared/types').Plan; entryId?: string }) => {
+      // Legacy support: if arg is just plan (no entryId property checks, but strict typing helps)
+      // Actually renderer sends one object. If we change signature, we must ensure renderer matches.
+      const result = await undoPlan(plan)
+      if (result.success && entryId) {
+        markReverted(entryId)
+      }
+      return result
     }
-    return result
-  })
+  )
 
   ipcMain.handle('mark-reverted', (_, id) => {
     markReverted(id)
