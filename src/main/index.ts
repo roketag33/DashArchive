@@ -4,7 +4,7 @@ import log from 'electron-log'
 import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers } from './ipc'
 import { watcherService } from './services/fs/watcher'
-import { initDB } from './db'
+import { initDB } from './db/index'
 import { migrateSettingsIfNeeded } from './services/core/settings'
 // ...
 import { createMenu } from './services/core/menu'

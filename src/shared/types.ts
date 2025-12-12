@@ -71,7 +71,16 @@ export interface ExecutionResult {
   success: boolean
   processed: number
   failed: number
-  errors: Array<{ file: string; error: string }>
+  errors: { file: string; error: string }[]
+}
+
+export interface Folder {
+  id: string
+  name: string
+  path: string
+  autoWatch: boolean
+  createdAt: Date
+  updatedAt: Date
 }
 
 export interface AppSettings {

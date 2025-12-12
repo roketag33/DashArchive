@@ -1,4 +1,4 @@
-import { db } from '../../db'
+import { db } from '../../db/index'
 import { settings } from '../../db/schema'
 import { getMyRules, replaceRules } from '../../db/rules'
 import { AppSettings } from '../../../shared/types'
@@ -29,11 +29,13 @@ function setSetting(key: string, value: unknown): void {
 }
 
 export function migrateSettingsIfNeeded(): void {
-  const dbRules = getMyRules()
+  // Use a specific flag to track if we've seeded rules, rather than counting rules
+  const initialized = getSetting('rulesInitialized', false)
 
-  if (dbRules.length === 0) {
+  if (!initialized) {
     console.log('Initializing DB with default rules...')
     replaceRules(getDefaultRules())
+    setSetting('rulesInitialized', true)
 
     // Initialize defaults for other settings if needed
     if (!getSetting('firstRun', false)) {

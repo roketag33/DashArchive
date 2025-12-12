@@ -5,10 +5,16 @@ import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry } from '../
 // Custom APIs for renderer
 const api = {
   selectFolder: (): Promise<string | null> => ipcRenderer.invoke('dialog:openDirectory'),
-  scanFolder: (path: string): Promise<FileEntry[]> => ipcRenderer.invoke('scan-folder', path),
+  scanFolder: (pathOrId: string | { path?: string, id?: string }): Promise<FileEntry[]> => {
+      // Support legacy string or new object signature
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const arg = (typeof pathOrId === 'string' ? { path: pathOrId } : pathOrId) as any;
+      return ipcRenderer.invoke('scan-folder', arg)
+  },
   generatePlan: (files: FileEntry[]): Promise<Plan> => ipcRenderer.invoke('generate-plan', files),
   executePlan: (plan: Plan): Promise<ExecutionResult> => ipcRenderer.invoke('execute-plan', plan),
   getSettings: (): Promise<AppSettings> => ipcRenderer.invoke('get-settings'),
+  getRules: (): Promise<any[]> => ipcRenderer.invoke('get-settings').then(s => s.rules), // Helper
   saveSettings: (settings: Partial<AppSettings>): Promise<AppSettings> =>
     ipcRenderer.invoke('save-settings', settings),
   getHistory: (): Promise<JournalEntry[]> => ipcRenderer.invoke('get-history'),
@@ -22,11 +28,23 @@ const api = {
   startWatcher: (path: string): Promise<void> => ipcRenderer.invoke('watcher:start', path),
   stopWatcher: (): Promise<void> => ipcRenderer.invoke('watcher:stop'),
   onFileAdded: (callback: (path: string) => void): void => {
-    ipcRenderer.on('watcher:file-added', (_, path) => callback(path))
+    ipcRenderer.on('watcher:file-added', (_, payload) => {
+        // Support legacy string or new object
+        const path = typeof payload === 'string' ? payload : payload.filePath;
+        callback(path) // TODO: pass folderId too if needed by UI
+    })
   },
   removeFileAddedListener: (): void => {
     ipcRenderer.removeAllListeners('watcher:file-added')
-  }
+  },
+  
+  // Folders API
+  getFolders: () => ipcRenderer.invoke('folders:get-all'),
+  addFolder: (folder) => ipcRenderer.invoke('folders:add', folder),
+  updateFolder: (id, updates) => ipcRenderer.invoke('folders:update', { id, updates }),
+  deleteFolder: (id) => ipcRenderer.invoke('folders:delete', id),
+  getFolderRules: (folderId) => ipcRenderer.invoke('folders:get-rules', folderId),
+  setFolderRules: (folderId, ruleIds) => ipcRenderer.invoke('folders:set-rules', { folderId, ruleIds })
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

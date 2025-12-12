@@ -1,14 +1,24 @@
 import { ipcMain } from 'electron'
+import { getFolder } from '../db/folders'
 import { scanDirectory } from '../services/fs/scanner'
 import { aiService } from '../services/analysis/aiService'
 import { findDuplicates } from '../services/analysis/hashService'
 import * as fs from 'fs/promises'
 import * as nodePath from 'path'
 import { FileEntry } from '../../shared/types'
+// ...
 
 export function registerScannerHandlers(): void {
-  ipcMain.handle('scan-folder', async (_, path: string) => {
-    return await scanDirectory(path)
+  ipcMain.handle('scan-folder', async (_, { path, id }: { path?: string, id?: string }) => {
+    let targetPath = path;
+    if (id) {
+        const folder = getFolder(id);
+        if (folder) targetPath = folder.path;
+    }
+    
+    if (!targetPath) throw new Error('No path or valid folder ID provided');
+    
+    return await scanDirectory(targetPath)
   })
 
   ipcMain.handle('ai-suggest-categories', async (_, folderPath: string) => {

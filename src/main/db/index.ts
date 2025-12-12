@@ -72,6 +72,24 @@ export function initDB(): void {
                 plan TEXT NOT NULL,
                 status TEXT NOT NULL
             );
+
+            CREATE TABLE IF NOT EXISTS folders (
+                id TEXT PRIMARY KEY,
+                name TEXT NOT NULL,
+                path TEXT NOT NULL,
+                auto_watch INTEGER NOT NULL DEFAULT 1,
+                created_at INTEGER NOT NULL,
+                updated_at INTEGER NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS folder_rules (
+                folder_id TEXT NOT NULL,
+                rule_id TEXT NOT NULL,
+                is_active INTEGER NOT NULL DEFAULT 1,
+                FOREIGN KEY (folder_id) REFERENCES folders(id) ON DELETE CASCADE,
+                FOREIGN KEY (rule_id) REFERENCES rules(id) ON DELETE CASCADE,
+                PRIMARY KEY (folder_id, rule_id)
+            );
         `)
     console.log('Database initialized')
   } catch (err) {

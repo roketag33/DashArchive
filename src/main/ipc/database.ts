@@ -1,5 +1,5 @@
 import { ipcMain } from 'electron'
-import { db } from '../db'
+import { db } from '../db/index'
 import { documents } from '../db/schema'
 
 export function registerDatabaseHandlers(): void {
