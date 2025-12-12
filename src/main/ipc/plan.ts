@@ -7,6 +7,9 @@ import { extractText } from '../services/analysis/textExtractor'
 import { aiService } from '../services/analysis/aiService'
 import { FileEntry } from '../../shared/types'
 
+import { sendNotification } from '../services/core/notifications'
+import { incrementFilesOrganized } from '../services/core/stats'
+
 export function registerPlanHandlers(): void {
   ipcMain.handle('generate-plan', async (_, files: FileEntry[]) => {
     const rules = getSettings().rules
@@ -24,8 +27,19 @@ export function registerPlanHandlers(): void {
 
   ipcMain.handle('execute-plan', async (_, plan) => {
     const result = await executePlan(plan)
-    if (result.success) {
+    if (result.success && result.processed > 0) {
       addEntry(plan)
+      void incrementFilesOrganized(result.processed)
+
+      const settings = getSettings()
+      const lang = settings.language
+      const title = lang === 'fr' ? 'Organisation terminée' : 'Organization Complete'
+      const body =
+        lang === 'fr'
+          ? `${result.processed} fichiers organisés avec succès.`
+          : `Successfully organized ${result.processed} files.`
+
+      sendNotification(title, body)
     }
     return result
   })

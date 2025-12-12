@@ -1,28 +1,21 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { addEntry, getHistory, markReverted, getEntry } from './journal'
+import { addEntry, markReverted, getEntry } from './journal'
 import { Plan } from '../../../shared/types'
+import { db } from '../../db'
 
-// Mock electron-store
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const mockStore = new Map<string, any>()
-vi.mock('electron-store', () => {
-  return {
-    default: class Store {
-      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type
-      get(key: string) {
-        return mockStore.get(key)
-      }
-      // eslint-disable-next-line @typescript-eslint/explicit-function-return-type, @typescript-eslint/no-explicit-any
-      set(key: string, val: any) {
-        mockStore.set(key, val)
-      }
-    }
+// Mock database
+vi.mock('../../db', () => ({
+  db: {
+    insert: vi.fn(),
+    select: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn()
   }
-})
+}))
 
 describe('Journal Manager', () => {
   beforeEach(() => {
-    mockStore.clear()
+    vi.resetAllMocks()
   })
 
   const mockPlan: Plan = {
@@ -32,32 +25,88 @@ describe('Journal Manager', () => {
   }
 
   it('should add an entry', () => {
+    // Mock successful insert
+    const mockRun = vi.fn()
+    // @ts-ignore - Mocking complex Drizzle types
+    db.insert.mockReturnValue({ values: vi.fn().mockReturnValue({ run: mockRun }) })
+    // Mock count check (active rules / journal count)
+    // @ts-ignore - Mocking complex Drizzle types
+    db.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({ all: vi.fn().mockReturnValue([]) })
+    })
+
     const entry = addEntry(mockPlan)
     expect(entry.id).toBeDefined()
     expect(entry.status).toBe('revertible')
-
-    const history = getHistory()
-    expect(history).toHaveLength(1)
-    expect(history[0]).toEqual(entry)
+    expect(db.insert).toHaveBeenCalled()
   })
 
-  it('should limit history size', () => {
-    for (let i = 0; i < 60; i++) {
-      addEntry(mockPlan)
-    }
-    expect(getHistory()).toHaveLength(50)
+  it('should cleanup old entries if history > 50', () => {
+    const mockRun = vi.fn()
+    // @ts-ignore - Mocking complex Drizzle types
+    db.insert.mockReturnValue({ values: vi.fn().mockReturnValue({ run: mockRun }) })
+
+    // Mock having 55 items
+    const manyItems = Array(55).fill({ id: 'old', timestamp: 0 })
+    // @ts-ignore - Mocking complex Drizzle types
+    db.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        orderBy: vi.fn().mockReturnValue({
+          // Add orderBy mock for correct chain
+          all: vi.fn().mockReturnValue(manyItems)
+        }),
+        all: vi.fn().mockReturnValue(manyItems) // Fallback if no orderBy called
+      })
+    })
+
+    // Mock delete
+    // @ts-ignore - Mocking complex Drizzle types
+    db.delete.mockReturnValue({ where: vi.fn().mockReturnValue({ run: mockRun }) })
+
+    addEntry(mockPlan)
+
+    // Should verify we tried to delete
+    expect(db.delete).toHaveBeenCalled()
   })
 
   it('should retrieve specific entry', () => {
-    const entry = addEntry(mockPlan)
-    const found = getEntry(entry.id)
-    expect(found).toEqual(entry)
+    const mockRecord = {
+      id: '123',
+      timestamp: 1000,
+      plan: JSON.stringify(mockPlan),
+      status: 'revertible'
+    }
+
+    // @ts-ignore - Mocking complex Drizzle types
+    db.select.mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          get: vi.fn().mockReturnValue(mockRecord)
+        })
+      })
+    })
+
+    const found = getEntry('123')
+    expect(found).toEqual({
+      id: '123',
+      timestamp: 1000,
+      plan: JSON.parse(mockRecord.plan),
+      status: 'revertible'
+    })
   })
 
   it('should mark entry as reverted', () => {
-    const entry = addEntry(mockPlan)
-    markReverted(entry.id)
-    const updated = getEntry(entry.id)
-    expect(updated?.status).toBe('reverted')
+    const mockRun = vi.fn()
+    // @ts-ignore - Mocking complex Drizzle types
+    db.update.mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          run: mockRun
+        })
+      })
+    })
+
+    markReverted('123')
+    expect(db.update).toHaveBeenCalled()
   })
 })

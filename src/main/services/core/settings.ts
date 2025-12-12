@@ -6,7 +6,7 @@ import { getDefaultRules } from '../../config/defaultRules'
 import { eq } from 'drizzle-orm'
 
 // Helper to get a setting from DB
-function getSetting<T>(key: string, defaultValue: T): T {
+export function getSetting<T>(key: string, defaultValue: T): T {
   try {
     const record = db.select().from(settings).where(eq(settings.key, key)).get()
     return record ? JSON.parse(record.value) : defaultValue
@@ -17,7 +17,7 @@ function getSetting<T>(key: string, defaultValue: T): T {
 }
 
 // Helper to set a setting in DB
-function setSetting(key: string, value: unknown): void {
+export function setSetting(key: string, value: unknown): void {
   try {
     db.insert(settings)
       .values({ key, value: JSON.stringify(value) })
