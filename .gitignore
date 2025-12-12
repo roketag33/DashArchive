@@ -10,3 +10,7 @@ coverage
 test-results
 .eslintcache
 debug.png
+/src/generated/prisma
+.env
+*.db
+*.db-journal

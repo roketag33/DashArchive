@@ -1,7 +1,7 @@
 import { ipcMain, shell } from 'electron'
 import { buildPlan } from '../services/planning/planner'
 import { executePlan, undoPlan } from '../services/fs/executor'
-import { getSettings, saveSettings } from '../services/core/settings'
+import { getSettings } from '../services/core/settings'
 import { addEntry, getHistory, markReverted } from '../services/core/journal'
 import { extractText } from '../services/analysis/textExtractor'
 import { aiService } from '../services/analysis/aiService'
@@ -9,7 +9,8 @@ import { FileEntry } from '../../shared/types'
 
 export function registerPlanHandlers(): void {
   ipcMain.handle('generate-plan', async (_, files: FileEntry[]) => {
-    const rules = getSettings().rules
+    const settings = await getSettings()
+    const rules = settings.rules
     return await buildPlan(files, rules, extractText, (text, labels) =>
       aiService.classify(text, labels)
     )
@@ -47,13 +48,5 @@ export function registerPlanHandlers(): void {
 
   ipcMain.handle('mark-reverted', (_, id) => {
     markReverted(id)
-  })
-
-  ipcMain.handle('get-settings', () => {
-    return getSettings()
-  })
-
-  ipcMain.handle('save-settings', (_, settings) => {
-    return saveSettings(settings)
   })
 }

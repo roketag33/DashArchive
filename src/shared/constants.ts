@@ -31,82 +31,17 @@ export const CATEGORY_EXTENSIONS: Record<FileCategory, string[]> = {
   other: []
 }
 
-export const EXTENSION_CATEGORY_MAP: Record<string, FileCategory> = {
-  // Images
-  jpg: 'image',
-  jpeg: 'image',
-  png: 'image',
-  gif: 'image',
-  bmp: 'image',
-  webp: 'image',
-  svg: 'image',
-  tiff: 'image',
-  ico: 'image',
-  // Video
-  mp4: 'video',
-  mov: 'video',
-  avi: 'video',
-  mkv: 'video',
-  wmv: 'video',
-  flv: 'video',
-  webm: 'video',
-  m4v: 'video',
-  // Audio
-  mp3: 'audio',
-  wav: 'audio',
-  aac: 'audio',
-  ogg: 'audio',
-  flac: 'audio',
-  m4a: 'audio',
-  wma: 'audio',
-  // Documents
-  pdf: 'document',
-  doc: 'document',
-  docx: 'document',
-  txt: 'document',
-  xls: 'document',
-  xlsx: 'document',
-  ppt: 'document',
-  pptx: 'document',
-  md: 'document',
-  csv: 'document',
-  rtf: 'document',
-  // Archives
-  zip: 'archive',
-  rar: 'archive',
-  '7z': 'archive',
-  tar: 'archive',
-  gz: 'archive',
-  bz2: 'archive',
-  // Dev
-  js: 'dev',
-  ts: 'dev',
-  jsx: 'dev',
-  tsx: 'dev',
-  html: 'dev',
-  css: 'dev',
-  json: 'dev',
-  py: 'dev',
-  java: 'dev',
-  c: 'dev',
-  cpp: 'dev',
-  php: 'dev',
-  rb: 'dev',
-  go: 'dev',
-  rs: 'dev',
-  yaml: 'dev',
-  xml: 'dev',
-  sql: 'dev',
-  // Executables
-  exe: 'executable',
-  msi: 'executable',
-  bat: 'executable',
-  sh: 'executable',
-  app: 'executable',
-  dmg: 'executable',
-  pkg: 'executable',
-  iso: 'executable'
-}
+export const EXTENSION_CATEGORY_MAP: Record<string, FileCategory> = Object.entries(
+  CATEGORY_EXTENSIONS
+).reduce(
+  (acc, [category, extensions]) => {
+    extensions.forEach((ext) => {
+      acc[ext] = category as FileCategory
+    })
+    return acc
+  },
+  {} as Record<string, FileCategory>
+)
 
 export const COMMON_CATEGORIES = [
   'Invoice',

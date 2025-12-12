@@ -1,0 +1,28 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "sqlite"
+}
+
+model Rule {
+  id          String   @id @default(uuid())
+  name        String   @default("New Rule")
+  type        String
+  isActive    Boolean  @default(true)
+  priority    Int      @default(0)
+  destination String
+
+  extensions  String?
+  namePattern String?
+  sizeMin     BigInt?
+  sizeMax     BigInt?
+  categories  String?
+  ageDays     Int?
+  aiPrompts   String?
+  description String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
