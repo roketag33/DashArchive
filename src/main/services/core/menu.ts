@@ -1,10 +1,10 @@
 import { app, Menu, shell, MenuItemConstructorOptions } from 'electron'
-import { is } from '@electron-toolkit/utils'
 
 export function createMenu(): void {
+  const isDev = !app.isPackaged
   const template: MenuItemConstructorOptions[] = [
     // { role: 'appMenu' }
-    ...(is.dev || process.platform === 'darwin'
+    ...(isDev || process.platform === 'darwin'
       ? ([
           {
             label: app.name,
@@ -88,7 +88,7 @@ export function createMenu(): void {
   ]
 
   // Production specific: Remove DevTools/Reload from View menu if not dev
-  if (!is.dev) {
+  if (!isDev) {
     const viewMenu = template.find((m) => m.label === 'View')
     if (viewMenu && viewMenu.submenu && Array.isArray(viewMenu.submenu)) {
       // Filter out dev tools and reload

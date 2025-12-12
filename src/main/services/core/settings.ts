@@ -1,34 +1,65 @@
-import Store from 'electron-store'
+import { db } from '../../db'
+import { settings } from '../../db/schema'
+import { getMyRules, replaceRules } from '../../db/rules'
 import { AppSettings } from '../../../shared/types'
 import { getDefaultRules } from '../../config/defaultRules'
+import { eq } from 'drizzle-orm'
 
-// Define the schema or default values
-const defaults: AppSettings = {
-  rules: getDefaultRules(),
-  theme: 'light',
-  language: 'en',
-  firstRun: true
-}
-
-const store = new Store<AppSettings>({
-  defaults,
-  name: 'user-preferences'
-})
-
-export function getSettings(): AppSettings {
-  return {
-    rules: store.get('rules'),
-    theme: store.get('theme'),
-    language: store.get('language'),
-    firstRun: store.get('firstRun')
+// Helper to get a setting from DB
+function getSetting<T>(key: string, defaultValue: T): T {
+  try {
+    const record = db.select().from(settings).where(eq(settings.key, key)).get()
+    return record ? JSON.parse(record.value) : defaultValue
+  } catch (e) {
+    console.error(`Failed to get setting ${key}:`, e)
+    return defaultValue
   }
 }
 
-export function saveSettings(settings: Partial<AppSettings>): AppSettings {
-  if (settings.rules) store.set('rules', settings.rules)
-  if (settings.theme) store.set('theme', settings.theme)
-  if (settings.language) store.set('language', settings.language)
-  if (settings.firstRun !== undefined) store.set('firstRun', settings.firstRun)
+// Helper to set a setting in DB
+function setSetting(key: string, value: unknown): void {
+  try {
+    db.insert(settings)
+      .values({ key, value: JSON.stringify(value) })
+      .onConflictDoUpdate({ target: settings.key, set: { value: JSON.stringify(value) } })
+      .run()
+  } catch (e) {
+    console.error(`Failed to set setting ${key}:`, e)
+  }
+}
+
+export function migrateSettingsIfNeeded(): void {
+  const dbRules = getMyRules()
+
+  if (dbRules.length === 0) {
+    console.log('Initializing DB with default rules...')
+    replaceRules(getDefaultRules())
+
+    // Initialize defaults for other settings if needed
+    if (!getSetting('firstRun', false)) {
+      setSetting('theme', 'light')
+      setSetting('language', 'en')
+      setSetting('firstRun', true)
+    }
+
+    console.log('Settings initialization complete.')
+  }
+}
+
+export function getSettings(): AppSettings {
+  return {
+    rules: getMyRules(),
+    theme: getSetting('theme', 'light'),
+    language: getSetting('language', 'en'),
+    firstRun: getSetting('firstRun', true) // Default to true if not found, but logic usually handles it
+  }
+}
+
+export function saveSettings(newSettings: Partial<AppSettings>): AppSettings {
+  if (newSettings.rules) replaceRules(newSettings.rules)
+  if (newSettings.theme) setSetting('theme', newSettings.theme)
+  if (newSettings.language) setSetting('language', newSettings.language)
+  if (newSettings.firstRun !== undefined) setSetting('firstRun', newSettings.firstRun)
 
   return getSettings()
 }

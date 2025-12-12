@@ -1,11 +1,11 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
-import { autoUpdater } from 'electron-updater'
 import log from 'electron-log'
-import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers } from './ipc'
 import { watcherService } from './services/fs/watcher'
+import { initDB } from './db'
+import { migrateSettingsIfNeeded } from './services/core/settings'
 // ...
 import { createMenu } from './services/core/menu'
 
@@ -29,11 +29,6 @@ JSON.stringify = function (value, replacer, space) {
     space
   )
 }
-
-// Setup Auto Updater
-autoUpdater.logger = log
-// autoUpdater.autoDownload = true // Default is true
-autoUpdater.disableWebInstaller = true
 
 function createWindow(): void {
   // Create the browser window.
@@ -65,7 +60,7 @@ function createWindow(): void {
 
   // HMR for renderer base on electron-vite cli.
   // Load the remote URL for development or the local html file for production.
-  if (is.dev && process.env['ELECTRON_RENDERER_URL']) {
+  if (!app.isPackaged && process.env['ELECTRON_RENDERER_URL']) {
     mainWindow.loadURL(process.env['ELECTRON_RENDERER_URL'])
   } else {
     mainWindow.loadFile(join(__dirname, '../renderer/index.html'))
@@ -76,21 +71,36 @@ function createWindow(): void {
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
 app.whenReady().then(() => {
+  initDB()
+  migrateSettingsIfNeeded()
   // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+  if (process.platform === 'win32') {
+    app.setAppUserModelId('com.electron')
+  }
 
   createMenu() // Apply native menu
 
-  // Check for updates
-  if (!is.dev) {
-    autoUpdater.checkForUpdatesAndNotify()
+  // Check for updates (dynamic import to avoid early app access)
+  if (app.isPackaged) {
+    import('electron-updater').then(({ autoUpdater }) => {
+      autoUpdater.logger = log
+      autoUpdater.disableWebInstaller = true
+      autoUpdater.checkForUpdatesAndNotify()
+    })
   }
 
   // Default open or close DevTools by F12 in development
   // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
   app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
+    window.webContents.on('before-input-event', (event, input) => {
+      if (input.key === 'F12' && !app.isPackaged) {
+        window.webContents.toggleDevTools()
+        event.preventDefault()
+      }
+      if (input.key === 'r' && (input.control || input.meta) && app.isPackaged) {
+        event.preventDefault()
+      }
+    })
   })
 
   // IPC test

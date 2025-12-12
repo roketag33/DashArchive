@@ -10,3 +10,6 @@ coverage
 test-results
 .eslintcache
 debug.png
+*.db
+*.db-journal
+drizzle/
