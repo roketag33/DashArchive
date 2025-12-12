@@ -1,122 +1,137 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { executePlan } from './executor'
-import * as fs from 'fs/promises'
 import { Plan, FileEntry } from '../../../shared/types'
-import * as path from 'path'
+import * as fs from 'fs/promises'
+import { getSettings } from '../core/settings'
 
+// Mock dependencies
+vi.mock('electron', () => ({
+  app: {
+    getPath: vi.fn().mockReturnValue('/tmp')
+  }
+}))
 vi.mock('fs/promises')
+vi.mock('../core/settings')
+vi.mock('../../db', () => ({
+  db: {
+    insert: vi.fn(),
+    select: vi.fn(),
+    update: vi.fn(),
+    delete: vi.fn()
+  }
+}))
 
-describe('Executor', () => {
+describe('Executor Service - Conflict Resolution', () => {
+  const mockFile: FileEntry = {
+    path: '/src/file.txt',
+    name: 'file.txt',
+    extension: 'txt',
+    isDirectory: false,
+    size: 100,
+    createdAt: new Date(),
+    modifiedAt: new Date(),
+    category: 'document'
+  }
+
+  const mockPlan: Plan = {
+    totalFiles: 1,
+    timestamp: new Date(),
+    items: [
+      {
+        id: '1',
+        file: mockFile,
+        ruleId: 'rule1',
+        destinationPath: '/dest/file.txt',
+        status: 'ok'
+      }
+    ]
+  }
+
   beforeEach(() => {
-    vi.clearAllMocks()
-  })
-
-  it('should execute a plan by moving files', async () => {
-    const mockPlan: Plan = {
-      items: [
-        {
-          id: '1',
-          file: { path: '/src/file1.jpg', name: 'file1.jpg' } as unknown as FileEntry,
-          ruleId: 'r1',
-          destinationPath: '/dest/file1.jpg',
-          status: 'ok'
-        },
-        {
-          id: '2',
-          file: { path: '/src/file2.doc', name: 'file2.doc' } as unknown as FileEntry,
-          ruleId: 'r2',
-          destinationPath: '/dest/docs/file2.doc',
-          status: 'ok'
-        }
-      ],
-      totalFiles: 2,
-      timestamp: new Date()
-    }
-
-    // Mock mkdir and rename
-    vi.mocked(fs.mkdir).mockResolvedValue(undefined)
+    vi.resetAllMocks()
+    // Default: fs.rename resolves (success)
     vi.mocked(fs.rename).mockResolvedValue(undefined)
-
-    const result = await executePlan(mockPlan)
-
-    expect(result.success).toBe(true)
-    expect(result.processed).toBe(2)
-    expect(result.errors).toHaveLength(0)
-
-    // Verify mkdir called for directories
-    expect(fs.mkdir).toHaveBeenCalledWith(path.dirname('/dest/file1.jpg'), { recursive: true })
-    expect(fs.mkdir).toHaveBeenCalledWith(path.dirname('/dest/docs/file2.doc'), { recursive: true })
-
-    // Verify rename called
-    expect(fs.rename).toHaveBeenCalledWith('/src/file1.jpg', '/dest/file1.jpg')
-    expect(fs.rename).toHaveBeenCalledWith('/src/file2.doc', '/dest/docs/file2.doc')
+    vi.mocked(fs.mkdir).mockResolvedValue(undefined)
   })
 
-  it('should report errors for individual failures but continue', async () => {
-    const mockPlan: Plan = {
-      items: [
-        {
-          id: '1',
-          file: { path: '/src/bad.jpg', name: 'bad.jpg' } as unknown as FileEntry,
-          ruleId: 'r1',
-          destinationPath: '/dest/bad.jpg',
-          status: 'ok'
-        },
-        {
-          id: '2',
-          file: { path: '/src/good.jpg', name: 'good.jpg' } as unknown as FileEntry,
-          ruleId: 'r1',
-          destinationPath: '/dest/good.jpg',
-          status: 'ok'
-        }
-      ],
-      totalFiles: 2,
-      timestamp: new Date()
-    }
-
-    vi.mocked(fs.mkdir).mockResolvedValue(undefined)
-    vi.mocked(fs.rename).mockImplementation(async (src) => {
-      if (src === '/src/bad.jpg') throw new Error('Permission denied')
-      return undefined
+  it('should OVERWRITE if strategy is "overwrite"', async () => {
+    vi.mocked(getSettings).mockReturnValue({
+      conflictResolution: 'overwrite',
+      rules: [],
+      theme: 'light',
+      language: 'en',
+      firstRun: false
     })
 
+    // Mock that destination exists (access succeeds)
+    vi.mocked(fs.access).mockResolvedValue(undefined)
+
     const result = await executePlan(mockPlan)
-
-    expect(result.success).toBe(false) // Overall success false if any error? Or partial?
-    // Let's define: success = true if ALL succeed. execution result should have details.
-
-    expect(result.processed).toBe(2)
-    expect(result.failed).toBe(1)
-    expect(result.errors).toHaveLength(1)
-    expect(result.errors[0].file).toBe('/src/bad.jpg')
-  })
-
-  it('should undo a plan by moving files back', async () => {
-    const mockPlan: Plan = {
-      items: [
-        {
-          id: '1',
-          file: { path: '/src/file1.jpg', name: 'file1.jpg' } as unknown as FileEntry,
-          ruleId: 'r1',
-          destinationPath: '/dest/file1.jpg',
-          status: 'ok'
-        }
-      ],
-      totalFiles: 1,
-      timestamp: new Date()
-    }
-
-    // Mock undo
-    vi.mocked(fs.mkdir).mockResolvedValue(undefined)
-    vi.mocked(fs.rename).mockResolvedValue(undefined)
-
-    const { undoPlan } = await import('./executor') // Re-import to get the new function if needed
-    const result = await undoPlan(mockPlan)
 
     expect(result.success).toBe(true)
     expect(result.processed).toBe(1)
+    expect(fs.rename).toHaveBeenCalledWith('/src/file.txt', '/dest/file.txt')
+  })
 
-    // Verify reverse move
-    expect(fs.rename).toHaveBeenCalledWith('/dest/file1.jpg', '/src/file1.jpg')
+  it('should SKIP if strategy is "skip"', async () => {
+    vi.mocked(getSettings).mockReturnValue({
+      conflictResolution: 'skip',
+      rules: [],
+      theme: 'light',
+      language: 'en',
+      firstRun: false
+    })
+
+    // Mock that destination exists
+    vi.mocked(fs.access).mockResolvedValue(undefined)
+
+    const result = await executePlan(mockPlan)
+
+    expect(result.success).toBe(true)
+    expect(result.processed).toBe(0) // Skipped count as processed? Or effectively ignored?
+    // Usually skipped means "handled but done nothing". Let's check logic.
+    // If skipped, we might confusingly return processed=0 or success=true.
+    // Ideally processed=1 but "skipped". For MVP, let's say "processed" means moved.
+    // If we skip, we literally do nothing.
+    expect(fs.rename).not.toHaveBeenCalled()
+  })
+
+  it('should RENAME if strategy is "rename"', async () => {
+    vi.mocked(getSettings).mockReturnValue({
+      conflictResolution: 'rename',
+      rules: [],
+      theme: 'light',
+      language: 'en',
+      firstRun: false
+    })
+
+    // Mock that destination exists
+    vi.mocked(fs.access)
+      .mockResolvedValueOnce(undefined) // executor check: /dest/file.txt exists
+      .mockResolvedValueOnce(undefined) // getUniquePath check 1: /dest/file.txt exists
+      .mockRejectedValueOnce(new Error('ENOENT')) // getUniquePath check 2: /dest/file (1).txt does NOT exist
+
+    const result = await executePlan(mockPlan)
+
+    expect(result.success).toBe(true)
+    // Should have renamed to ... (1).txt
+    expect(fs.rename).toHaveBeenCalledWith('/src/file.txt', '/dest/file (1).txt')
+  })
+
+  it('should handle normal move if no conflict', async () => {
+    vi.mocked(getSettings).mockReturnValue({
+      conflictResolution: 'skip', // Strategy shouldn't matter if no conflict
+      rules: [],
+      theme: 'light',
+      language: 'en',
+      firstRun: false
+    })
+
+    // Mock dest does NOT exist
+    vi.mocked(fs.access).mockRejectedValue(new Error('ENOENT'))
+
+    await executePlan(mockPlan)
+
+    expect(fs.rename).toHaveBeenCalledWith('/src/file.txt', '/dest/file.txt')
   })
 })

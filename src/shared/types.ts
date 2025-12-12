@@ -83,11 +83,14 @@ export interface Folder {
   updatedAt: Date
 }
 
+export type ConflictResolution = 'skip' | 'overwrite' | 'rename'
+
 export interface AppSettings {
   rules: Rule[]
   theme: 'light' | 'dark'
   language: string
   firstRun: boolean
+  conflictResolution: ConflictResolution
 }
 
 export interface JournalEntry {

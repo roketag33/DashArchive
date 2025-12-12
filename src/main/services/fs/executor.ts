@@ -13,11 +13,32 @@ export async function executePlan(plan: Plan): Promise<ExecutionResult> {
   for (const item of plan.items) {
     if (item.status !== 'ok') continue
 
-    result.processed++
     try {
       const destDir = path.dirname(item.destinationPath)
       await fs.mkdir(destDir, { recursive: true })
-      await fs.rename(item.file.path, item.destinationPath)
+
+      // Check for conflict
+      let finalDest = item.destinationPath
+      try {
+        await fs.access(item.destinationPath)
+        // File exists, handle conflict
+        const { getSettings } = await import('../core/settings')
+        const strategy = getSettings().conflictResolution || 'rename' // Fallback
+
+        if (strategy === 'skip') {
+          // result.processed is NOT incremented
+          continue
+        } else if (strategy === 'overwrite') {
+          // Fall through to rename (overwrite)
+        } else if (strategy === 'rename') {
+          finalDest = await getUniquePath(item.destinationPath)
+        }
+      } catch {
+        // File does not exist, proceed
+      }
+
+      await fs.rename(item.file.path, finalDest)
+      result.processed++
     } catch (error: unknown) {
       result.failed++
       result.errors.push({
@@ -71,4 +92,24 @@ export async function undoPlan(plan: Plan): Promise<ExecutionResult> {
   }
 
   return result
+}
+
+// Helper to generate unique path: file.txt -> file (1).txt
+async function getUniquePath(filePath: string): Promise<string> {
+  const dir = path.dirname(filePath)
+  const ext = path.extname(filePath)
+  const base = path.basename(filePath, ext)
+
+  let counter = 1
+  let newPath = filePath
+
+  while (true) {
+    try {
+      await fs.access(newPath)
+      newPath = path.join(dir, `${base} (${counter})${ext}`)
+      counter++
+    } catch {
+      return newPath
+    }
+  }
 }

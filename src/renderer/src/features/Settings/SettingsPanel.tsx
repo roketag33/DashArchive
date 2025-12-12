@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback } from 'react'
-import { Rule, AppSettings } from '../../../../shared/types'
+import { Rule, AppSettings, ConflictResolution } from '../../../../shared/types'
 import { Button } from '../../components/ui/button'
 import { Switch } from '../../components/ui/switch'
 import { Card, CardHeader, CardTitle, CardDescription } from '../../components/ui/card'
@@ -135,6 +135,30 @@ export function SettingsPanel(): React.JSX.Element {
                 checked={theme === 'dark'}
                 onChange={(e) => setTheme(e.target.checked ? 'dark' : 'light')}
               />
+            </div>
+
+            <div className="flex items-center justify-between rounded-lg border p-4 shadow-sm">
+              <div className="space-y-0.5">
+                <label className="text-sm font-medium leading-none">
+                  {t('app.conflictResolution')}
+                </label>
+                <p className="text-sm text-muted-foreground">{t('app.conflictResolutionDesc')}</p>
+              </div>
+              <select
+                className="h-9 w-[200px] rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                value={settings?.conflictResolution || 'rename'}
+                onChange={(e) =>
+                  setSettings(
+                    settings
+                      ? { ...settings, conflictResolution: e.target.value as ConflictResolution }
+                      : null
+                  )
+                }
+              >
+                <option value="rename">{t('app.conflictRename')}</option>
+                <option value="overwrite">{t('app.conflictOverwrite')}</option>
+                <option value="skip">{t('app.conflictSkip')}</option>
+              </select>
             </div>
           </div>
 

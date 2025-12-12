@@ -53,7 +53,8 @@ export function getSettings(): AppSettings {
     rules: getMyRules(),
     theme: getSetting('theme', 'light'),
     language: getSetting('language', 'en'),
-    firstRun: getSetting('firstRun', true) // Default to true if not found, but logic usually handles it
+    firstRun: getSetting('firstRun', true),
+    conflictResolution: getSetting('conflictResolution', 'rename') // Default to 'rename' (safe)
   }
 }
 
@@ -62,6 +63,8 @@ export function saveSettings(newSettings: Partial<AppSettings>): AppSettings {
   if (newSettings.theme) setSetting('theme', newSettings.theme)
   if (newSettings.language) setSetting('language', newSettings.language)
   if (newSettings.firstRun !== undefined) setSetting('firstRun', newSettings.firstRun)
+  if (newSettings.conflictResolution)
+    setSetting('conflictResolution', newSettings.conflictResolution)
 
   return getSettings()
 }
