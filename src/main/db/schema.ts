@@ -45,7 +45,7 @@ export const journal = sqliteTable('journal', {
 })
 
 export type JournalRecord = typeof journal.$inferSelect
-export type NewJournalRecord = typeof journal.$inferInsert;
+export type NewJournalRecord = typeof journal.$inferInsert
 
 export const folders = sqliteTable('folders', {
   id: text('id').primaryKey(),
@@ -53,15 +53,27 @@ export const folders = sqliteTable('folders', {
   path: text('path').notNull(),
   autoWatch: integer('auto_watch', { mode: 'boolean' }).notNull().default(true),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(new Date()),
-  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(new Date()),
-});
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(new Date())
+})
 
 export const folderRules = sqliteTable('folder_rules', {
-  folderId: text('folder_id').notNull().references(() => folders.id, { onDelete: 'cascade' }),
-  ruleId: text('rule_id').notNull().references(() => rules.id, { onDelete: 'cascade' }),
-  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true),
-});
+  folderId: text('folder_id')
+    .notNull()
+    .references(() => folders.id, { onDelete: 'cascade' }),
+  ruleId: text('rule_id')
+    .notNull()
+    .references(() => rules.id, { onDelete: 'cascade' }),
+  isActive: integer('is_active', { mode: 'boolean' }).notNull().default(true)
+})
 
-export type FolderRecord = typeof folders.$inferSelect;
-export type NewFolderRecord = typeof folders.$inferInsert;
-export type FolderRuleRecord = typeof folderRules.$inferSelect;
+export type FolderRecord = typeof folders.$inferSelect
+export type NewFolderRecord = typeof folders.$inferInsert
+export type FolderRuleRecord = typeof folderRules.$inferSelect
+
+export const globalStats = sqliteTable('global_stats', {
+  key: text('key').primaryKey(),
+  value: integer('value').notNull().default(0),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(new Date())
+})
+
+export type GlobalStatRecord = typeof globalStats.$inferSelect

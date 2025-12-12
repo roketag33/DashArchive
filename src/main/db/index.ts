@@ -90,6 +90,12 @@ export function initDB(): void {
                 FOREIGN KEY (rule_id) REFERENCES rules(id) ON DELETE CASCADE,
                 PRIMARY KEY (folder_id, rule_id)
             );
+
+            CREATE TABLE IF NOT EXISTS global_stats (
+                key TEXT PRIMARY KEY,
+                value INTEGER NOT NULL DEFAULT 0,
+                updated_at INTEGER NOT NULL
+            );
         `)
     console.log('Database initialized')
   } catch (err) {

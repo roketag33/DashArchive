@@ -2,7 +2,7 @@ import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry } from '../
 
 interface CustomAPI {
   selectFolder: () => Promise<string | null>
-  scanFolder: (pathOrId: string | { path?: string, id?: string }) => Promise<FileEntry[]>
+  scanFolder: (pathOrId: string | { path?: string; id?: string }) => Promise<FileEntry[]>
   generatePlan: (files: FileEntry[]) => Promise<Plan>
   executePlan: (plan: Plan) => Promise<ExecutionResult>
   getSettings: () => Promise<AppSettings>
@@ -23,11 +23,18 @@ interface CustomAPI {
 
   // Folders
   getFolders: () => Promise<import('../shared/types').Folder[]>
-  addFolder: (folder: { name: string; path: string; autoWatch: boolean }) => Promise<import('../shared/types').Folder>
+  addFolder: (folder: {
+    name: string
+    path: string
+    autoWatch: boolean
+  }) => Promise<import('../shared/types').Folder>
   updateFolder: (id: string, updates: Partial<import('../shared/types').Folder>) => Promise<void>
   deleteFolder: (id: string) => Promise<void>
   getFolderRules: (folderId: string) => Promise<string[]>
   setFolderRules: (folderId: string, ruleIds: string[]) => Promise<void>
+
+  // Stats
+  getStats: () => Promise<{ totalFiles: number; spaceSaved: number; activeRules: number }>
 }
 
 declare global {

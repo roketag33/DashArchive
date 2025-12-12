@@ -45,7 +45,12 @@
     "remove": "Supprimer",
     "settingsRef": "Paramètres",
     "watchEnabled": "Surveillance activée",
-    "watchDisabled": "Surveillance désactivée"
+    "watchDisabled": "Surveillance désactivée",
+    "stats": {
+      "totalFiles": "Fichiers Organisés",
+      "spaceSaved": "Espace Calculé Économisé",
+      "activeRules": "Règles Actives"
+    }
   },
   "folderSelector": {
     "title": "Organisez vos fichiers",

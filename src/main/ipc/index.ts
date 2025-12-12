@@ -5,6 +5,8 @@ import { registerWatcherHandlers } from './watcher'
 import { registerDatabaseHandlers } from './database'
 import { registerFoldersHandlers } from './folders'
 
+import { registerStatsHandlers } from './stats'
+
 export function registerIpcHandlers(): void {
   registerDialogHandlers()
   registerScannerHandlers()
@@ -12,4 +14,5 @@ export function registerIpcHandlers(): void {
   registerWatcherHandlers()
   registerDatabaseHandlers()
   registerFoldersHandlers()
+  registerStatsHandlers()
 }

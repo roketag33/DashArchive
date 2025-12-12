@@ -7,6 +7,7 @@ import { DuplicateModal } from './DuplicateModal'
 import { AddFolderModal } from './AddFolderModal'
 import { FolderSettingsModal } from './FolderSettingsModal'
 import { Button } from '../../components/ui/button'
+import { DashboardStats } from './DashboardStats'
 import { Copy, Check, TriangleAlert, Loader2, ArrowLeft, Plus } from 'lucide-react'
 import { useDashboard } from './useDashboard'
 import { Folder } from '../../../../shared/types'
@@ -58,7 +59,12 @@ export function Dashboard(): React.JSX.Element {
       <div className="space-y-4 animate-in slide-in-from-right-10 fade-in duration-300">
         {/* Header / Back Button */}
         <div className="flex items-center gap-4 border-b pb-4">
-          <Button variant="ghost" size="icon" onClick={handleBackToDashboard} disabled={isExecuting}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={handleBackToDashboard}
+            disabled={isExecuting}
+          >
             <ArrowLeft className="h-5 w-5" />
           </Button>
           <div>
@@ -98,7 +104,9 @@ export function Dashboard(): React.JSX.Element {
             {!scanning && files.length === 0 && (
               <div className="text-center py-12 border-2 border-dashed rounded-lg bg-muted/10">
                 <p className="text-lg font-medium text-muted-foreground">{t('app.noFiles')}</p>
-                <p className="text-sm text-muted-foreground mt-1">Everything looks organized here!</p>
+                <p className="text-sm text-muted-foreground mt-1">
+                  Everything looks organized here!
+                </p>
               </div>
             )}
 
@@ -179,6 +187,8 @@ export function Dashboard(): React.JSX.Element {
         </Button>
       </div>
 
+      <DashboardStats />
+
       <FolderList
         folders={folders}
         onSort={handleSortFolder}
@@ -203,4 +213,3 @@ export function Dashboard(): React.JSX.Element {
     </div>
   )
 }
-

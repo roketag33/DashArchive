@@ -45,7 +45,12 @@
     "remove": "Remove",
     "settingsRef": "Settings",
     "watchEnabled": "Watch enabled",
-    "watchDisabled": "Watch disabled"
+    "watchDisabled": "Watch disabled",
+    "stats": {
+      "totalFiles": "Total Files Organized",
+      "spaceSaved": "Calculated Space Saved",
+      "activeRules": "Active Rules"
+    }
   },
   "folderSelector": {
     "title": "Organize your files",
