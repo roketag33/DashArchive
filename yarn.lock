@@ -1390,17 +1390,10 @@
   dependencies:
     undici-types "~7.16.0"
 
-"@types/node@^20.9.0":
-  version "20.19.26"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-20.19.26.tgz#2e8085b493a4f8b9e61e2b1a9d59a219bdc0e373"
-  integrity sha512-0l6cjgF0XnihUpndDhk+nyD3exio3iKaYROSgvh/qSevPXax3L8p5DBRFjbvalnwatGgHEQn2R88y2fA3g4irg==
-  dependencies:
-    undici-types "~6.21.0"
-
-"@types/node@^22.19.1":
-  version "22.19.2"
-  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.19.2.tgz#2f0956fba46518aaf7578c84e37bddab55f85d01"
-  integrity sha512-LPM2G3Syo1GLzXLGJAKdqoU35XvrWzGJ21/7sgZTUpbkBaOasTj8tjwn6w+hCkqaa1TfJ/w67rJSwYItlJ2mYw==
+"@types/node@^22.19.1", "@types/node@^22.7.7":
+  version "22.19.3"
+  resolved "https://registry.yarnpkg.com/@types/node/-/node-22.19.3.tgz#8dfde7630d7a8528dc9b34db23d34f764467c02c"
+  integrity sha512-1N9SBnWYOJTrNZCdh/yJE+t910Y128BoyY+zBLWhL3r0TYzlTmFdXrPwHL9DyFZmlEXNQQolTZh3KHV31QDhyA==
   dependencies:
     undici-types "~6.21.0"
 
@@ -2727,13 +2720,13 @@ electron-vite@2.3.0:
     magic-string "^0.30.10"
     picocolors "^1.0.1"
 
-electron@^30.0.0:
-  version "30.5.1"
-  resolved "https://registry.yarnpkg.com/electron/-/electron-30.5.1.tgz#9f6060ce5b869c3803cbf8064305e9c3056c0744"
-  integrity sha512-AhL7+mZ8Lg14iaNfoYTkXQ2qee8mmsQyllKdqxlpv/zrKgfxz6jNVtcRRbQtLxtF8yzcImWdfTQROpYiPumdbw==
+electron@^39.2.7:
+  version "39.2.7"
+  resolved "https://registry.yarnpkg.com/electron/-/electron-39.2.7.tgz#1cf2371304994fe26c564764bd50878fe405fb4b"
+  integrity sha512-KU0uFS6LSTh4aOIC3miolcbizOFP7N1M46VTYVfqIgFiuA2ilfNaOHLDS9tCMvwwHRowAsvqBrh9NgMXcTOHCQ==
   dependencies:
     "@electron/get" "^2.0.0"
-    "@types/node" "^20.9.0"
+    "@types/node" "^22.7.7"
     extract-zip "^2.0.1"
 
 emoji-regex@^10.3.0:
