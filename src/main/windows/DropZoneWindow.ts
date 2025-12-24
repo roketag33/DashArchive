@@ -31,8 +31,14 @@ export class DropZoneWindow {
     // Logic for loading URL
     if (process.env['ELECTRON_RENDERER_URL']) {
       this.window.loadURL(`${process.env['ELECTRON_RENDERER_URL']}/#/dropzone`)
+    }
+  }
+
+  public toggle(): void {
+    if (this.window.isVisible()) {
+      this.window.hide()
     } else {
-      this.window.loadFile(join(__dirname, '../renderer/index.html'), { hash: 'dropzone' })
+      this.window.show()
     }
   }
 }

@@ -10,8 +10,10 @@ import { migrateSettingsIfNeeded } from './services/core/settings'
 import { createMenu } from './services/core/menu'
 import { globalShortcut } from 'electron'
 import { DropZoneWindow } from './windows/DropZoneWindow'
+import { SpotlightWindow } from './windows/SpotlightWindow'
 
 let dropZoneWindow: DropZoneWindow | null = null
+let spotlightWindow: SpotlightWindow | null = null
 
 // Setup logger
 log.transports.file.level = 'info'
@@ -117,15 +119,17 @@ app.whenReady().then(() => {
   // Initialize Drop Zone
   dropZoneWindow = new DropZoneWindow()
 
-  // Register global shortcut to toggle Drop Zone
-  globalShortcut.register('CommandOrControl+Shift+D', () => {
-    if (dropZoneWindow?.window) {
-      if (dropZoneWindow.window.isVisible()) {
-        dropZoneWindow.window.hide()
-      } else {
-        dropZoneWindow.window.show()
-      }
-    }
+  // Initialize Spotlight
+  spotlightWindow = new SpotlightWindow()
+
+  // Register Global Shortcut for DropZone (Alt+Shift+D)
+  globalShortcut.register('Option+Shift+D', () => {
+    dropZoneWindow?.toggle()
+  })
+
+  // Register Global Shortcut for Spotlight (Cmd+Shift+Space)
+  globalShortcut.register('CommandOrControl+Shift+Space', () => {
+    spotlightWindow?.toggle()
   })
 
   app.on('activate', function () {
