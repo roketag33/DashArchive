@@ -78,6 +78,8 @@ export function initDB(): void {
                 name TEXT NOT NULL,
                 path TEXT NOT NULL,
                 auto_watch INTEGER NOT NULL DEFAULT 1,
+                scan_frequency TEXT,
+                last_scan INTEGER,
                 created_at INTEGER NOT NULL,
                 updated_at INTEGER NOT NULL
             );
@@ -97,6 +99,23 @@ export function initDB(): void {
                 updated_at INTEGER NOT NULL
             );
         `)
+
+    // Manual Migrations (Naive check)
+    try {
+      // Check if 'scan_frequency' column exists in 'folders'
+      const hasColumn = sqlite
+        .prepare('PRAGMA table_info(folders)')
+        .all()
+        .some((col: unknown) => (col as { name: string }).name === 'scan_frequency')
+      if (!hasColumn) {
+        console.log('Migrating: Adding scan_frequency and last_scan to folders')
+        sqlite.exec('ALTER TABLE folders ADD COLUMN scan_frequency TEXT')
+        sqlite.exec('ALTER TABLE folders ADD COLUMN last_scan INTEGER')
+      }
+    } catch (e) {
+      console.error('Migration failed:', e)
+    }
+
     console.log('Database initialized')
   } catch (err) {
     console.error('Failed to initialize database:', err)

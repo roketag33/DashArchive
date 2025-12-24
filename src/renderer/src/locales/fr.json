@@ -40,6 +40,12 @@
     "folderSettingsDesc": "Sélectionnez les règles à appliquer à ce dossier.",
     "noDescription": "Pas de description",
     "noRules": "Aucune règle définie. Allez dans Paramètres/Règles pour en créer.",
+    "scanFrequency": "Fréquence d'analyse auto",
+    "freqManual": "Manuel (Pas d'analyse auto)",
+    "freq15m": "Toutes les 15 minutes",
+    "freq30m": "Toutes les 30 minutes",
+    "freq1h": "Toutes les heures",
+    "freqDaily": "Quotidien",
     "dashboardTitle": "Tableau de Bord",
     "dashboardDesc": "Gérez vos dossiers et règles d'organisation.",
     "statusWatching": "Surveillance",
@@ -100,7 +106,9 @@
     "preferences": {
       "title": "Préférences",
       "darkMode": "Mode Sombre",
-      "darkModeDesc": "Activer le thème sombre pour l'interface"
+      "darkModeDesc": "Activer le thème sombre pour l'interface",
+      "language": "Langue",
+      "languageDesc": "Choisir la langue de l'application"
     },
     "rules": {
       "title": "Règles",
@@ -138,6 +146,16 @@
     "sizeRange": "Plage de Taille (Octets)",
     "minAge": "Âge Minimum",
     "daysOld": "Jours",
-    "fallback": "Tout le Reste (Par défaut)"
+    "labelColor": "Étiquette Finder (Couleur)",
+    "colors": {
+      "none": "Aucune",
+      "Red": "Rouge",
+      "Orange": "Orange",
+      "Yellow": "Jaune",
+      "Green": "Vert",
+      "Blue": "Bleu",
+      "Purple": "Violet",
+      "Gray": "Gris"
+    }
   }
 }

@@ -47,6 +47,9 @@ export interface Rule {
   isActive: boolean
   priority: number // Higher matches first
 
+  // OS Tagging
+  labelColor?: 'none' | 'Red' | 'Orange' | 'Yellow' | 'Green' | 'Blue' | 'Purple' | 'Gray'
+
   // Action
   destination: string // Destination path template
 }
@@ -59,6 +62,7 @@ export interface PlanItem {
   status: 'ok' | 'conflict' | 'error'
   conflictOriginalPath?: string
   warning?: string
+  labelColor?: string
 }
 
 export interface Plan {
@@ -79,6 +83,8 @@ export interface Folder {
   name: string
   path: string
   autoWatch: boolean
+  scanFrequency?: string
+  lastScan?: Date
   createdAt: Date
   updatedAt: Date
 }

@@ -46,7 +46,8 @@ export async function buildPlan(
         file,
         ruleId: matchedRule.id,
         destinationPath: finalDest,
-        status: 'ok'
+        status: 'ok',
+        labelColor: matchedRule.labelColor
       })
     }
   }

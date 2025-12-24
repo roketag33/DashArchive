@@ -9,15 +9,15 @@ import { FileEntry } from '../../shared/types'
 // ...
 
 export function registerScannerHandlers(): void {
-  ipcMain.handle('scan-folder', async (_, { path, id }: { path?: string, id?: string }) => {
-    let targetPath = path;
+  ipcMain.handle('scan-folder', async (_, { path, id }: { path?: string; id?: string }) => {
+    let targetPath = path
     if (id) {
-        const folder = getFolder(id);
-        if (folder) targetPath = folder.path;
+      const folder = getFolder(id)
+      if (folder) targetPath = folder.path
     }
-    
-    if (!targetPath) throw new Error('No path or valid folder ID provided');
-    
+
+    if (!targetPath) throw new Error('No path or valid folder ID provided')
+
     return await scanDirectory(targetPath)
   })
 

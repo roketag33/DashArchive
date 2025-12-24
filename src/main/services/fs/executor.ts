@@ -37,7 +37,14 @@ export async function executePlan(plan: Plan): Promise<ExecutionResult> {
         // File does not exist, proceed
       }
 
-      await fs.rename(item.file.path, finalDest)
+      await moveFile(item.file.path, finalDest)
+
+      // Apply Label if present
+      if (item.labelColor) {
+        const { taggerService } = await import('./tagger')
+        await taggerService.setLabel(finalDest, item.labelColor)
+      }
+
       result.processed++
     } catch (error: unknown) {
       result.failed++
@@ -76,7 +83,7 @@ export async function undoPlan(plan: Plan): Promise<ExecutionResult> {
       await fs.mkdir(path.dirname(originalPath), { recursive: true })
 
       // Move back
-      await fs.rename(currentPath, originalPath)
+      await moveFile(currentPath, originalPath)
 
       // Optional: Clean up empty directories if they were created?
       // Logic for that is complex, skipping for MVP.
@@ -110,6 +117,20 @@ async function getUniquePath(filePath: string): Promise<string> {
       counter++
     } catch {
       return newPath
+    }
+  }
+}
+
+async function moveFile(src: string, dest: string): Promise<void> {
+  try {
+    await fs.rename(src, dest)
+  } catch (error: unknown) {
+    if ((error as { code?: string }).code === 'EXDEV') {
+      // Cross-device move: Copy and Unlink
+      await fs.copyFile(src, dest)
+      await fs.unlink(src)
+    } else {
+      throw error
     }
   }
 }

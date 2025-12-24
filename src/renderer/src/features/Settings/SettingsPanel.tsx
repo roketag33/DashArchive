@@ -12,7 +12,7 @@ import { RuleList } from './RuleList'
 import { RuleEditor } from './RuleEditor'
 
 export function SettingsPanel(): React.JSX.Element {
-  const { t } = useTranslation()
+  const { t, i18n } = useTranslation()
   const navigate = useNavigate()
   const { theme, setTheme } = useTheme()
   const [settings, setSettings] = useState<AppSettings | null>(null)
@@ -96,7 +96,12 @@ export function SettingsPanel(): React.JSX.Element {
     setRules(rules.map((r) => (r.id === rule.id ? { ...r, isActive: !r.isActive } : r)))
   }
 
-  if (!settings) return <div className="p-8 text-center">Loading settings...</div>
+  if (!settings)
+    return (
+      <div className="flex items-center justify-center min-h-[500px]">
+        <div className="animate-spin h-8 w-8 border-4 border-primary border-t-transparent rounded-full" />
+      </div>
+    )
 
   // If creating, we need a dummy rule object to pass to Editor
   const newRuleTemplate: Rule = {
@@ -110,42 +115,95 @@ export function SettingsPanel(): React.JSX.Element {
   }
 
   return (
-    <div className="container max-w-4xl mx-auto py-6 animate-in fade-in-0 slide-in-from-bottom-4">
-      <Card className="flex flex-col shadow-lg border-0 bg-background">
-        <CardHeader className="flex flex-row items-center justify-between border-b px-6 py-4">
-          <div className="grid gap-1">
-            <CardTitle>{t('settings.title')}</CardTitle>
-            <CardDescription>{t('settings.description')}</CardDescription>
-          </div>
-        </CardHeader>
+    <div className="container max-w-5xl mx-auto py-8 space-y-8 animate-in fade-in slide-in-from-bottom-4">
+      {/* Header Section */}
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/60 bg-clip-text text-transparent">
+            {t('settings.title')}
+          </h1>
+          <p className="text-muted-foreground mt-1 max-w-xl">{t('settings.description')}</p>
+        </div>
+        <div className="flex items-center gap-3">
+          <Button
+            variant="outline"
+            onClick={() => navigate('/')}
+            className="bg-background/50 backdrop-blur-sm border-border/50"
+          >
+            {t('settings.cancel')}
+          </Button>
+          <Button
+            onClick={handleSaveAll}
+            className="shadow-lg shadow-primary/20 transition-all hover:scale-105 active:scale-95"
+          >
+            {t('settings.saveChanges')}
+          </Button>
+        </div>
+      </div>
 
-        <div className="flex-1 overflow-auto p-6 space-y-6">
-          <div className="space-y-4">
-            <h3 className="text-lg font-medium">{t('settings.preferences.title')}</h3>
-            <div className="flex items-center justify-between rounded-lg border p-4 shadow-sm">
+      <div className="grid gap-6">
+        {/* Global Preferences Card */}
+        <Card className="border border-border/50 bg-card/30 backdrop-blur-xl shadow-sm overflow-hidden">
+          <CardHeader className="border-b border-border/50 bg-muted/10">
+            <CardTitle className="flex items-center gap-2">
+              <span className="p-2 rounded-lg bg-primary/10 text-primary text-xs">
+                <Switch
+                  id="pref-icon"
+                  checked={true}
+                  readOnly
+                  className="pointer-events-none scale-75"
+                />
+              </span>
+              {t('settings.preferences.title')}
+            </CardTitle>
+            <CardDescription>
+              Personnalisez l&apos;apparence et le comportement général.
+            </CardDescription>
+          </CardHeader>
+          <div className="p-6 grid gap-6 md:grid-cols-2">
+            <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-background/40 hover:bg-background/60 transition-colors">
               <div className="space-y-0.5">
                 <label className="text-sm font-medium leading-none">
                   {t('settings.preferences.darkMode')}
                 </label>
-                <p className="text-sm text-muted-foreground">
+                <p className="text-xs text-muted-foreground">
                   {t('settings.preferences.darkModeDesc')}
                 </p>
               </div>
               <Switch
                 checked={theme === 'dark'}
-                onChange={(e) => setTheme(e.target.checked ? 'dark' : 'light')}
+                onCheckedChange={(checked) => setTheme(checked ? 'dark' : 'light')}
               />
             </div>
 
-            <div className="flex items-center justify-between rounded-lg border p-4 shadow-sm">
+            <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-background/40 hover:bg-background/60 transition-colors">
+              <div className="space-y-0.5">
+                <label className="text-sm font-medium leading-none">
+                  {t('settings.preferences.language')}
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  {t('settings.preferences.languageDesc')}
+                </p>
+              </div>
+              <select
+                className="h-9 rounded-md border border-input bg-background/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
+                value={i18n.language}
+                onChange={(e) => i18n.changeLanguage(e.target.value)}
+              >
+                <option value="fr">Français</option>
+                <option value="en">English</option>
+              </select>
+            </div>
+
+            <div className="md:col-span-2 flex items-center justify-between p-4 rounded-xl border border-border/50 bg-background/40 hover:bg-background/60 transition-colors">
               <div className="space-y-0.5">
                 <label className="text-sm font-medium leading-none">
                   {t('app.conflictResolution')}
                 </label>
-                <p className="text-sm text-muted-foreground">{t('app.conflictResolutionDesc')}</p>
+                <p className="text-xs text-muted-foreground">{t('app.conflictResolutionDesc')}</p>
               </div>
               <select
-                className="h-9 w-[200px] rounded-md border border-input bg-background px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                className="h-9 min-w-[200px] rounded-md border border-input bg-background/50 px-3 py-1 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring cursor-pointer"
                 value={settings?.conflictResolution || 'rename'}
                 onChange={(e) =>
                   setSettings(
@@ -161,48 +219,63 @@ export function SettingsPanel(): React.JSX.Element {
               </select>
             </div>
           </div>
+        </Card>
 
-          <div className="space-y-4">
-            <div className="flex items-center justify-between">
-              <h3 className="text-lg font-medium">
-                {t('settings.rules.title')} ({rules.length})
-              </h3>
-              {!isCreating && (
-                <Button onClick={handleAddRule} size="sm">
-                  <Plus className="mr-2 h-4 w-4" /> {t('settings.rules.add')}
-                </Button>
-              )}
+        {/* Rules Management Card */}
+        <Card className="border border-border/50 bg-card/30 backdrop-blur-xl shadow-sm overflow-hidden flex flex-col min-h-[400px]">
+          <CardHeader className="border-b border-border/50 bg-muted/10 flex flex-row items-center justify-between">
+            <div>
+              <CardTitle className="flex items-center gap-2">
+                <span className="p-2 rounded-lg bg-blue-500/10 text-blue-500 text-xs">
+                  <Plus className="w-4 h-4" />
+                </span>
+                {t('settings.rules.title')}
+                <span className="ml-2 text-sm font-normal text-muted-foreground bg-muted px-2 py-0.5 rounded-full border border-border/50">
+                  {rules.length}
+                </span>
+              </CardTitle>
+              <CardDescription>
+                Définissez comment vos fichiers doivent être organisés automatiquement.
+              </CardDescription>
             </div>
-
-            {isCreating && (
-              <div className="mb-4">
-                <RuleEditor
-                  initialRule={newRuleTemplate}
-                  onSave={handleSaveRule}
-                  onCancel={handleCancelEdit}
-                />
-              </div>
+            {!isCreating && (
+              <Button onClick={handleAddRule} size="sm" className="shadow-sm">
+                <Plus className="mr-2 h-4 w-4" /> {t('settings.rules.add')}
+              </Button>
             )}
+          </CardHeader>
 
-            <RuleList
-              rules={rules}
-              editingRuleId={editingRuleId}
-              onEdit={handleStartEdit}
-              onCancelEdit={handleCancelEdit}
-              onSaveRule={handleSaveRule}
-              onDelete={handleDelete}
-              onToggleActive={handleToggleActive}
-            />
+          <div className="p-6 flex-1 bg-muted/5">
+            {isCreating ? (
+              <div className="animate-in fade-in zoom-in-95 duration-200">
+                <div className="mb-4 p-4 border border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-900/10 rounded-lg">
+                  <h4 className="font-semibold text-blue-700 dark:text-blue-400 mb-2">
+                    Nouvelle Règle
+                  </h4>
+                  <p className="text-sm text-blue-600/80 dark:text-blue-400/80 mb-4">
+                    Créez une règle personnalisée pour trier vos fichiers.
+                  </p>
+                  <RuleEditor
+                    initialRule={newRuleTemplate}
+                    onSave={handleSaveRule}
+                    onCancel={handleCancelEdit}
+                  />
+                </div>
+              </div>
+            ) : (
+              <RuleList
+                rules={rules}
+                editingRuleId={editingRuleId}
+                onEdit={handleStartEdit}
+                onCancelEdit={handleCancelEdit}
+                onSaveRule={handleSaveRule}
+                onDelete={handleDelete}
+                onToggleActive={handleToggleActive}
+              />
+            )}
           </div>
-        </div>
-
-        <div className="border-t p-4 flex justify-end gap-2 bg-muted/50 rounded-b-lg">
-          <Button variant="outline" onClick={() => navigate('/')}>
-            {t('settings.cancel')}
-          </Button>
-          <Button onClick={handleSaveAll}>{t('settings.saveChanges')}</Button>
-        </div>
-      </Card>
+        </Card>
+      </div>
     </div>
   )
 }

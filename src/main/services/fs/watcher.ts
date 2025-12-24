@@ -22,7 +22,7 @@ class WatcherService {
       ignored: /(^|[/\\])\../,
       persistent: true,
       ignoreInitial: true,
-      depth: 0 
+      depth: 0
     })
 
     watcher.on('add', (filePath) => {
@@ -39,41 +39,41 @@ class WatcherService {
   unwatchFolder(id: string): void {
     const watcher = this.watchers.get(id)
     if (watcher) {
-        console.log(`[Watcher] Stopping watch on folder ${id}`)
-        watcher.close()
-        this.watchers.delete(id)
+      console.log(`[Watcher] Stopping watch on folder ${id}`)
+      watcher.close()
+      this.watchers.delete(id)
     }
   }
 
   // Sync watchers with active DB folders
-  syncWatchers(folders: { id: string, path: string, autoWatch: boolean }[]): void {
-      const activeIds = new Set<string>();
+  syncWatchers(folders: { id: string; path: string; autoWatch: boolean }[]): void {
+    const activeIds = new Set<string>()
 
-      for (const folder of folders) {
-          if (folder.autoWatch) {
-              activeIds.add(folder.id);
-              if (!this.watchers.has(folder.id)) {
-                  this.watchFolder(folder.id, folder.path);
-              }
-          } else {
-              // If it exists but shouldn't watch, remove it
-              if (this.watchers.has(folder.id)) {
-                  this.unwatchFolder(folder.id);
-              }
-          }
+    for (const folder of folders) {
+      if (folder.autoWatch) {
+        activeIds.add(folder.id)
+        if (!this.watchers.has(folder.id)) {
+          this.watchFolder(folder.id, folder.path)
+        }
+      } else {
+        // If it exists but shouldn't watch, remove it
+        if (this.watchers.has(folder.id)) {
+          this.unwatchFolder(folder.id)
+        }
       }
+    }
 
-      // Remove watchers for folders that no longer exist
-      for (const id of this.watchers.keys()) {
-          if (!activeIds.has(id)) {
-              this.unwatchFolder(id);
-          }
+    // Remove watchers for folders that no longer exist
+    for (const id of this.watchers.keys()) {
+      if (!activeIds.has(id)) {
+        this.unwatchFolder(id)
       }
+    }
   }
 
   stopAll(): void {
     for (const watcher of this.watchers.values()) {
-        watcher.close()
+      watcher.close()
     }
     this.watchers.clear()
   }

@@ -61,12 +61,22 @@ export default {
         'spin-slow': {
           from: { transform: 'rotate(0deg)' },
           to: { transform: 'rotate(360deg)' }
+        },
+        'fade-in': {
+          from: { opacity: '0' },
+          to: { opacity: '1' }
+        },
+        'slide-in-from-bottom': {
+          from: { transform: 'translateY(10px)', opacity: '0' },
+          to: { transform: 'translateY(0)', opacity: '1' }
         }
       },
       animation: {
         'accordion-down': 'accordion-down 0.2s ease-out',
         'accordion-up': 'accordion-up 0.2s ease-out',
-        'spin-slow': 'spin-slow 20s linear infinite'
+        'spin-slow': 'spin-slow 20s linear infinite',
+        'fade-in': 'fade-in 0.3s ease-out',
+        'slide-in-from-bottom': 'slide-in-from-bottom 0.4s ease-out'
       }
     }
   },

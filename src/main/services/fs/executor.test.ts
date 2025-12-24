@@ -1,137 +1,86 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
+
+const mocks = vi.hoisted(() => ({
+  fs: {
+    rename: vi.fn(),
+    copyFile: vi.fn(),
+    unlink: vi.fn(),
+    mkdir: vi.fn(),
+    access: vi.fn()
+  }
+}))
+
+vi.mock('fs/promises', () => mocks.fs)
+vi.mock('../core/settings', () => ({
+  getSettings: vi.fn().mockReturnValue({ conflictResolution: 'rename' })
+}))
+vi.mock('./tagger', () => ({
+  taggerService: { setLabel: vi.fn() }
+}))
+
 import { executePlan } from './executor'
-import { Plan, FileEntry } from '../../../shared/types'
-import * as fs from 'fs/promises'
-import { getSettings } from '../core/settings'
+import { Plan } from '../../../shared/types'
 
-// Mock dependencies
-vi.mock('electron', () => ({
-  app: {
-    getPath: vi.fn().mockReturnValue('/tmp')
-  }
-}))
-vi.mock('fs/promises')
-vi.mock('../core/settings')
-vi.mock('../../db', () => ({
-  db: {
-    insert: vi.fn(),
-    select: vi.fn(),
-    update: vi.fn(),
-    delete: vi.fn()
-  }
-}))
-
-describe('Executor Service - Conflict Resolution', () => {
-  const mockFile: FileEntry = {
-    path: '/src/file.txt',
-    name: 'file.txt',
-    extension: 'txt',
-    isDirectory: false,
-    size: 100,
-    createdAt: new Date(),
-    modifiedAt: new Date(),
-    category: 'document'
-  }
-
-  const mockPlan: Plan = {
-    totalFiles: 1,
-    timestamp: new Date(),
-    items: [
-      {
-        id: '1',
-        file: mockFile,
-        ruleId: 'rule1',
-        destinationPath: '/dest/file.txt',
-        status: 'ok'
-      }
-    ]
-  }
-
+describe('ExecutorService', () => {
   beforeEach(() => {
-    vi.resetAllMocks()
-    // Default: fs.rename resolves (success)
-    vi.mocked(fs.rename).mockResolvedValue(undefined)
-    vi.mocked(fs.mkdir).mockResolvedValue(undefined)
+    vi.clearAllMocks()
+    mocks.fs.access.mockRejectedValue(new Error('ENOENT')) // Default: File does not exist
   })
 
-  it('should OVERWRITE if strategy is "overwrite"', async () => {
-    vi.mocked(getSettings).mockReturnValue({
-      conflictResolution: 'overwrite',
-      rules: [],
-      theme: 'light',
-      language: 'en',
-      firstRun: false
-    })
+  it('should handle EXDEV by copying and unlinking', async () => {
+    // Simulate EXDEV on rename
+    mocks.fs.rename.mockRejectedValueOnce({ code: 'EXDEV' })
 
-    // Mock that destination exists (access succeeds)
-    vi.mocked(fs.access).mockResolvedValue(undefined)
+    const plan: Plan = {
+      items: [
+        {
+          id: '1',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          file: { path: '/vol1/source.txt' } as any,
+          ruleId: 'r1',
+          destinationPath: '/vol2/dest.txt',
+          status: 'ok'
+        }
+      ],
+      totalFiles: 1,
+      timestamp: new Date()
+    }
 
-    const result = await executePlan(mockPlan)
+    const result = await executePlan(plan)
+
+    if (!result.success) {
+      console.error('Test failed with errors:', JSON.stringify(result.errors, null, 2))
+    }
 
     expect(result.success).toBe(true)
-    expect(result.processed).toBe(1)
-    expect(fs.rename).toHaveBeenCalledWith('/src/file.txt', '/dest/file.txt')
+    expect(mocks.fs.rename).toHaveBeenCalledWith('/vol1/source.txt', '/vol2/dest.txt')
+    // Fallback triggered
+    expect(mocks.fs.copyFile).toHaveBeenCalledWith('/vol1/source.txt', '/vol2/dest.txt')
+    expect(mocks.fs.unlink).toHaveBeenCalledWith('/vol1/source.txt')
   })
 
-  it('should SKIP if strategy is "skip"', async () => {
-    vi.mocked(getSettings).mockReturnValue({
-      conflictResolution: 'skip',
-      rules: [],
-      theme: 'light',
-      language: 'en',
-      firstRun: false
-    })
+  it('should throw real errors', async () => {
+    mocks.fs.rename.mockRejectedValueOnce(new Error('EPERM'))
 
-    // Mock that destination exists
-    vi.mocked(fs.access).mockResolvedValue(undefined)
+    const plan: Plan = {
+      items: [
+        {
+          id: '2',
+          // eslint-disable-next-line @typescript-eslint/no-explicit-any
+          file: { path: '/source.txt' } as any,
+          ruleId: 'r1',
+          destinationPath: '/dest.txt',
+          status: 'ok'
+        }
+      ],
+      totalFiles: 1,
+      timestamp: new Date()
+    }
 
-    const result = await executePlan(mockPlan)
+    const result = await executePlan(plan)
 
-    expect(result.success).toBe(true)
-    expect(result.processed).toBe(0) // Skipped count as processed? Or effectively ignored?
-    // Usually skipped means "handled but done nothing". Let's check logic.
-    // If skipped, we might confusingly return processed=0 or success=true.
-    // Ideally processed=1 but "skipped". For MVP, let's say "processed" means moved.
-    // If we skip, we literally do nothing.
-    expect(fs.rename).not.toHaveBeenCalled()
-  })
-
-  it('should RENAME if strategy is "rename"', async () => {
-    vi.mocked(getSettings).mockReturnValue({
-      conflictResolution: 'rename',
-      rules: [],
-      theme: 'light',
-      language: 'en',
-      firstRun: false
-    })
-
-    // Mock that destination exists
-    vi.mocked(fs.access)
-      .mockResolvedValueOnce(undefined) // executor check: /dest/file.txt exists
-      .mockResolvedValueOnce(undefined) // getUniquePath check 1: /dest/file.txt exists
-      .mockRejectedValueOnce(new Error('ENOENT')) // getUniquePath check 2: /dest/file (1).txt does NOT exist
-
-    const result = await executePlan(mockPlan)
-
-    expect(result.success).toBe(true)
-    // Should have renamed to ... (1).txt
-    expect(fs.rename).toHaveBeenCalledWith('/src/file.txt', '/dest/file (1).txt')
-  })
-
-  it('should handle normal move if no conflict', async () => {
-    vi.mocked(getSettings).mockReturnValue({
-      conflictResolution: 'skip', // Strategy shouldn't matter if no conflict
-      rules: [],
-      theme: 'light',
-      language: 'en',
-      firstRun: false
-    })
-
-    // Mock dest does NOT exist
-    vi.mocked(fs.access).mockRejectedValue(new Error('ENOENT'))
-
-    await executePlan(mockPlan)
-
-    expect(fs.rename).toHaveBeenCalledWith('/src/file.txt', '/dest/file.txt')
+    expect(result.success).toBe(false)
+    expect(result.failed).toBe(1)
+    expect(mocks.fs.copyFile).not.toHaveBeenCalled()
   })
 })

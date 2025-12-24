@@ -52,6 +52,8 @@ export const folders = sqliteTable('folders', {
   name: text('name').notNull(),
   path: text('path').notNull(),
   autoWatch: integer('auto_watch', { mode: 'boolean' }).notNull().default(true),
+  scanFrequency: text('scan_frequency'), // '15m', '1h', 'daily', etc.
+  lastScan: integer('last_scan', { mode: 'timestamp' }),
   createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(new Date()),
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(new Date())
 })

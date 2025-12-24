@@ -1,8 +1,15 @@
 import React, { useEffect, useState } from 'react'
 import { FileEntry, DuplicateGroup } from '../../../../shared/types'
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '../../components/ui/dialog'
 import { Button } from '../../components/ui/button'
-import { Card } from '../../components/ui/card'
-import { Trash2, AlertTriangle, X, Sparkles } from 'lucide-react'
+import { Trash2, AlertTriangle, Sparkles } from 'lucide-react'
 import clsx from 'clsx'
 import { useTranslation } from 'react-i18next'
 
@@ -71,45 +78,66 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({ files, onClose, 
   )
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 animate-in fade-in">
-      <Card className="w-full max-w-4xl max-h-[80vh] flex flex-col bg-background shadow-xl">
-        <div className="p-4 border-b flex justify-between items-center">
-          <div>
-            <h2 className="text-xl font-bold flex items-center gap-2">
-              <AlertTriangle className="w-5 h-5 text-yellow-500" />
+    <Dialog open={true} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="max-w-4xl max-h-[85vh] flex flex-col p-0 gap-0 overflow-hidden border-border/50 bg-background/95 backdrop-blur-xl">
+        <div className="p-6 pb-4 border-b border-border/50">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2 text-xl">
+              <div className="p-2 rounded-full bg-yellow-500/10 text-yellow-500">
+                <AlertTriangle className="w-5 h-5" />
+              </div>
               {t('duplicates.title')}
-            </h2>
-            <p className="text-sm text-muted-foreground">
-              {t('duplicates.spaceReclaim')}: {(totalWaste / 1024 / 1024).toFixed(2)} MB
-            </p>
-          </div>
-          <Button variant="ghost" size="icon" onClick={onClose}>
-            <X className="w-4 h-4" />
-          </Button>
+            </DialogTitle>
+            <DialogDescription className="flex items-center gap-2 pt-1">
+              {t('duplicates.spaceReclaim')}:
+              <span className="font-mono font-medium text-foreground bg-muted px-1.5 py-0.5 rounded text-xs">
+                {(totalWaste / 1024 / 1024).toFixed(2)} MB
+              </span>
+            </DialogDescription>
+          </DialogHeader>
         </div>
 
-        <div className="flex-1 overflow-auto p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto p-6 space-y-6 bg-muted/5">
           {loading ? (
-            <div className="text-center py-10">{t('duplicates.scanning')}</div>
+            <div className="flex flex-col items-center justify-center py-20 text-muted-foreground animate-pulse">
+              <Sparkles className="w-10 h-10 mb-4 opacity-50" />
+              <p>{t('duplicates.scanning')}</p>
+            </div>
           ) : duplicates.length === 0 ? (
-            <div className="text-center py-10 text-muted-foreground flex flex-col items-center gap-2">
-              <Sparkles className="w-8 h-8 text-yellow-500" />
-              <span>{t('duplicates.noDuplicates')}</span>
+            <div className="text-center py-20 text-muted-foreground flex flex-col items-center gap-4">
+              <div className="p-4 rounded-full bg-green-500/10 text-green-500">
+                <Sparkles className="w-8 h-8" />
+              </div>
+              <div>
+                <p className="text-lg font-medium text-foreground">
+                  {t('duplicates.noDuplicates')}
+                </p>
+                <p className="text-sm opacity-80">Votre dossier est parfaitement propre !</p>
+              </div>
             </div>
           ) : (
             duplicates.map((group) => (
-              <div key={group.hash} className="border rounded-lg p-3 bg-card/50">
-                <div className="flex justify-between text-sm mb-2 font-medium">
-                  <span>Hash: {group.hash.substring(0, 8)}...</span>
-                  <span>{(group.size / 1024).toFixed(2)} KB</span>
+              <div
+                key={group.hash}
+                className="group border border-border/50 rounded-xl p-4 bg-card hover:bg-card/80 hover:shadow-sm transition-all"
+              >
+                <div className="flex justify-between items-center text-sm mb-3">
+                  <span className="font-mono text-xs text-muted-foreground bg-muted px-2 py-1 rounded">
+                    Hash: {group.hash.substring(0, 8)}...
+                  </span>
+                  <span className="font-medium text-xs px-2 py-1 rounded-full bg-primary/10 text-primary">
+                    {(group.size / 1024).toFixed(2)} KB
+                  </span>
                 </div>
                 <div className="space-y-1">
                   {group.files.map((file) => (
                     <div
                       key={file.path}
                       className={clsx(
-                        'flex items-center gap-3 p-2 rounded cursor-pointer hover:bg-accent/50 transition-colors',
-                        selectedPaths.has(file.path) ? 'bg-red-500/10 border border-red-500/20' : ''
+                        'flex items-center gap-3 p-2.5 rounded-lg cursor-pointer transition-all duration-200 border border-transparent',
+                        selectedPaths.has(file.path)
+                          ? 'bg-destructive/5 border-destructive/20'
+                          : 'hover:bg-muted/50'
                       )}
                       onClick={() => toggleSelect(file.path)}
                     >
@@ -117,13 +145,22 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({ files, onClose, 
                         type="checkbox"
                         checked={selectedPaths.has(file.path)}
                         readOnly
-                        className="h-4 w-4"
+                        className="h-4 w-4 rounded border-gray-300 text-destructive focus:ring-destructive"
                       />
-                      <div className="flex-1 min-w-0">
-                        <div className="truncate text-sm font-medium">{file.name}</div>
-                        <div className="truncate text-xs text-muted-foreground">{file.path}</div>
+                      <div className="flex-1 min-w-0 grid gap-0.5">
+                        <div
+                          className={clsx(
+                            'truncate text-sm font-medium',
+                            selectedPaths.has(file.path) ? 'text-destructive' : 'text-foreground'
+                          )}
+                        >
+                          {file.name}
+                        </div>
+                        <div className="truncate text-xs text-muted-foreground font-mono opacity-70">
+                          {file.path}
+                        </div>
                       </div>
-                      <div className="text-xs text-muted-foreground">
+                      <div className="text-xs text-muted-foreground tabular-nums whitespace-nowrap px-2">
                         {new Date(file.createdAt).toLocaleDateString()}
                       </div>
                     </div>
@@ -134,16 +171,25 @@ export const DuplicateModal: React.FC<DuplicateModalProps> = ({ files, onClose, 
           )}
         </div>
 
-        <div className="p-4 border-t bg-muted/20 flex justify-end gap-2">
-          <Button variant="outline" onClick={onClose}>
+        <DialogFooter className="p-4 border-t border-border/50 bg-muted/20 gap-2 sm:justify-between">
+          <Button
+            variant="ghost"
+            onClick={onClose}
+            className="text-muted-foreground hover:text-foreground"
+          >
             {t('duplicates.cancel')}
           </Button>
-          <Button variant="destructive" onClick={handleDelete} disabled={selectedPaths.size === 0}>
+          <Button
+            variant="destructive"
+            onClick={handleDelete}
+            disabled={selectedPaths.size === 0}
+            className="shadow-sm"
+          >
             <Trash2 className="w-4 h-4 mr-2" />
             {t('duplicates.deleteSelected', { count: selectedPaths.size })}
           </Button>
-        </div>
-      </Card>
-    </div>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
   )
 }

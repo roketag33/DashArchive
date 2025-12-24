@@ -40,6 +40,12 @@
     "folderSettingsDesc": "Select which rules apply to this folder.",
     "noDescription": "No description",
     "noRules": "No rules defined. Go to Settings/Rules to create some.",
+    "scanFrequency": "Auto-Scan Frequency",
+    "freqManual": "Manual (No Auto-Scan)",
+    "freq15m": "Every 15 minutes",
+    "freq30m": "Every 30 minutes",
+    "freq1h": "Every Hour",
+    "freqDaily": "Daily",
     "dashboardTitle": "Dashboard",
     "dashboardDesc": "Manage your folders and organization rules.",
     "statusWatching": "Watching",
@@ -100,7 +106,9 @@
     "preferences": {
       "title": "Preferences",
       "darkMode": "Dark Mode",
-      "darkModeDesc": "Enable dark theme for the interface"
+      "darkModeDesc": "Enable dark theme for the interface",
+      "language": "Language",
+      "languageDesc": "Select application language"
     },
     "rules": {
       "title": "Rules",
@@ -138,6 +146,17 @@
     "sizeRange": "Size Range (Bytes)",
     "minAge": "Minimum Age",
     "daysOld": "Days old",
-    "fallback": "Everything Else (Fallback)"
+    "fallback": "Everything Else (Fallback)",
+    "labelColor": "Finder Label (Color)",
+    "colors": {
+      "none": "None",
+      "Red": "Red",
+      "Orange": "Orange",
+      "Yellow": "Yellow",
+      "Green": "Green",
+      "Blue": "Blue",
+      "Purple": "Purple",
+      "Gray": "Gray"
+    }
   }
 }

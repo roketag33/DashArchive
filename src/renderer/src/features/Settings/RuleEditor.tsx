@@ -4,6 +4,7 @@ import { COMMON_CATEGORIES } from '../../../../shared/constants'
 import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
+import { Label } from '../../components/ui/label'
 import { Save, FolderOpen, Wand2, Brain, Wrench, Check } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
@@ -87,11 +88,12 @@ export function RuleEditor({ initialRule, onSave, onCancel }: RuleEditorProps): 
           />
         </div>
         <div className="grid gap-2">
-          <label className="text-sm font-medium">Destination</label>
+          <Label className="text-sm font-medium">{t('settings.destination')}</Label>
           <div className="flex gap-2">
             <Input
               value={editForm.destination || ''}
               onChange={(e) => handleChange('destination', e.target.value)}
+              placeholder="Documents/{{category}}"
             />
             <Button
               variant="outline"
@@ -102,6 +104,28 @@ export function RuleEditor({ initialRule, onSave, onCancel }: RuleEditorProps): 
               <FolderOpen className="h-4 w-4" />
             </Button>
           </div>
+          <p className="text-xs text-muted-foreground">
+            Supports placeholders: {'{{extension}}, {{year}}, {{month}}, {{category}}'}. You can
+            also select external drives.
+          </p>
+        </div>
+
+        <div className="grid gap-2">
+          <Label className="text-sm font-medium">{t('settings.labelColor')}</Label>
+          <select
+            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
+            value={editForm.labelColor || 'none'}
+            onChange={(e) => handleChange('labelColor', e.target.value)}
+          >
+            <option value="none">{t('settings.colors.none')}</option>
+            <option value="Red">{t('settings.colors.Red')}</option>
+            <option value="Orange">{t('settings.colors.Orange')}</option>
+            <option value="Yellow">{t('settings.colors.Yellow')}</option>
+            <option value="Green">{t('settings.colors.Green')}</option>
+            <option value="Blue">{t('settings.colors.Blue')}</option>
+            <option value="Purple">{t('settings.colors.Purple')}</option>
+            <option value="Gray">{t('settings.colors.Gray')}</option>
+          </select>
         </div>
         <div className="grid gap-2">
           <label className="text-sm font-medium">{t('settings.rules.edit.ruleMode')}</label>

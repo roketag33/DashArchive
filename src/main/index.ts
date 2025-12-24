@@ -80,6 +80,9 @@ app.whenReady().then(() => {
 
   createMenu() // Apply native menu
 
+  // Start Scheduler
+  import('./services/core/scheduler').then(({ schedulerService }) => schedulerService.init())
+
   // Check for updates (dynamic import to avoid early app access)
   if (app.isPackaged) {
     import('electron-updater').then(({ autoUpdater }) => {

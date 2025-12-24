@@ -1,6 +1,13 @@
-
 import { ipcMain } from 'electron'
-import { getFolders, addFolder, updateFolder, deleteFolder, getFolderRules, setFolderRules, Folder } from '../db/folders'
+import {
+  getFolders,
+  addFolder,
+  updateFolder,
+  deleteFolder,
+  getFolderRules,
+  setFolderRules,
+  Folder
+} from '../db/folders'
 import { watcherService } from '../services/fs/watcher'
 
 export function registerFoldersHandlers(): void {
@@ -9,25 +16,28 @@ export function registerFoldersHandlers(): void {
   })
 
   ipcMain.handle('folders:add', (_, folder: Omit<Folder, 'id' | 'createdAt' | 'updatedAt'>) => {
-    // Generate ID here or in DB service? DB Service usually takes ID if it's UUID, 
+    // Generate ID here or in DB service? DB Service usually takes ID if it's UUID,
     // but better-sqlite3 doesn't auto-gen UUIDs. Let's gen here.
-    const id = Math.random().toString(36).substring(2, 15);
-    const newFolder = addFolder({ ...folder, id });
-    
+    const id = Math.random().toString(36).substring(2, 15)
+    const newFolder = addFolder({ ...folder, id })
+
     // Refresh watcher
-    refreshWatchers();
-    
-    return newFolder;
+    refreshWatchers()
+
+    return newFolder
   })
 
-  ipcMain.handle('folders:update', (_, { id, updates }: { id: string, updates: Partial<Folder> }) => {
-    updateFolder(id, updates);
-    refreshWatchers();
-  })
+  ipcMain.handle(
+    'folders:update',
+    (_, { id, updates }: { id: string; updates: Partial<Folder> }) => {
+      updateFolder(id, updates)
+      refreshWatchers()
+    }
+  )
 
   ipcMain.handle('folders:delete', (_, id: string) => {
-    deleteFolder(id);
-    refreshWatchers();
+    deleteFolder(id)
+    refreshWatchers()
   })
 
   ipcMain.handle('folders:get-rules', async (_, folderId: string): Promise<string[]> => {
@@ -40,12 +50,18 @@ export function registerFoldersHandlers(): void {
     }
   })
 
-  ipcMain.handle('folders:set-rules', (_, { folderId, ruleIds }: { folderId: string, ruleIds: string[] }): void => {
-    setFolderRules(folderId, ruleIds);
-  })
+  ipcMain.handle(
+    'folders:set-rules',
+    (_, { folderId, ruleIds }: { folderId: string; ruleIds: string[] }): void => {
+      setFolderRules(folderId, ruleIds)
+    }
+  )
 }
 
-function refreshWatchers() {
-    const folders = getFolders();
-    watcherService.syncWatchers(folders);
+import { schedulerService } from '../services/core/scheduler'
+
+function refreshWatchers(): void {
+  const folders = getFolders()
+  watcherService.syncWatchers(folders)
+  schedulerService.refreshSchedules()
 }
