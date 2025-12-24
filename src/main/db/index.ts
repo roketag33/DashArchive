@@ -17,7 +17,7 @@ if (!fs.existsSync(dbDir)) {
 
 console.log('Database path:', dbPath)
 
-const sqlite = new Database(dbPath)
+export const sqlite = new Database(dbPath)
 export const db = drizzle(sqlite, { schema })
 
 // Helper to manually push schema for simple apps (optional)
@@ -71,6 +71,19 @@ export function initDB(): void {
                 timestamp INTEGER NOT NULL,
                 plan TEXT NOT NULL,
                 status TEXT NOT NULL
+            );
+
+            CREATE TABLE IF NOT EXISTS files (
+                id TEXT PRIMARY KEY,
+                path TEXT NOT NULL,
+                name TEXT NOT NULL,
+                size INTEGER NOT NULL,
+                category TEXT NOT NULL, -- 'image', 'video', 'document', 'other'
+                hash TEXT, -- SHA-256 for duplicate detection
+                created_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                modified_at DATETIME DEFAULT CURRENT_TIMESTAMP,
+                last_scan DATETIME,
+                embedding TEXT -- JSON string of vector
             );
 
             CREATE TABLE IF NOT EXISTS folders (
