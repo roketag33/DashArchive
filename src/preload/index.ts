@@ -39,6 +39,8 @@ const api = {
   removeFileAddedListener: (): void => {
     ipcRenderer.removeAllListeners('watcher:file-added')
   },
+  processDroppedFiles: (paths: string[]): Promise<void> =>
+    ipcRenderer.invoke('DROP_ZONE:FILE_DROPPED', paths),
 
   // Folders API
   getFolders: () => ipcRenderer.invoke('folders:get-all'),

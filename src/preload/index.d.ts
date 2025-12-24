@@ -17,6 +17,7 @@ interface CustomAPI {
   startWatcher: (path: string) => Promise<void>
   stopWatcher: () => Promise<void>
   onFileAdded: (callback: (path: string) => void) => void
+  processDroppedFiles: (paths: string[]) => Promise<void>
   removeFileAddedListener: () => void
 
   // Folders
