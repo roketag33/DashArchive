@@ -116,7 +116,8 @@ export function StorageView(): React.JSX.Element {
                 <Treemap
                   width={400}
                   height={200}
-                  data={data}
+                  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                  data={data as any}
                   dataKey="size"
                   aspectRatio={4 / 3}
                   stroke="#fff"

@@ -5,6 +5,7 @@ import { SettingsPanel } from './features/Settings/SettingsPanel'
 import { HistoryPanel } from './features/History/HistoryPanel'
 import { DropZone } from './features/DropZone/DropZone'
 import { StorageView } from './features/Storage/StorageView'
+import { FlowEditor } from './features/Automation/FlowEditor'
 
 function App(): React.JSX.Element {
   return (
@@ -16,6 +17,7 @@ function App(): React.JSX.Element {
         <Route path="settings" element={<SettingsPanel />} />
         <Route path="history" element={<HistoryPanel />} />
         <Route path="storage" element={<StorageView />} />
+        <Route path="automation" element={<FlowEditor />} />
       </Route>
       <Route path="/dropzone" element={<DropZone />} />
     </Routes>

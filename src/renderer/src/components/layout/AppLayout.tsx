@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Folder, Settings, Home, History, Sun, Moon, HardDrive } from 'lucide-react'
+import { Settings, Home, History, Sun, Moon, HardDrive, Zap } from 'lucide-react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
@@ -98,42 +98,44 @@ export function AppLayout(): React.JSX.Element {
           <div className="px-2 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
             Menu
           </div>
-          <SidebarItem
-            icon={Home}
-            label={t('app.dashboard', 'Tableau de Bord')}
-            isActive={currentPath === '/'}
-            onClick={() => navigateTo('/')}
-          />
-          <SidebarItem
-            icon={Folder}
-            label={t('app.folders', 'Dossiers')}
-            isActive={currentPath === '/folders'}
-            onClick={() => navigateTo('/folders')}
-          />
-          <SidebarItem
-            icon={HardDrive}
-            label="Stockage"
-            isActive={currentPath === '/storage'}
-            onClick={() => navigateTo('/storage')}
-          />
-          <SidebarItem
-            icon={History}
-            label={t('app.history', 'Historique')}
-            isActive={currentPath === '/history'}
-            onClick={() => navigateTo('/history')}
-          />
-        </div>
-
-        <div className="mt-auto border-t border-border/40 pt-4">
-          <div className="px-2 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
-            Système
+          <div className="space-y-1">
+            <SidebarItem
+              icon={Home}
+              label={t('app.dashboard', 'Tableau de Bord')}
+              isActive={currentPath === '/' || currentPath === '/folders'}
+              onClick={() => navigateTo('/folders')}
+            />
+            <SidebarItem
+              icon={Zap}
+              label="Automation"
+              isActive={currentPath === '/automation'}
+              onClick={() => navigateTo('/automation')}
+            />
+            <SidebarItem
+              icon={HardDrive}
+              label="Stockage"
+              isActive={currentPath === '/storage'}
+              onClick={() => navigateTo('/storage')}
+            />
+            <SidebarItem
+              icon={History}
+              label={t('app.history', 'Historique')}
+              isActive={currentPath === '/history'}
+              onClick={() => navigateTo('/history')}
+            />
           </div>
-          <SidebarItem
-            icon={Settings}
-            label={t('app.settings', 'Paramètres')}
-            isActive={currentPath === '/settings'}
-            onClick={() => navigateTo('/settings')}
-          />
+
+          <div className="mt-auto border-t border-border/40 pt-4">
+            <div className="px-2 py-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
+              Système
+            </div>
+            <SidebarItem
+              icon={Settings}
+              label={t('app.settings', 'Paramètres')}
+              isActive={currentPath === '/settings'}
+              onClick={() => navigateTo('/settings')}
+            />
+          </div>
         </div>
       </motion.aside>
 
