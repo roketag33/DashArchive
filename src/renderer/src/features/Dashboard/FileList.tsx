@@ -42,16 +42,21 @@ export function FileList({ files }: FileListProps): React.JSX.Element {
   const getFileIcon = (category: string): React.JSX.Element => {
     switch (category) {
       case 'image':
-        return <ImageIcon className="h-5 w-5 text-purple-500" />
+        return <ImageIcon className="h-5 w-5 text-purple-500 dark:text-purple-400" />
       case 'video':
-        return <Video className="h-5 w-5 text-pink-500" />
+        return <Video className="h-5 w-5 text-pink-500 dark:text-pink-400" />
       case 'audio':
-        return <Music className="h-5 w-5 text-blue-500" />
+        return <Music className="h-5 w-5 text-blue-500 dark:text-blue-400" />
       case 'code':
-        return <Code className="h-5 w-5 text-green-500" />
+        return <Code className="h-5 w-5 text-green-500 dark:text-green-400" />
       case 'archive':
-        return <Box className="h-5 w-5 text-orange-500" />
+        return <Box className="h-5 w-5 text-orange-500 dark:text-orange-400" />
+      case 'document':
+        return <FileText className="h-5 w-5 text-red-500 dark:text-red-400" />
       default:
+        // Check extension manually for PDF if category is generic?
+        // Assuming category logic handles it, otherwise default styling.
+        // Let's stick to FileText with generic color for unknown.
         return <FileText className="h-5 w-5 text-muted-foreground" />
     }
   }

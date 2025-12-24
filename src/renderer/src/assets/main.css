@@ -6,7 +6,8 @@
 
 @layer base {
   :root {
-    --background: 240 5% 96%; /* Soft white/gray for light mode */
+    --background: 240 5% 96%;
+    /* Soft white/gray for light mode */
     --foreground: 240 10% 3.9%;
 
     --card: 0 0% 100%;
@@ -39,31 +40,37 @@
 
   /* Premium Dark Mode - Linear Style */
   .dark {
-    --background: 225 6% 12%; /* Very deep gray, almost black but warmer */
+    --background: 225 6% 12%;
+    /* Very deep gray, almost black but warmer */
     --foreground: 0 0% 98%;
 
-    --card: 225 6% 14%; /* Slightly lighter than bg */
+    --card: 225 6% 14%;
+    /* Slightly lighter than bg */
     --card-foreground: 0 0% 98%;
 
     --popover: 225 6% 14%;
     --popover-foreground: 0 0% 98%;
 
-    --primary: 250 80% 65%; /* Sophisticated Indigo/Violet */
+    --primary: 250 80% 65%;
+    /* Sophisticated Indigo/Violet */
     --primary-foreground: 0 0% 100%;
 
-    --secondary: 225 6% 18%; /* Distinct layer for secondary actions */
+    --secondary: 225 6% 18%;
+    /* Distinct layer for secondary actions */
     --secondary-foreground: 0 0% 98%;
 
     --muted: 225 6% 18%;
     --muted-foreground: 240 5% 65%;
 
-    --accent: 225 6% 22%; /* Lighter interaction state */
+    --accent: 225 6% 22%;
+    /* Lighter interaction state */
     --accent-foreground: 0 0% 98%;
 
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 0 0% 98%;
 
-    --border: 225 6% 20%; /* Subtle border */
+    --border: 225 6% 20%;
+    /* Subtle border */
     --input: 225 6% 20%;
     --ring: 250 80% 65%;
   }
@@ -114,18 +121,28 @@
 
 /* Custom scrollbar */
 ::-webkit-scrollbar {
-  width: 8px;
-  height: 8px;
+  width: 6px;
+  height: 6px;
 }
 
 ::-webkit-scrollbar-track {
-  @apply bg-transparent;
+  background: transparent;
 }
 
 ::-webkit-scrollbar-thumb {
-  @apply bg-gray-300 rounded-full hover:bg-gray-400;
+  background: hsl(var(--muted-foreground) / 0.2);
+  border-radius: 9999px;
+  transition: all 0.2s;
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
 }
 
 .dark ::-webkit-scrollbar-thumb {
-  @apply bg-gray-600 hover:bg-gray-500;
+  background: hsl(var(--muted-foreground) / 0.2);
+}
+
+.dark ::-webkit-scrollbar-thumb:hover {
+  background: hsl(var(--muted-foreground) / 0.5);
 }
