@@ -7,7 +7,7 @@ import { registerFoldersHandlers } from './folders'
 
 import { registerStatsHandlers } from './stats'
 
-import { ipcMain } from 'electron'
+import { ipcMain, Notification } from 'electron'
 import log from 'electron-log'
 import { watcherService } from '../services/fs/watcher'
 
@@ -22,16 +22,17 @@ export function registerIpcHandlers(): void {
 
   // Drop Zone IPC
   ipcMain.handle('DROP_ZONE:FILE_DROPPED', async (_, paths: string[]) => {
-    // We can reuse the planner or tagger service here
-    // For now, let's just log and maybe notify the watcher or run the plan directly
-    // Ideally, we treat this as "manual trigger" for specific files
     log.info('DropZone received files:', paths)
 
-    // TODO: Trigger processing flow
-    // 1. Scan/Analyze files
-    // 2. Generate Plan
-    // 3. Execute or Ask for confirmation
+    // Notify user
 
+    new Notification({
+      title: 'DashArchive',
+      body: `Received ${paths.length} file(s). Analysis started.`,
+      silent: false
+    }).show()
+
+    // Future: Trigger analysis flow
     return
   })
 

@@ -1,4 +1,4 @@
-import { app, shell, BrowserWindow, ipcMain } from 'electron'
+import { app, shell, BrowserWindow } from 'electron'
 import { join } from 'path'
 import log from 'electron-log'
 import icon from '../../resources/icon.png?asset'
@@ -8,6 +8,10 @@ import { initDB } from './db/index'
 import { migrateSettingsIfNeeded } from './services/core/settings'
 // ...
 import { createMenu } from './services/core/menu'
+import { globalShortcut } from 'electron'
+import { DropZoneWindow } from './windows/DropZoneWindow'
+
+let dropZoneWindow: DropZoneWindow | null = null
 
 // Setup logger
 log.transports.file.level = 'info'
@@ -106,12 +110,23 @@ app.whenReady().then(() => {
     })
   })
 
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
-
   registerIpcHandlers()
 
   createWindow()
+
+  // Initialize Drop Zone
+  dropZoneWindow = new DropZoneWindow()
+
+  // Register global shortcut to toggle Drop Zone
+  globalShortcut.register('CommandOrControl+Shift+D', () => {
+    if (dropZoneWindow?.window) {
+      if (dropZoneWindow.window.isVisible()) {
+        dropZoneWindow.window.hide()
+      } else {
+        dropZoneWindow.window.show()
+      }
+    }
+  })
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
