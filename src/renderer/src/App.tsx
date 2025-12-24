@@ -7,6 +7,7 @@ import { DropZone } from './features/DropZone/DropZone'
 import { StorageView } from './features/Storage/StorageView'
 import { FlowEditor } from './features/Automation/FlowEditor'
 import { Spotlight } from './features/Spotlight/Spotlight'
+import { Vault } from './features/Vault/Vault'
 
 function App(): React.JSX.Element {
   return (
@@ -19,6 +20,7 @@ function App(): React.JSX.Element {
         <Route path="history" element={<HistoryPanel />} />
         <Route path="storage" element={<StorageView />} />
         <Route path="automation" element={<FlowEditor />} />
+        <Route path="vault" element={<Vault />} />
       </Route>
       <Route path="/dropzone" element={<DropZone />} />
       <Route path="/spotlight" element={<Spotlight />} />

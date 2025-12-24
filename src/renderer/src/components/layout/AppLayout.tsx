@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, Home, History, Sun, Moon, HardDrive, Zap } from 'lucide-react'
+import { Settings, Home, History, Sun, Moon, HardDrive, Zap, Shield } from 'lucide-react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
@@ -116,6 +116,12 @@ export function AppLayout(): React.JSX.Element {
               label="Stockage"
               isActive={currentPath === '/storage'}
               onClick={() => navigateTo('/storage')}
+            />
+            <SidebarItem
+              icon={Shield}
+              label="Coffre-fort"
+              isActive={currentPath === '/vault'}
+              onClick={() => navigateTo('/vault')}
             />
             <SidebarItem
               icon={History}
