@@ -18,6 +18,8 @@ interface CustomAPI {
   stopWatcher: () => Promise<void>
   onFileAdded: (callback: (path: string) => void) => void
   processDroppedFiles: (paths: string[]) => Promise<void>
+  searchSemantic(query: string): Promise<any[]> // eslint-disable-line @typescript-eslint/no-explicit-any
+  showInFolder: (path: string) => Promise<void>
   removeFileAddedListener: () => void
 
   // Folders

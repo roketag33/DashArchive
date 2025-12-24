@@ -41,6 +41,8 @@ const api = {
   },
   processDroppedFiles: (paths: string[]): Promise<void> =>
     ipcRenderer.invoke('DROP_ZONE:FILE_DROPPED', paths),
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  searchSemantic: (query: string): Promise<any[]> => ipcRenderer.invoke('SEARCH:SEMANTIC', query),
 
   // Folders API
   getFolders: () => ipcRenderer.invoke('folders:get-all'),
@@ -52,7 +54,8 @@ const api = {
     ipcRenderer.invoke('folders:set-rules', { folderId, ruleIds }),
 
   // Stats API
-  getStats: () => ipcRenderer.invoke('stats:get')
+  getStats: () => ipcRenderer.invoke('stats:get'),
+  showInFolder: (path: string) => ipcRenderer.invoke('shell:show-in-folder', path)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to
