@@ -4,6 +4,7 @@ import { Dashboard } from './features/Dashboard/Dashboard'
 import { SettingsPanel } from './features/Settings/SettingsPanel'
 import { HistoryPanel } from './features/History/HistoryPanel'
 import { DropZone } from './features/DropZone/DropZone'
+import { StorageView } from './features/Storage/StorageView'
 
 function App(): React.JSX.Element {
   return (
@@ -11,18 +12,12 @@ function App(): React.JSX.Element {
       <Route path="/" element={<AppLayout />}>
         <Route index element={<Dashboard />} />
         <Route path="folders" element={<Dashboard />} />
-        <Route path="settings" element={<SettingsPanel />} />
+        <Route path="folders/:folderId" element={<Dashboard />} />
         <Route path="settings" element={<SettingsPanel />} />
         <Route path="history" element={<HistoryPanel />} />
-        <Route
-          path="dropzone"
-          element={
-            <div className="h-screen w-screen flex items-center justify-center bg-transparent">
-              <DropZone />
-            </div>
-          }
-        />
+        <Route path="storage" element={<StorageView />} />
       </Route>
+      <Route path="/dropzone" element={<DropZone />} />
     </Routes>
   )
 }

@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Folder, Settings, Home, History, Sun, Moon } from 'lucide-react'
+import { Folder, Settings, Home, History, Sun, Moon, HardDrive } from 'lucide-react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
@@ -109,6 +109,12 @@ export function AppLayout(): React.JSX.Element {
             label={t('app.folders', 'Dossiers')}
             isActive={currentPath === '/folders'}
             onClick={() => navigateTo('/folders')}
+          />
+          <SidebarItem
+            icon={HardDrive}
+            label="Stockage"
+            isActive={currentPath === '/storage'}
+            onClick={() => navigateTo('/storage')}
           />
           <SidebarItem
             icon={History}
