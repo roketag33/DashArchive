@@ -8,6 +8,7 @@ import { StorageView } from './features/Storage/StorageView'
 import { FlowEditor } from './features/Automation/FlowEditor'
 import { Spotlight } from './features/Spotlight/Spotlight'
 import { Vault } from './features/Vault/Vault'
+import { ChatInterface } from './features/Chat/ChatInterface'
 
 function App(): React.JSX.Element {
   return (
@@ -21,6 +22,7 @@ function App(): React.JSX.Element {
         <Route path="storage" element={<StorageView />} />
         <Route path="automation" element={<FlowEditor />} />
         <Route path="vault" element={<Vault />} />
+        <Route path="chat" element={<ChatInterface />} />
       </Route>
       <Route path="/dropzone" element={<DropZone />} />
       <Route path="/spotlight" element={<Spotlight />} />

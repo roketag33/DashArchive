@@ -1,5 +1,15 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, Home, History, Sun, Moon, HardDrive, Zap, Shield } from 'lucide-react'
+import {
+  Settings,
+  Home,
+  History,
+  Sun,
+  Moon,
+  HardDrive,
+  Zap,
+  Shield,
+  MessageSquare
+} from 'lucide-react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
@@ -110,6 +120,12 @@ export function AppLayout(): React.JSX.Element {
               label="Automation"
               isActive={currentPath === '/automation'}
               onClick={() => navigateTo('/automation')}
+            />
+            <SidebarItem
+              icon={MessageSquare}
+              label="Assistant"
+              isActive={currentPath === '/chat'}
+              onClick={() => navigateTo('/chat')}
             />
             <SidebarItem
               icon={HardDrive}
