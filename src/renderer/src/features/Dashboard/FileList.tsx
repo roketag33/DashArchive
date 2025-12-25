@@ -1,13 +1,12 @@
 import React, { useState } from 'react'
 import { FileEntry } from '../../../../shared/types'
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow
-} from '../../components/ui/table'
+// @ts-ignore - react-window types compatibility with CJS/ESM in Vite
+import * as ReactWindow from 'react-window'
+
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+const rw = ReactWindow as any
+const FixedSizeList = rw.FixedSizeList || rw.default.FixedSizeList
+import AutoSizer from 'react-virtualized-auto-sizer'
 import { Card } from '../../components/ui/card'
 import {
   FileText,
@@ -54,9 +53,6 @@ export function FileList({ files }: FileListProps): React.JSX.Element {
       case 'document':
         return <FileText className="h-5 w-5 text-red-500 dark:text-red-400" />
       default:
-        // Check extension manually for PDF if category is generic?
-        // Assuming category logic handles it, otherwise default styling.
-        // Let's stick to FileText with generic color for unknown.
         return <FileText className="h-5 w-5 text-muted-foreground" />
     }
   }
@@ -69,7 +65,29 @@ export function FileList({ files }: FileListProps): React.JSX.Element {
     return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i]
   }
 
-  const filteredFiles = files.filter(
+  // Debugging Helpers - Stress Test
+  const [isStressTest, setIsStressTest] = useState(false)
+  const stressFiles = React.useMemo(() => {
+    if (!isStressTest) return []
+    return Array.from({ length: 5000 }).map(
+      (_, i) =>
+        ({
+          path: `/dummy/path/file-${i}.txt`,
+          name: `Dummy File ${i}.txt`,
+          size: 1024 * i,
+          category: 'document',
+          extension: '.txt',
+          createdAt: new Date().toISOString(),
+          updatedAt: new Date().toISOString(),
+          modifiedAt: new Date().toISOString(),
+          isDirectory: false
+        }) as unknown as FileEntry
+    )
+  }, [isStressTest])
+
+  const effectiveFiles = isStressTest ? stressFiles : files
+
+  const filteredFiles = effectiveFiles.filter(
     (f) =>
       f.name.toLowerCase().includes(filter.toLowerCase()) ||
       f.extension.toLowerCase().includes(filter.toLowerCase())
@@ -81,7 +99,6 @@ export function FileList({ files }: FileListProps): React.JSX.Element {
       const aValue = a[sortConfig.key]
       const bValue = b[sortConfig.key]
 
-      // Handle potential undefined/null values safely
       if (aValue === bValue) return 0
       if (aValue === undefined || aValue === null) return 1
       if (bValue === undefined || bValue === null) return -1
@@ -105,9 +122,60 @@ export function FileList({ files }: FileListProps): React.JSX.Element {
     }))
   }
 
+  const Row = ({
+    index,
+    style
+  }: {
+    index: number
+    style: React.CSSProperties
+  }): React.JSX.Element => {
+    const file = sortedFiles[index]
+    return (
+      <div
+        style={style}
+        className="flex items-center border-b border-border/40 hover:bg-muted/30 transition-colors group px-4"
+      >
+        {/* Icon */}
+        <div className="w-[50px] flex-shrink-0">
+          <div className="p-2 rounded-md bg-background shadow-sm border border-border/50 group-hover:scale-110 transition-transform w-fit">
+            {getFileIcon(file.category)}
+          </div>
+        </div>
+
+        {/* Name */}
+        <div className="flex-1 min-w-0 pr-4">
+          <div className="flex flex-col">
+            <span
+              className="font-medium text-foreground group-hover:text-primary transition-colors truncate text-sm"
+              title={file.name}
+            >
+              {file.name}
+            </span>
+            <span className="text-xs text-muted-foreground opacity-60 truncate">{file.path}</span>
+          </div>
+        </div>
+
+        {/* Type */}
+        <div className="w-[100px] text-muted-foreground uppercase text-xs font-semibold tracking-wider hidden sm:block">
+          {file.extension.replace('.', '')}
+        </div>
+
+        {/* Size */}
+        <div className="w-[100px] text-right font-mono text-xs text-muted-foreground hidden md:block">
+          {formatSize(file.size)}
+        </div>
+
+        {/* Date */}
+        <div className="w-[150px] text-right text-xs text-muted-foreground hidden lg:block">
+          {new Date(file.createdAt).toLocaleDateString()}
+        </div>
+      </div>
+    )
+  }
+
   return (
-    <Card className="border border-border/50 bg-card/30 backdrop-blur-xl overflow-hidden shadow-sm">
-      <div className="p-4 border-b border-border/50 flex flex-col sm:flex-row gap-4 justify-between items-center bg-muted/20">
+    <Card className="border border-border/50 bg-card/30 backdrop-blur-xl overflow-hidden shadow-sm flex flex-col h-[calc(100vh-14rem)]">
+      <div className="p-4 border-b border-border/50 flex flex-col sm:flex-row gap-4 justify-between items-center bg-muted/20 shrink-0">
         <div className="relative w-full sm:w-72">
           <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
           <Input
@@ -118,131 +186,121 @@ export function FileList({ files }: FileListProps): React.JSX.Element {
           />
         </div>
 
-        <div className="flex items-center gap-2 bg-background/50 p-1 rounded-lg border border-border/50">
+        <div className="flex items-center gap-2">
           <Button
-            variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+            variant="ghost"
             size="sm"
-            onClick={() => setViewMode('list')}
-            className="h-8 w-8 p-0"
+            onClick={() => setIsStressTest(!isStressTest)}
+            className={`text-xs ${isStressTest ? 'text-red-500 bg-red-500/10' : 'text-muted-foreground'}`}
           >
-            <ListIcon className="h-4 w-4" />
+            {isStressTest ? 'Stop Stress' : 'Stress Test (5k)'}
           </Button>
-          <Button
-            variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
-            size="sm"
-            onClick={() => setViewMode('grid')}
-            className="h-8 w-8 p-0"
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </Button>
+
+          <div className="flex items-center gap-2 bg-background/50 p-1 rounded-lg border border-border/50">
+            <Button
+              variant={viewMode === 'list' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('list')}
+              className="h-8 w-8 p-0"
+            >
+              <ListIcon className="h-4 w-4" />
+            </Button>
+            <Button
+              variant={viewMode === 'grid' ? 'secondary' : 'ghost'}
+              size="sm"
+              onClick={() => setViewMode('grid')}
+              className="h-8 w-8 p-0"
+            >
+              <LayoutGrid className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </div>
 
-      <div className="p-0">
+      <div className="flex-1 w-full bg-background/20 relative">
         {viewMode === 'list' ? (
-          <Table>
-            <TableHeader className="bg-muted/10">
-              <TableRow className="hover:bg-transparent">
-                <TableHead className="w-[50px]"></TableHead>
-                <TableHead
-                  className="cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => handleSort('name')}
-                >
-                  Nom <ArrowUpDown className="inline h-3 w-3 ml-1" />
-                </TableHead>
-                <TableHead
-                  className="w-[100px] cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => handleSort('extension')}
-                >
-                  Type
-                </TableHead>
-                <TableHead
-                  className="w-[100px] text-right cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => handleSort('size')}
-                >
-                  Taille
-                </TableHead>
-                <TableHead
-                  className="w-[150px] text-right cursor-pointer hover:text-primary transition-colors"
-                  onClick={() => handleSort('createdAt')}
-                >
-                  Date
-                </TableHead>
-              </TableRow>
-            </TableHeader>
-            <TableBody>
-              {sortedFiles.map((file) => (
-                <TableRow
-                  key={file.path}
-                  className="group hover:bg-muted/30 transition-colors border-b border-border/40"
-                >
-                  <TableCell className="font-medium">
-                    <div className="p-2 rounded-md bg-background shadow-sm border border-border/50 group-hover:scale-110 transition-transform">
-                      {getFileIcon(file.category)}
-                    </div>
-                  </TableCell>
-                  <TableCell>
-                    <div className="flex flex-col">
-                      <span
-                        className="font-medium text-foreground group-hover:text-primary transition-colors truncate max-w-[300px]"
-                        title={file.name}
-                      >
-                        {file.name}
-                      </span>
-                      <span className="text-xs text-muted-foreground opacity-60 truncate max-w-[300px]">
-                        {file.path}
-                      </span>
-                    </div>
-                  </TableCell>
-                  <TableCell className="text-muted-foreground uppercase text-xs font-semibold tracking-wider">
-                    {file.extension.replace('.', '')}
-                  </TableCell>
-                  <TableCell className="text-right font-mono text-xs text-muted-foreground">
-                    {formatSize(file.size)}
-                  </TableCell>
-                  <TableCell className="text-right text-xs text-muted-foreground">
-                    {new Date(file.createdAt).toLocaleDateString()}
-                  </TableCell>
-                </TableRow>
-              ))}
-              {sortedFiles.length === 0 && (
-                <TableRow>
-                  <TableCell colSpan={5} className="h-24 text-center text-muted-foreground">
-                    Aucun fichier trouvé.
-                  </TableCell>
-                </TableRow>
-              )}
-            </TableBody>
-          </Table>
-        ) : (
-          <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4 p-4 bg-muted/5">
-            {sortedFiles.map((file) => (
-              <motion.div
-                key={file.path}
-                layout
-                initial={{ opacity: 0, scale: 0.9 }}
-                animate={{ opacity: 1, scale: 1 }}
-                className="group relative flex flex-col items-center p-4 rounded-xl border border-border/50 bg-card hover:bg-accent/50 hover:border-primary/30 transition-all cursor-default shadow-sm hover:shadow-md"
+          <>
+            {/* Header */}
+            <div className="flex items-center h-12 border-b border-border/50 bg-muted/10 px-4 text-xs font-medium text-muted-foreground">
+              <div className="w-[50px]"></div>
+              <div
+                className="flex-1 cursor-pointer hover:text-primary transition-colors flex items-center"
+                onClick={() => handleSort('name')}
               >
-                <div className="h-12 w-12 mb-3 rounded-full bg-background border border-border/50 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
-                  {getFileIcon(file.category)}
+                Nom <ArrowUpDown className="h-3 w-3 ml-1" />
+              </div>
+              <div
+                className="w-[100px] hidden sm:block cursor-pointer hover:text-primary transition-colors"
+                onClick={() => handleSort('extension')}
+              >
+                Type
+              </div>
+              <div
+                className="w-[100px] text-right hidden md:block cursor-pointer hover:text-primary transition-colors"
+                onClick={() => handleSort('size')}
+              >
+                Taille
+              </div>
+              <div
+                className="w-[150px] text-right hidden lg:block cursor-pointer hover:text-primary transition-colors"
+                onClick={() => handleSort('createdAt')}
+              >
+                Date
+              </div>
+            </div>
+
+            {/* Virtual List */}
+            <div className="h-[calc(100%-3rem)] w-full">
+              <AutoSizer>
+                {({ height, width }) => (
+                  <FixedSizeList
+                    height={height}
+                    width={width}
+                    itemCount={sortedFiles.length}
+                    itemSize={72} // Row height
+                  >
+                    {Row}
+                  </FixedSizeList>
+                )}
+              </AutoSizer>
+              {sortedFiles.length === 0 && (
+                <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">
+                  Aucun fichier trouvé.
                 </div>
-                <span
-                  className="text-sm font-medium text-center truncate w-full px-2 group-hover:text-primary transition-colors"
-                  title={file.name}
+              )}
+            </div>
+          </>
+        ) : (
+          <div className="h-full overflow-y-auto p-4">
+            <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-5 gap-4">
+              {sortedFiles.map((file) => (
+                <motion.div
+                  key={file.path}
+                  layout
+                  initial={{ opacity: 0, scale: 0.9 }}
+                  animate={{ opacity: 1, scale: 1 }}
+                  className="group relative flex flex-col items-center p-4 rounded-xl border border-border/50 bg-card hover:bg-accent/50 hover:border-primary/30 transition-all cursor-default shadow-sm hover:shadow-md"
                 >
-                  {file.name}
-                </span>
-                <span className="text-xs text-muted-foreground mt-1 uppercase font-semibold opacity-70">
-                  {file.extension.replace('.', '')}
-                </span>
-                <span className="text-[10px] text-muted-foreground mt-0.5">
-                  {formatSize(file.size)}
-                </span>
-              </motion.div>
-            ))}
+                  <div className="h-12 w-12 mb-3 rounded-full bg-background border border-border/50 flex items-center justify-center shadow-inner group-hover:scale-110 transition-transform">
+                    {getFileIcon(file.category)}
+                  </div>
+                  <span
+                    className="text-sm font-medium text-center truncate w-full px-2 group-hover:text-primary transition-colors"
+                    title={file.name}
+                  >
+                    {file.name}
+                  </span>
+                  <span className="text-xs text-muted-foreground mt-1 uppercase font-semibold opacity-70">
+                    {file.extension.replace('.', '')}
+                  </span>
+                  <span className="text-[10px] text-muted-foreground mt-0.5">
+                    {formatSize(file.size)}
+                  </span>
+                </motion.div>
+              ))}
+            </div>
             {sortedFiles.length === 0 && (
-              <div className="col-span-full h-24 flex items-center justify-center text-muted-foreground">
+              <div className="flex h-full items-center justify-center text-muted-foreground">
                 Aucun fichier trouvé.
               </div>
             )}
