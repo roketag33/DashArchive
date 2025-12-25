@@ -4,7 +4,19 @@ import * as fsPromises from 'fs/promises'
 import * as fs from 'fs'
 import * as path from 'path'
 
-vi.mock('fs/promises')
+const mocks = vi.hoisted(() => ({
+  readdir: vi.fn(),
+  stat: vi.fn()
+}))
+
+vi.mock('fs/promises', () => ({
+  readdir: mocks.readdir,
+  stat: mocks.stat,
+  default: {
+    readdir: mocks.readdir,
+    stat: mocks.stat
+  }
+}))
 
 describe('Scanner', () => {
   beforeEach(() => {
@@ -24,9 +36,9 @@ describe('Scanner', () => {
     }
 
     // Mock readdir
-    vi.mocked(fsPromises.readdir).mockResolvedValue(mockDirents as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+    mocks.readdir.mockResolvedValue(mockDirents)
     // Mock stat
-    vi.mocked(fsPromises.stat).mockResolvedValue(mockStats as any) // eslint-disable-line @typescript-eslint/no-explicit-any
+    mocks.stat.mockResolvedValue(mockStats)
 
     const result = await scanDirectory('/test/dir')
 

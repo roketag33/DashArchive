@@ -5,6 +5,7 @@ const mocks = vi.hoisted(() => ({
 }))
 
 vi.mock('child_process', () => ({
+  default: { exec: mocks.exec },
   exec: mocks.exec
 }))
 

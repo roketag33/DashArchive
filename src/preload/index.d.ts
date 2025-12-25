@@ -34,6 +34,15 @@ interface CustomAPI {
 
   // Stats
   getStats: () => Promise<import('./main/services/core/stats').GlobalStats>
+
+  // Vault
+  vault: {
+    unlock: (password: string) => Promise<boolean>
+    lock: () => Promise<void>
+    getStatus: () => Promise<boolean>
+    encryptFile: (source: string, dest: string) => Promise<{ success: boolean }>
+    decryptFile: (source: string, dest: string) => Promise<{ success: boolean }>
+  }
 }
 
 declare global {

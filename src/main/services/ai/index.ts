@@ -1,33 +1,26 @@
-/* eslint-disable @typescript-eslint/no-explicit-any */
-import { pipeline, env } from '@xenova/transformers'
 import { join } from 'path'
 import { app } from 'electron'
-
-// Configure cache for Electron (avoid redownloading)
-// We set it to userData/ai-models
-if (app) {
-  env.localModelPath = join(app.getPath('userData'), 'ai-models')
-  // We allow remote models so it can download them once
-  env.allowRemoteModels = true
-  env.allowLocalModels = true
-}
+import Log from 'electron-log'
 
 interface ClassificationOutput {
   label: string
   score: number
 }
 
+// Global variable to cache the module reference
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+let Transformers: any = null
+
 export class AIService {
   private static instance: AIService
-  // Define a looser type or specific one for the pipeline function
   private classifier: ((text: string | unknown) => Promise<ClassificationOutput[]>) | null = null
   private modelName = 'Xenova/resnet-50'
 
   private extractor: unknown = null
   private embeddingModelName = 'Xenova/clip-vit-base-patch32'
 
-  constructor() {
-    // Singleton pattern if needed, but for now just public
+  private constructor() {
+    // Private constructor for singleton
   }
 
   static getInstance(): AIService {
@@ -37,14 +30,44 @@ export class AIService {
     return AIService.instance
   }
 
+  /**
+   * Dynamically loads the transformers module and configures the environment.
+   */
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  private async loadTransformers(): Promise<any> {
+    if (Transformers) return Transformers
+
+    try {
+      // Dynamic import
+      Transformers = await import('@xenova/transformers')
+      const { env } = Transformers
+
+      if (app) {
+        env.localModelPath = join(app.getPath('userData'), 'ai-models')
+        // Allow remote models for first download, then rely on cache
+        env.allowRemoteModels = true
+        env.allowLocalModels = true
+      }
+      return Transformers
+    } catch (error) {
+      Log.error('[AIService] Failed to load transformers module:', error)
+      throw error
+    }
+  }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async initialize(onProgress?: (data: any) => void): Promise<void> {
     if (this.classifier) return
     console.log(`[AIService] Loading model ${this.modelName}...`)
     try {
+      const { pipeline } = await this.loadTransformers()
+
       this.classifier = (await pipeline('image-classification', this.modelName, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         progress_callback: (data: any) => {
           if (onProgress) onProgress(data)
         }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
       })) as any
       console.log('[AIService] Model loaded successfully')
     } catch (error) {
@@ -53,26 +76,20 @@ export class AIService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async suggestTags(filePath: string, onProgress?: (data: any) => void): Promise<string[]> {
     try {
       if (!this.classifier) {
         await this.initialize(onProgress)
       }
 
-      // Important: Transformers.js in Electron typically takes a file path string
-      // or a URL. For local files, strict file:// protocol is usually safest
-      // or just absolute path if supported by the specific version's sharp/image loader.
-      // We will try passing the raw path first.
-
       const output = await this.classifier!(filePath)
-      // output is [{ label: 'tabby, tabby cat', score: 0.99 }, ...]
 
       if (!output || !Array.isArray(output)) return []
 
-      // Filter and map
       const tags = output
-        .filter((item: ClassificationOutput) => item.score > 0.5) // 50% confidence threshold
-        .map((item: ClassificationOutput) => item.label.split(',')[0].trim()) // Take first synonym
+        .filter((item: ClassificationOutput) => item.score > 0.5)
+        .map((item: ClassificationOutput) => item.label.split(',')[0].trim())
 
       console.log(`[AIService] Suggested tags for ${filePath}:`, tags)
       return tags
@@ -81,6 +98,7 @@ export class AIService {
       return []
     }
   }
+
   async initializeExtractor(
     onProgress?: (data: {
       status: string
@@ -94,7 +112,10 @@ export class AIService {
     if (this.extractor) return
     console.log(`[AIService] Loading embedding model ${this.embeddingModelName}...`)
     try {
+      const { pipeline } = await this.loadTransformers()
+
       this.extractor = await pipeline('feature-extraction', this.embeddingModelName, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         progress_callback: (data: any) => {
           if (onProgress) onProgress(data)
         }
@@ -106,19 +127,19 @@ export class AIService {
     }
   }
 
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   async generateEmbedding(input: string, onProgress?: (data: any) => void): Promise<number[]> {
     try {
       if (!this.extractor) {
         await this.initializeExtractor(onProgress)
       }
 
-      // CLIP accepts text or image path
+      // feature-extraction pipeline result is a Tensor or Object
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
       const output = await (this.extractor as any)(input, { pooling: 'mean', normalize: true })
-      // Output is a Tensor, we need to convert to array
-      // output.data is Float32Array
       return Array.from(output.data)
     } catch (error) {
-      console.error('[AIService] Error generating embedding:', error)
+      Log.error('Embedding error:', error)
       return []
     }
   }

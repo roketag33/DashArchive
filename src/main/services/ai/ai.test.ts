@@ -18,7 +18,12 @@ describe('AIService', () => {
     vi.clearAllMocks()
     // Reset singleton if needed, or just instantiate new classes if not using strict singleton pattern in tests
     // For now assuming we can instantiate it for testing
-    aiService = new AIService()
+    aiService = AIService.getInstance()
+    // Reset internal state for testing
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(aiService as any).classifier = null
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    ;(aiService as any).extractor = null
   })
 
   it('should instantiate correctly', () => {
@@ -26,8 +31,6 @@ describe('AIService', () => {
   })
 
   it('should initialize pipeline on first use', async () => {
-    mockPipeline.mockResolvedValueOnce(async () => [])
-
     // Call suggestTags (which triggers initialization)
     // We mock the classification result
     const mockClassifier = vi.fn().mockResolvedValue([
@@ -38,7 +41,11 @@ describe('AIService', () => {
 
     await aiService.suggestTags('/path/to/image.jpg')
 
-    expect(mockPipeline).toHaveBeenCalledWith('image-classification', expect.any(String))
+    expect(mockPipeline).toHaveBeenCalledWith(
+      'image-classification',
+      expect.any(String),
+      expect.any(Object)
+    )
   })
 
   it('should return tags for an image', async () => {

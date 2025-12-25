@@ -1,11 +1,7 @@
 import React, { useState } from 'react'
 import { FileEntry } from '../../../../shared/types'
-// @ts-ignore - react-window types compatibility with CJS/ESM in Vite
-import * as ReactWindow from 'react-window'
-
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-const rw = ReactWindow as any
-const FixedSizeList = rw.FixedSizeList || rw.default.FixedSizeList
+// @ts-ignore - Types compatibility issue
+import { List } from 'react-window'
 import AutoSizer from 'react-virtualized-auto-sizer'
 import { Card } from '../../components/ui/card'
 import {
@@ -124,15 +120,23 @@ export function FileList({ files }: FileListProps): React.JSX.Element {
 
   const Row = ({
     index,
-    style
+    style,
+    ...props
   }: {
     index: number
     style: React.CSSProperties
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    [key: string]: any
   }): React.JSX.Element => {
     const file = sortedFiles[index]
+    // Extract aria attributes for accessibility if present
+    // eslint-disable-next-line react/prop-types
+    const { ariaAttributes } = props
+
     return (
       <div
         style={style}
+        {...ariaAttributes}
         className="flex items-center border-b border-border/40 hover:bg-muted/30 transition-colors group px-4"
       >
         {/* Icon */}
@@ -191,7 +195,7 @@ export function FileList({ files }: FileListProps): React.JSX.Element {
             variant="ghost"
             size="sm"
             onClick={() => setIsStressTest(!isStressTest)}
-            className={`text-xs ${isStressTest ? 'text-red-500 bg-red-500/10' : 'text-muted-foreground'}`}
+            className={`text - xs ${isStressTest ? 'text-red-500 bg-red-500/10' : 'text-muted-foreground'} `}
           >
             {isStressTest ? 'Stop Stress' : 'Stress Test (5k)'}
           </Button>
@@ -252,16 +256,18 @@ export function FileList({ files }: FileListProps): React.JSX.Element {
             {/* Virtual List */}
             <div className="h-[calc(100%-3rem)] w-full">
               <AutoSizer>
-                {({ height, width }) => (
-                  <FixedSizeList
-                    height={height}
-                    width={width}
-                    itemCount={sortedFiles.length}
-                    itemSize={72} // Row height
-                  >
-                    {Row}
-                  </FixedSizeList>
-                )}
+                {({ height, width }) => {
+                  // @ts-ignore - react-window v2 types inference issue with rowProps
+                  return (
+                    <List
+                      style={{ height, width }}
+                      rowCount={sortedFiles.length}
+                      rowHeight={72} // Row height
+                      rowComponent={Row}
+                      rowProps={{}}
+                    />
+                  )
+                }}
               </AutoSizer>
               {sortedFiles.length === 0 && (
                 <div className="absolute inset-0 flex items-center justify-center text-muted-foreground">

@@ -92,6 +92,25 @@ export function ChatInterface(): React.JSX.Element {
                 )}
               >
                 {msg.content}
+
+                {msg.sources && msg.sources.length > 0 && (
+                  <div className="mt-3 pt-3 border-t border-white/10 text-xs">
+                    <p className="font-semibold mb-1 opacity-70">Sources :</p>
+                    <div className="flex flex-wrap gap-2">
+                      {msg.sources.map((source, idx) => (
+                        <button
+                          key={idx}
+                          onClick={() => window.api.showInFolder(source.path)}
+                          className="px-2 py-1 bg-black/20 rounded hover:bg-black/40 transition-colors flex items-center gap-1.5"
+                          title={source.path}
+                        >
+                          <span className="opacity-50">📄</span>
+                          <span className="truncate max-w-[150px]">{source.name}</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             </motion.div>
           ))}

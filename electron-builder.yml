@@ -1,5 +1,5 @@
-appId: com.electron.fileorganizer
-productName: FileOrganizer
+appId: com.roketag33.dasharchive
+productName: DashArchive
 directories:
   buildResources: build
 files:
@@ -12,7 +12,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: test
+  executableName: DashArchive
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -23,8 +23,8 @@ mac:
   extendInfo:
     - NSCameraUsageDescription: Application requests access to the device's camera.
     - NSMicrophoneUsageDescription: Application requests access to the device's microphone.
-    - NSDocumentsFolderUsageDescription: Application requests access to the user's Documents folder.
-    - NSDownloadsFolderUsageDescription: Application requests access to the user's Downloads folder.
+    - NSDocumentsFolderUsageDescription: DashArchive needs access to organize your documents.
+    - NSDownloadsFolderUsageDescription: DashArchive needs access to organize your downloads.
   notarize: false
   target:
     - dmg
@@ -33,7 +33,7 @@ dmg:
 linux:
   target:
     - AppImage
-  maintainer: electronjs.org
+  maintainer: roketag33
   category: Utility
 appImage:
   artifactName: ${name}-${version}.${ext}

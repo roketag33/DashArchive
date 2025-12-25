@@ -8,9 +8,11 @@ import {
   Video,
   Music,
   Code,
-  Box
+  Box,
+  Mic
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
+import { voiceService } from '../../services/VoiceService'
 
 interface SearchResult {
   path: string
@@ -27,7 +29,33 @@ export function Spotlight(): React.JSX.Element {
   const [results, setResults] = useState<SearchResult[]>([])
   const [loading, setLoading] = useState(false)
   const [selectedIndex, setSelectedIndex] = useState(0)
+  const [isListening, setIsListening] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Initialize Voice Service
+  useEffect(() => {
+    voiceService.initialize().catch(console.error)
+  }, [])
+
+  const toggleListening = async (): Promise<void> => {
+    if (isListening) {
+      voiceService.stopListening()
+      setIsListening(false)
+    } else {
+      try {
+        setIsListening(true)
+        await voiceService.startListening((text) => {
+          setQuery((prev) => {
+            // Smart append: si vide, remplace. Si plein, ajoute.
+            return prev ? `${prev} ${text}` : text
+          })
+        })
+      } catch (err) {
+        console.error('Failed to start listening', err)
+        setIsListening(false)
+      }
+    }
+  }
 
   // Auto-focus input when mounted
   useEffect(() => {
@@ -118,9 +146,25 @@ export function Spotlight(): React.JSX.Element {
             onChange={(e) => setQuery(e.target.value)}
           />
           {loading && <Loader2 className="h-5 w-5 animate-spin text-muted-foreground" />}
-          <div className="ml-2 px-2 py-0.5 rounded bg-muted/20 text-xs font-mono text-muted-foreground">
+          <div className="ml-2 px-2 py-0.5 rounded bg-muted/20 text-xs font-mono text-muted-foreground mr-2">
             CMD+K
           </div>
+          <button
+            onClick={toggleListening}
+            className={cn(
+              'p-2 rounded-full transition-all duration-300 relative overflow-hidden',
+              isListening ? 'bg-red-500/20 text-red-500' : 'hover:bg-muted/20 text-muted-foreground'
+            )}
+            title="Contrôle Vocal"
+          >
+            <div
+              className={cn(
+                'absolute inset-0 bg-red-500/20 rounded-full animate-ping',
+                isListening ? 'opacity-100' : 'opacity-0'
+              )}
+            />
+            <Mic className={cn('h-5 w-5 relative z-10', isListening && 'animate-pulse')} />
+          </button>
         </div>
 
         {/* Results Area */}

@@ -55,7 +55,18 @@ const api = {
 
   // Stats API
   getStats: () => ipcRenderer.invoke('stats:get'),
-  showInFolder: (path: string) => ipcRenderer.invoke('shell:show-in-folder', path)
+  showInFolder: (path: string) => ipcRenderer.invoke('shell:show-in-folder', path),
+
+  // Vault API
+  vault: {
+    unlock: (password: string) => ipcRenderer.invoke('vault:unlock', password),
+    lock: () => ipcRenderer.invoke('vault:lock'),
+    getStatus: () => ipcRenderer.invoke('vault:status'),
+    encryptFile: (source: string, dest: string) =>
+      ipcRenderer.invoke('vault:encrypt-file', { source, dest }),
+    decryptFile: (source: string, dest: string) =>
+      ipcRenderer.invoke('vault:decrypt-file', { source, dest })
+  }
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

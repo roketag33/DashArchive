@@ -1,6 +1,6 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
-import { Shield, Lock, ArrowRight, AlertCircle, Fingerprint } from 'lucide-react'
+import { Shield, Lock, ArrowRight, AlertCircle, Fingerprint, FileLock, Upload } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 
 export function Vault(): React.JSX.Element {
@@ -8,6 +8,12 @@ export function Vault(): React.JSX.Element {
   const [password, setPassword] = useState('')
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
+  const [processingFile, setProcessingFile] = useState<string | null>(null)
+
+  // Check initial status
+  useEffect(() => {
+    window.api.vault.getStatus().then(setUnlocked)
+  }, [])
 
   const handleUnlock = async (): Promise<void> => {
     if (!password) return
@@ -15,17 +21,50 @@ export function Vault(): React.JSX.Element {
     setLoading(true)
     setError('')
 
-    // Simulate IPC call (to be wired later)
-    setTimeout(() => {
-      if (password === 'admin') {
-        // Temporary mock
+    try {
+      const success = await window.api.vault.unlock(password)
+      if (success) {
         setUnlocked(true)
       } else {
         setError('Accès refusé. Mot de passe incorrect.')
         setPassword('')
       }
+    } catch (err) {
+      setError('Erreur lors du déverrouillage.')
+      console.error(err)
+    } finally {
       setLoading(false)
-    }, 800)
+    }
+  }
+
+  const handleDrop = async (e: React.DragEvent): Promise<void> => {
+    e.preventDefault()
+    e.stopPropagation()
+
+    if (!unlocked) return
+
+    const files = Array.from(e.dataTransfer.files)
+    if (files.length === 0) return
+
+    setProcessingFile('Chiffrement en cours...')
+
+    for (const file of files) {
+      try {
+        // Encrypt to .enc sidecar
+        const dest = `${file.path}.enc`
+        await window.api.vault.encryptFile(file.path, dest)
+        console.log(`Encrypted ${file.path} to ${dest}`)
+      } catch (error) {
+        console.error('Encryption failed', error)
+        setError(`Échec du chiffrement de ${file.name}`)
+      }
+    }
+    setProcessingFile(null)
+  }
+
+  const handleDragOver = (e: React.DragEvent): void => {
+    e.preventDefault()
+    e.stopPropagation()
   }
 
   if (unlocked) {
@@ -33,10 +72,34 @@ export function Vault(): React.JSX.Element {
       <div className="h-full w-full p-8 text-foreground flex flex-col items-center justify-center">
         <Shield className="h-16 w-16 text-green-500 mb-4" />
         <h1 className="text-3xl font-bold mb-2">Coffre-fort Ouvert</h1>
-        <p className="text-muted-foreground mb-8">Vos documents sont déchiffrés et accessibles.</p>
-        <div className="p-4 border border-dashed rounded-lg border-muted-foreground/30 w-full max-w-lg flex items-center justify-center h-64">
-          <p className="text-sm text-muted-foreground">Liste des fichiers sécurisés (Vide)</p>
+        <p className="text-muted-foreground mb-8">
+          Vos documents sont déchiffrés et accessibles en mémoire.
+        </p>
+
+        <div
+          className="p-8 border-2 border-dashed rounded-xl border-muted-foreground/30 w-full max-w-lg flex flex-col items-center justify-center h-64 transition-colors hover:border-primary/50 hover:bg-muted/10"
+          onDrop={handleDrop}
+          onDragOver={handleDragOver}
+        >
+          {processingFile ? (
+            <div className="flex flex-col items-center animate-pulse">
+              <FileLock className="h-10 w-10 text-primary mb-2" />
+              <p className="text-sm font-medium">{processingFile}</p>
+            </div>
+          ) : (
+            <>
+              <Upload className="h-10 w-10 text-muted-foreground mb-4" />
+              <p className="text-sm font-semibold text-foreground">
+                Déposez des fichiers ici pour les chiffrer
+              </p>
+              <p className="text-xs text-muted-foreground mt-2">Algorithme AES-256-GCM</p>
+            </>
+          )}
         </div>
+
+        <p className="mt-8 text-xs text-muted-foreground">
+          Note: Les fichiers chiffrés (.enc) seront créés à côté des originaux.
+        </p>
       </div>
     )
   }

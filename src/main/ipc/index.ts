@@ -10,19 +10,18 @@ import { registerStatsHandlers } from './stats'
 
 import { ipcMain, Notification } from 'electron'
 import log from 'electron-log'
-import { watcherService } from '../services/fs/watcher'
 import { aiService } from '../services/ai'
 import { sqlite } from '../db'
 import fs from 'fs'
+
+import { registerVaultHandlers } from './vault'
 
 export function registerIpcHandlers(): void {
   registerDialogHandlers()
   registerScannerHandlers()
   registerPlanHandlers()
   registerWatcherHandlers()
-
-  // New handler for watcher:stop, as per the provided edit snippet
-  ipcMain.handle('watcher:stop', () => watcherService.stopAll())
+  registerVaultHandlers() // Register Vault Handlers
 
   // Drop Zone IPC
   ipcMain.handle('DROP_ZONE:FILE_DROPPED', async (_, paths: string[]) => {
