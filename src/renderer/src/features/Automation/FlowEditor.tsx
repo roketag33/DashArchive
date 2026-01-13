@@ -59,7 +59,7 @@ export function FlowEditor(): React.JSX.Element {
         </div>
       </div>
 
-      <div className="flex-1 min-h-0 bg-card/30 backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden glass-panel relative">
+      <div className="h-[600px] bg-card/30 backdrop-blur-sm border border-border/40 rounded-xl overflow-hidden glass-panel relative">
         <ReactFlow
           nodes={nodes}
           edges={edges}

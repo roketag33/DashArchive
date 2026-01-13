@@ -2,6 +2,7 @@ import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry, Rule } fro
 
 interface CustomAPI {
   selectFolder: () => Promise<string | null>
+  openFile: () => Promise<string[]>
   scanFolder: (pathOrId: string | { path?: string; id?: string }) => Promise<FileEntry[]>
   generatePlan: (files: FileEntry[]) => Promise<Plan>
   executePlan: (plan: Plan) => Promise<ExecutionResult>
@@ -43,6 +44,8 @@ interface CustomAPI {
     encryptFile: (source: string, dest: string) => Promise<{ success: boolean }>
     decryptFile: (source: string, dest: string) => Promise<{ success: boolean }>
   }
+  // Explicit Context API
+  readFiles: (paths: string[]) => Promise<{ path: string; name: string; content: string }[]>
 }
 
 declare global {

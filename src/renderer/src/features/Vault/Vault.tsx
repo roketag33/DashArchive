@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react'
 import { motion } from 'framer-motion'
 import { Shield, Lock, ArrowRight, AlertCircle, Fingerprint, FileLock, Upload } from 'lucide-react'
 import { Button } from '../../components/ui/button'
+import { Tooltip } from '../../components/ui/tooltip'
 
 export function Vault(): React.JSX.Element {
   const [unlocked, setUnlocked] = useState(false)
@@ -92,7 +93,11 @@ export function Vault(): React.JSX.Element {
               <p className="text-sm font-semibold text-foreground">
                 Déposez des fichiers ici pour les chiffrer
               </p>
-              <p className="text-xs text-muted-foreground mt-2">Algorithme AES-256-GCM</p>
+              <Tooltip content="Chiffrement militaire AES-256-GCM" side="bottom">
+                <p className="text-xs text-muted-foreground mt-2 cursor-help">
+                  Algorithme AES-256-GCM
+                </p>
+              </Tooltip>
             </>
           )}
         </div>

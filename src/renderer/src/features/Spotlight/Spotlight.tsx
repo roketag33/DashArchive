@@ -13,6 +13,7 @@ import {
 } from 'lucide-react'
 import { cn } from '../../lib/utils'
 import { voiceService } from '../../services/VoiceService'
+import { Tooltip } from '../../components/ui/tooltip'
 
 interface SearchResult {
   path: string
@@ -149,22 +150,25 @@ export function Spotlight(): React.JSX.Element {
           <div className="ml-2 px-2 py-0.5 rounded bg-muted/20 text-xs font-mono text-muted-foreground mr-2">
             CMD+K
           </div>
-          <button
-            onClick={toggleListening}
-            className={cn(
-              'p-2 rounded-full transition-all duration-300 relative overflow-hidden',
-              isListening ? 'bg-red-500/20 text-red-500' : 'hover:bg-muted/20 text-muted-foreground'
-            )}
-            title="Contrôle Vocal"
-          >
-            <div
+          <Tooltip content="Commande Vocale (Jarvis)" side="left">
+            <button
+              onClick={toggleListening}
               className={cn(
-                'absolute inset-0 bg-red-500/20 rounded-full animate-ping',
-                isListening ? 'opacity-100' : 'opacity-0'
+                'p-2 rounded-full transition-all duration-300 relative overflow-hidden',
+                isListening
+                  ? 'bg-red-500/20 text-red-500'
+                  : 'hover:bg-muted/20 text-muted-foreground'
               )}
-            />
-            <Mic className={cn('h-5 w-5 relative z-10', isListening && 'animate-pulse')} />
-          </button>
+            >
+              <div
+                className={cn(
+                  'absolute inset-0 bg-red-500/20 rounded-full animate-ping',
+                  isListening ? 'opacity-100' : 'opacity-0'
+                )}
+              />
+              <Mic className={cn('h-5 w-5 relative z-10', isListening && 'animate-pulse')} />
+            </button>
+          </Tooltip>
         </div>
 
         {/* Results Area */}

@@ -161,6 +161,29 @@ export function SettingsPanel(): React.JSX.Element {
             </CardDescription>
           </CardHeader>
           <div className="p-6 grid gap-6 md:grid-cols-2">
+            {/* Onboarding Reset */}
+            <div className="md:col-span-2 flex items-center justify-between p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 transition-colors">
+              <div className="space-y-0.5">
+                <label className="text-sm font-medium leading-none text-blue-600 dark:text-blue-400">
+                  Didacticiel interactif
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Relancez le guide de démarrage pour revoir les fonctionnalités.
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  localStorage.removeItem('dasharchive-onboarding-completed')
+                  window.location.reload()
+                }}
+                className="border-blue-200 hover:bg-blue-100 dark:border-blue-800 dark:hover:bg-blue-900/50"
+              >
+                Relancer le tutoriel
+              </Button>
+            </div>
+
             <div className="flex items-center justify-between p-4 rounded-xl border border-border/50 bg-background/40 hover:bg-background/60 transition-colors">
               <div className="space-y-0.5">
                 <label className="text-sm font-medium leading-none">

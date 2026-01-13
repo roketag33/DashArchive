@@ -116,14 +116,24 @@ export function initDB(): void {
     // Manual Migrations (Naive check)
     try {
       // Check if 'scan_frequency' column exists in 'folders'
-      const hasColumn = sqlite
-        .prepare('PRAGMA table_info(folders)')
-        .all()
-        .some((col: unknown) => (col as { name: string }).name === 'scan_frequency')
-      if (!hasColumn) {
+      const foldersColumns = sqlite.prepare('PRAGMA table_info(folders)').all()
+      const hasScanFreq = foldersColumns.some(
+        (col: unknown) => (col as { name: string }).name === 'scan_frequency'
+      )
+      if (!hasScanFreq) {
         console.log('Migrating: Adding scan_frequency and last_scan to folders')
         sqlite.exec('ALTER TABLE folders ADD COLUMN scan_frequency TEXT')
         sqlite.exec('ALTER TABLE folders ADD COLUMN last_scan INTEGER')
+      }
+
+      // Check if 'content' column exists in 'files'
+      const filesColumns = sqlite.prepare('PRAGMA table_info(files)').all()
+      const hasContent = filesColumns.some(
+        (col: unknown) => (col as { name: string }).name === 'content'
+      )
+      if (!hasContent) {
+        console.log('Migrating: Adding content to files')
+        sqlite.exec('ALTER TABLE files ADD COLUMN content TEXT')
       }
     } catch (e) {
       console.error('Migration failed:', e)

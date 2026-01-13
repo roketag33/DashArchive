@@ -264,7 +264,8 @@ export function FileList({ files }: FileListProps): React.JSX.Element {
                       rowCount={sortedFiles.length}
                       rowHeight={72} // Row height
                       rowComponent={Row}
-                      rowProps={{}}
+                      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+                      rowProps={{} as any}
                     />
                   )
                 }}

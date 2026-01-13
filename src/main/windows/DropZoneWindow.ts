@@ -24,9 +24,9 @@ export class DropZoneWindow {
       }
     })
 
-    this.window.on('ready-to-show', () => {
-      this.window.show()
-    })
+    // this.window.on('ready-to-show', () => {
+    //   this.window.show()
+    // })
 
     // Logic for loading URL
     if (process.env['ELECTRON_RENDERER_URL']) {

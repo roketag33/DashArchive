@@ -7,13 +7,19 @@ export interface SearchResult {
   content?: string
 }
 
+export interface ActiveFile {
+  name: string
+  path: string
+  content: string
+}
+
 export interface RAGResponse {
   augmentedMessage: string
   sources: SearchResult[]
 }
 
 export class RAGService {
-  private readonly SIMILARITY_THRESHOLD = 0.7
+  private readonly SIMILARITY_THRESHOLD = 0.05
   private readonly MAX_CONTEXT_LENGTH = 3000 // Characters
 
   async preparePromptWithContext(userMessage: string): Promise<RAGResponse> {
@@ -59,6 +65,59 @@ export class RAGService {
         augmentedMessage: userMessage,
         sources: []
       }
+    }
+  }
+
+  async prepareExplicitContext(
+    userMessage: string,
+    activeFiles: ActiveFile[]
+  ): Promise<RAGResponse> {
+    if (!activeFiles || activeFiles.length === 0) {
+      // Fallback to implicit RAG if no explicit files
+      return this.preparePromptWithContext(userMessage)
+    }
+
+    // Explicit Mode: Use these files ONLY (or prioritize them heavily)
+    let contextString = ''
+
+    // We can allow larger context for explicit files as user specifically asked for them
+    const EXPLICIT_MAX_LENGTH = 12000
+
+    for (const file of activeFiles) {
+      // Use full content, but safety limit
+      const content = file.content.substring(0, 8000)
+      contextString += `\n=== BEGIN FILE: ${file.name} ===\n${content}\n=== END FILE ===\n`
+      if (contextString.length > EXPLICIT_MAX_LENGTH) break
+    }
+
+    // Prompt Engineering for "See this file"
+    const augmentedMessage = `[SYSTEM: You are a helpful AI assistant. The user has attached files. You must read them to answer.
+IMPORTANT INSTRUCTIONS:
+1. ANSWER IN FRENCH ONLY.
+2. USE MARKDOWN FORMATTING.
+3. BE EXTREMELY CONCISE. Answer directly.
+4. DO NOT REPEAT THE QUESTION OR CONTEXT.
+5. NO FILLER WORDS ("Voici la réponse", "Basé sur le fichier..."). Just the answer.
+6. If the user asks for a list, provide a numbered list.
+]
+
+${contextString}
+
+[USER QUESTION]:
+${userMessage}`
+
+    // Convert ActiveFile to SearchResult for UI compatibility
+    const sources: SearchResult[] = activeFiles.map((f) => ({
+      id: f.path,
+      name: f.name,
+      path: f.path,
+      score: 1.0,
+      content: f.content
+    }))
+
+    return {
+      augmentedMessage,
+      sources
     }
   }
 }

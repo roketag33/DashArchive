@@ -1,10 +1,12 @@
 import React, { useState } from 'react'
 import { useTranslation } from 'react-i18next'
 import { Upload, File } from 'lucide-react'
+import { useAI } from '../../context/AIContext'
 
 export function DropZone(): React.JSX.Element {
   const { t } = useTranslation()
   const [isDragOver, setIsDragOver] = useState(false)
+  const { addActiveFiles } = useAI()
 
   const handleDragEnter = (e: React.DragEvent): void => {
     e.preventDefault()
@@ -37,7 +39,21 @@ export function DropZone(): React.JSX.Element {
         path: string
       }
       const filePaths = files.map((f) => (f as ElectronFile).path)
-      await window.api.processDroppedFiles(filePaths)
+
+      // 1. Index for future RAG (Background)
+      window.api
+        .processDroppedFiles(filePaths)
+        .catch((err) => console.error('DropZone indexing failed:', err))
+
+      // 2. Add to Active Context (Immediate)
+      try {
+        const filesWithContent = await window.api.readFiles(filePaths)
+        if (filesWithContent.length > 0) {
+          addActiveFiles(filesWithContent)
+        }
+      } catch (err) {
+        console.error('Failed to read dropped files:', err)
+      }
     }
   }
 

@@ -17,21 +17,25 @@ import { Toaster } from 'sonner'
 import { cn } from '../../lib/utils'
 import { Button } from '../ui/button'
 import { SearchBar } from '../../features/Search/SearchBar'
+import { OnboardingModal } from '../../features/Onboarding/OnboardingModal'
+import { Tooltip } from '../ui/tooltip'
 
 interface SidebarItemProps {
   icon: React.ElementType
   label: string
   isActive?: boolean
   onClick?: () => void
+  tooltip?: string
 }
 
 function SidebarItem({
   icon: Icon,
   label,
   isActive,
-  onClick
+  onClick,
+  tooltip
 }: SidebarItemProps): React.JSX.Element {
-  return (
+  const content = (
     <button
       onClick={onClick}
       className={cn(
@@ -54,13 +58,25 @@ function SidebarItem({
       )}
     </button>
   )
+
+  if (tooltip) {
+    return (
+      <Tooltip content={tooltip} side="right">
+        {content}
+      </Tooltip>
+    )
+  }
+  return content
 }
+
+import { useAI } from '../../context/AIContext'
 
 export function AppLayout(): React.JSX.Element {
   const navigate = useNavigate()
   const location = useLocation()
   const { t, i18n } = useTranslation()
   const { theme, setTheme } = useTheme()
+  const { isLoading: isAILoading, progress: aiProgress } = useAI()
 
   const currentPath = location.pathname
 
@@ -95,7 +111,7 @@ export function AppLayout(): React.JSX.Element {
         initial={{ x: -20, opacity: 0 }}
         animate={{ x: 0, opacity: 1 }}
         transition={{ duration: 0.4, ease: 'easeOut' }}
-        className="flex w-64 flex-col gap-4 border-r border-border/40 bg-card/30 p-4 backdrop-blur-xl"
+        className="relative z-50 flex w-64 flex-col gap-4 border-r border-border/40 bg-card/30 p-4 backdrop-blur-xl"
       >
         <div className="flex h-12 items-center px-2 mb-4">
           <div className="flex items-center gap-2">
@@ -123,9 +139,14 @@ export function AppLayout(): React.JSX.Element {
             />
             <SidebarItem
               icon={MessageSquare}
-              label="Assistant"
+              label={
+                isAILoading && aiProgress
+                  ? `Assistant (${aiProgress.match(/\d+%/)?.[0] || '...'})`
+                  : 'Assistant'
+              }
               isActive={currentPath === '/chat'}
               onClick={() => navigateTo('/chat')}
+              tooltip={isAILoading ? aiProgress : 'Chat RAG avec vos fichiers'}
             />
             <SidebarItem
               icon={HardDrive}
@@ -138,6 +159,7 @@ export function AppLayout(): React.JSX.Element {
               label="Coffre-fort"
               isActive={currentPath === '/vault'}
               onClick={() => navigateTo('/vault')}
+              tooltip="Zone sécurisée chiffrée"
             />
             <SidebarItem
               icon={History}
@@ -219,6 +241,7 @@ export function AppLayout(): React.JSX.Element {
         </div>
       </main>
       <Toaster position="bottom-right" theme={theme as 'light' | 'dark' | 'system'} />
+      <OnboardingModal />
     </div>
   )
 }

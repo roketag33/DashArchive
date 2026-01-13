@@ -5,6 +5,7 @@ import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry } from '../
 // Custom APIs for renderer
 const api = {
   selectFolder: (): Promise<string | null> => ipcRenderer.invoke('dialog:openDirectory'),
+  openFile: (): Promise<string[]> => ipcRenderer.invoke('dialog:openFile'),
   scanFolder: (pathOrId: string | { path?: string; id?: string }): Promise<FileEntry[]> => {
     // Support legacy string or new object signature
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -43,6 +44,10 @@ const api = {
     ipcRenderer.invoke('DROP_ZONE:FILE_DROPPED', paths),
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   searchSemantic: (query: string): Promise<any[]> => ipcRenderer.invoke('SEARCH:SEMANTIC', query),
+
+  // Explicit Context API
+  readFiles: (paths: string[]): Promise<{ path: string; name: string; content: string }[]> =>
+    ipcRenderer.invoke('fs:read-files', paths),
 
   // Folders API
   getFolders: () => ipcRenderer.invoke('folders:get-all'),

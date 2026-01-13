@@ -17,7 +17,7 @@ export class AIService {
   private modelName = 'Xenova/resnet-50'
 
   private extractor: unknown = null
-  private embeddingModelName = 'Xenova/clip-vit-base-patch32'
+  private embeddingModelName = 'Xenova/all-MiniLM-L6-v2'
 
   private constructor() {
     // Private constructor for singleton

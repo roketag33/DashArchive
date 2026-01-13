@@ -12,11 +12,21 @@ vi.mock('react-i18next', () => ({
   })
 }))
 
+// Mock useAI
+vi.mock('../../context/AIContext', () => ({
+  useAI: () => ({
+    addActiveFiles: vi.fn(),
+    activeFiles: []
+  })
+}))
+
 // Mock window.api
-const mockProcessFile = vi.fn()
+const mockProcessFile = vi.fn().mockResolvedValue(undefined)
+const mockReadFiles = vi.fn().mockResolvedValue([])
 Object.defineProperty(window, 'api', {
   value: {
-    processDroppedFiles: mockProcessFile
+    processDroppedFiles: mockProcessFile,
+    readFiles: mockReadFiles
     // Add other methods if DropZone uses them
   },
   writable: true

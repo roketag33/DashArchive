@@ -13,3 +13,6 @@ debug.png
 *.db
 *.db-journal
 drizzle/
+# Tooling
+_bmad-output/
+.claude/

@@ -15,6 +15,9 @@ import { sqlite } from '../db'
 import fs from 'fs'
 
 import { registerVaultHandlers } from './vault'
+// eslint-disable-next-line @typescript-eslint/ban-ts-comment
+// @ts-ignore
+import * as pdfLib from 'pdf-parse'
 
 export function registerIpcHandlers(): void {
   registerDialogHandlers()
@@ -37,7 +40,7 @@ export function registerIpcHandlers(): void {
     try {
       // Simple sequential processing for now
       for (const filePath of paths) {
-        // Check if Image (naive extension check for now, can use file-type later)
+        // Handle Images
         if (/\.(jpg|jpeg|png|webp)$/i.test(filePath)) {
           log.info(`[DropZone] Analyzing image: ${filePath}`)
 
@@ -101,14 +104,56 @@ export function registerIpcHandlers(): void {
               silent: false
             }).show()
           }
-        } else {
           new Notification({
             title: 'DashArchive',
             body: 'File received (Text/Other support coming soon).',
             silent: false
           }).show()
         }
-      }
+
+        // Handle PDFs
+        if (/\.pdf$/i.test(filePath)) {
+          log.info(`[DropZone] Analyzing PDF: ${filePath}`)
+          const buffer = await fs.promises.readFile(filePath)
+
+          // pdf-parse v2 check
+          const PDFParseClass =
+            pdfLib.PDFParse || (pdfLib as any).default?.PDFParse || (pdfLib as any).default
+
+          if (!PDFParseClass || typeof PDFParseClass !== 'function' || !PDFParseClass.prototype) {
+            log.error('PDFParse class not found in export:', pdfLib)
+            throw new Error('PDFParse class failed to load')
+          }
+
+          // Instantiate Parser
+          const parser = new PDFParseClass({ data: buffer })
+          const data = await parser.getText()
+          const text = data.text
+
+          if (text && text.trim().length > 0) {
+            await indexDocument(filePath, text)
+            new Notification({
+              title: 'DashArchive',
+              body: 'PDF Indexed successfully.',
+              silent: false
+            }).show()
+          }
+        }
+
+        // Handle Text Files
+        if (/\.(txt|md|json|js|ts|tsx)$/i.test(filePath)) {
+          log.info(`[DropZone] Analyzing Text: ${filePath}`)
+          const text = await fs.promises.readFile(filePath, 'utf-8')
+          if (text && text.trim().length > 0) {
+            await indexDocument(filePath, text)
+            new Notification({
+              title: 'DashArchive',
+              body: 'Text File Indexed successfully.',
+              silent: false
+            }).show()
+          }
+        }
+      } // End of for loop
     } catch (err) {
       log.error('AI Analysis failed:', err)
       new Notification({
@@ -121,6 +166,47 @@ export function registerIpcHandlers(): void {
     return
   })
 
+  // Helper to index documents
+  // Helper to index documents
+  async function indexDocument(filePath: string, content: string): Promise<void> {
+    // Truncate if too long for embedding model (simple truncation)
+    const truncatedContent = content.slice(0, 8000)
+
+    const embedding = await aiService.generateEmbedding(truncatedContent)
+    if (embedding.length > 0) {
+      try {
+        const stats = await fs.promises.stat(filePath)
+        const name = filePath.split(/[/\\]/).pop() || 'unknown'
+
+        // Upsert
+        sqlite
+          .prepare(
+            `
+                INSERT INTO files (id, path, name, size, category, embedding, last_scan, content)
+                VALUES (?, ?, ?, ?, 'document', ?, CURRENT_TIMESTAMP, ?)
+                ON CONFLICT(id) DO UPDATE SET 
+                    embedding = excluded.embedding,
+                    last_scan = CURRENT_TIMESTAMP,
+                    content = excluded.content
+              `
+          )
+          .run(
+            filePath, // Using path as ID for simplicity
+            filePath,
+            name,
+            stats.size,
+            JSON.stringify(embedding),
+            truncatedContent
+          )
+        log.info(
+          `[DropZone] Indexed ${name} for semantic search. Content Length: ${truncatedContent.length}`
+        )
+      } catch (dbErr) {
+        log.error('Failed to save embedding:', dbErr)
+      }
+    }
+  }
+
   // Semantic Search IPC
   ipcMain.handle('SEARCH:SEMANTIC', async (_, query: string) => {
     try {
@@ -130,8 +216,10 @@ export function registerIpcHandlers(): void {
 
       // Fetch all files with embeddings
       const files = sqlite
-        .prepare('SELECT id, path, name, embedding FROM files WHERE embedding IS NOT NULL')
+        .prepare('SELECT id, path, name, embedding, content FROM files WHERE embedding IS NOT NULL')
         .all()
+
+      log.info(`[Search] Found ${files.length} files with embeddings in DB.`)
 
       if (files.length === 0) return []
 
@@ -140,6 +228,14 @@ export function registerIpcHandlers(): void {
           try {
             const embedding = JSON.parse(file.embedding)
             const similarity = cosineSimilarity(queryEmbedding, embedding)
+            // Debug log for each file score
+            if (similarity > 0.0) {
+              log.info(`[Search] File: ${file.name}, Score: ${similarity}`)
+              const preview = file.content
+                ? file.content.substring(0, 100).replace(/\n/g, ' ')
+                : 'NULL_OR_UNDEFINED'
+              log.info(`[Search] Content Preview: ${preview}`)
+            }
             return { ...file, score: similarity }
           } catch (e) {
             // Ignore parsing errors for now
@@ -149,12 +245,48 @@ export function registerIpcHandlers(): void {
         })
         .filter((f: any) => f !== null)
 
-      // Sort by score desc, take top 20
-      return results.sort((a: any, b: any) => b.score - a.score).slice(0, 20)
+      const topResults = results.sort((a: any, b: any) => b.score - a.score).slice(0, 20)
+      log.info(
+        `[Search] Top results:`,
+        topResults.map((f: any) => ({ name: f.name, score: f.score }))
+      )
+
+      return topResults
     } catch (error) {
       log.error('Semantic search failed:', error)
       return []
     }
+  })
+
+  ipcMain.handle('fs:read-files', async (_, paths: string[]) => {
+    const results: { path: string; name: string; content: string }[] = []
+
+    for (const filePath of paths) {
+      try {
+        const name = filePath.split(/[/\\]/).pop() || 'unknown'
+        let content = ''
+
+        if (/\.pdf$/i.test(filePath)) {
+          const buffer = await fs.promises.readFile(filePath)
+          const PDFParseClass =
+            pdfLib.PDFParse || (pdfLib as any).default?.PDFParse || (pdfLib as any).default
+          if (PDFParseClass) {
+            const parser = new PDFParseClass({ data: buffer })
+            const data = await parser.getText()
+            content = data.text
+          }
+        } else if (/\.(txt|md|json|js|ts|tsx)$/i.test(filePath)) {
+          content = await fs.promises.readFile(filePath, 'utf-8')
+        }
+
+        if (content) {
+          results.push({ path: filePath, name, content })
+        }
+      } catch (error) {
+        log.error(`Failed to read file ${filePath}:`, error)
+      }
+    }
+    return results
   })
 
   ipcMain.handle('shell:show-in-folder', (_, path) => {

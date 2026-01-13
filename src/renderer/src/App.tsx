@@ -9,24 +9,27 @@ import { FlowEditor } from './features/Automation/FlowEditor'
 import { Spotlight } from './features/Spotlight/Spotlight'
 import { Vault } from './features/Vault/Vault'
 import { ChatInterface } from './features/Chat/ChatInterface'
+import { AIProvider } from './context/AIContext'
 
 function App(): React.JSX.Element {
   return (
-    <Routes>
-      <Route path="/" element={<AppLayout />}>
-        <Route index element={<Dashboard />} />
-        <Route path="folders" element={<Dashboard />} />
-        <Route path="folders/:folderId" element={<Dashboard />} />
-        <Route path="settings" element={<SettingsPanel />} />
-        <Route path="history" element={<HistoryPanel />} />
-        <Route path="storage" element={<StorageView />} />
-        <Route path="automation" element={<FlowEditor />} />
-        <Route path="vault" element={<Vault />} />
-        <Route path="chat" element={<ChatInterface />} />
-      </Route>
-      <Route path="/dropzone" element={<DropZone />} />
-      <Route path="/spotlight" element={<Spotlight />} />
-    </Routes>
+    <AIProvider>
+      <Routes>
+        <Route path="/" element={<AppLayout />}>
+          <Route index element={<Dashboard />} />
+          <Route path="folders" element={<Dashboard />} />
+          <Route path="folders/:folderId" element={<Dashboard />} />
+          <Route path="settings" element={<SettingsPanel />} />
+          <Route path="history" element={<HistoryPanel />} />
+          <Route path="storage" element={<StorageView />} />
+          <Route path="automation" element={<FlowEditor />} />
+          <Route path="vault" element={<Vault />} />
+          <Route path="chat" element={<ChatInterface />} />
+        </Route>
+        <Route path="/dropzone" element={<DropZone />} />
+        <Route path="/spotlight" element={<Spotlight />} />
+      </Routes>
+    </AIProvider>
   )
 }
 
