@@ -1,4 +1,4 @@
-import { ipcMain } from 'electron'
+import { ipcMain, app } from 'electron'
 import {
   getFolders,
   addFolder,
@@ -13,6 +13,17 @@ import { watcherService } from '../services/fs/watcher'
 export function registerFoldersHandlers(): void {
   ipcMain.handle('folders:get-all', () => {
     return getFolders()
+  })
+
+  ipcMain.handle('folders:get-system-paths', () => {
+    return {
+      downloads: app.getPath('downloads'),
+      desktop: app.getPath('desktop'),
+      documents: app.getPath('documents'),
+      pictures: app.getPath('pictures'),
+      music: app.getPath('music'),
+      videos: app.getPath('videos')
+    }
   })
 
   ipcMain.handle('folders:add', (_, folder: Omit<Folder, 'id' | 'createdAt' | 'updatedAt'>) => {

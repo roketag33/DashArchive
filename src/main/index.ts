@@ -1,19 +1,35 @@
-import { app, shell, BrowserWindow } from 'electron'
-import { join } from 'path'
+import { app, shell, BrowserWindow, Notification, ipcMain } from 'electron'
+import path, { join } from 'path'
 import log from 'electron-log'
 import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers } from './ipc'
 import { watcherService } from './services/fs/watcher'
+import { trayService } from './services/core/tray'
 import { initDB } from './db/index'
-import { migrateSettingsIfNeeded } from './services/core/settings'
+import { migrateSettingsIfNeeded, getSettings } from './services/core/settings'
 // ...
 import { createMenu } from './services/core/menu'
 import { globalShortcut } from 'electron'
 import { DropZoneWindow } from './windows/DropZoneWindow'
 import { SpotlightWindow } from './windows/SpotlightWindow'
+import { WorkerWindow } from './windows/WorkerWindow'
+import { NotificationWindow } from './windows/NotificationWindow'
 
 let dropZoneWindow: DropZoneWindow | null = null
 let spotlightWindow: SpotlightWindow | null = null
+// Keep reference to prevent GC
+
+let workerWindow: WorkerWindow | null = null
+let notificationWindow: NotificationWindow | null = null
+
+// Protocol Registration
+if (process.defaultApp) {
+  if (process.argv.length >= 2) {
+    app.setAsDefaultProtocolClient('dasharchive', process.execPath, [path.resolve(process.argv[1])])
+  }
+} else {
+  app.setAsDefaultProtocolClient('dasharchive')
+}
 
 // Setup logger
 log.transports.file.level = 'info'
@@ -37,11 +53,15 @@ JSON.stringify = function (value, replacer, space) {
 }
 
 function createWindow(): void {
+  // Determine if we should show the window (First Run) or start hidden (Tray mode)
+  const settings = getSettings()
+  const shouldShow = settings.firstRun
+
   // Create the browser window.
   const mainWindow = new BrowserWindow({
     width: 900,
     height: 670,
-    show: false,
+    show: shouldShow, // Show if first run, otherwise hide
     autoHideMenuBar: true,
     ...(process.platform === 'linux' ? { icon } : {}),
     webPreferences: {
@@ -54,9 +74,26 @@ function createWindow(): void {
     }
   })
 
+  // Initialize Tray with reference to MainWindow
+  trayService.init(mainWindow)
+
   mainWindow.on('ready-to-show', () => {
-    mainWindow.show()
+    // If we are supposed to show it (first run), ensure it's up
+    if (shouldShow) {
+      mainWindow.show()
+    }
+    // Otherwise wait for user or Tray interaction.
     watcherService.setWindow(mainWindow)
+  })
+
+  // Prevent closing, just hide
+  mainWindow.on('close', (event) => {
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    if (!(app as any).isQuiting) {
+      event.preventDefault()
+      mainWindow.hide()
+    }
+    return false
   })
 
   mainWindow.webContents.setWindowOpenHandler((details) => {
@@ -73,6 +110,20 @@ function createWindow(): void {
   }
 }
 
+// Global flag to track explicit quit
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+;(app as any).isQuiting = false
+
+app.on('before-quit', () => {
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  ;(app as any).isQuiting = true
+  if (workerWindow) {
+    console.log('Disposing WorkerWindow')
+    workerWindow = null
+  }
+  trayService.destroy()
+})
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
@@ -88,6 +139,8 @@ app.whenReady().then(() => {
 
   // Start Scheduler
   import('./services/core/scheduler').then(({ schedulerService }) => schedulerService.init())
+  // Start Learning Service
+  import('./services/core/learning')
 
   // Check for updates (dynamic import to avoid early app access)
   if (app.isPackaged) {
@@ -122,6 +175,17 @@ app.whenReady().then(() => {
   // Initialize Spotlight
   spotlightWindow = new SpotlightWindow()
 
+  // Initialize AI Worker
+  workerWindow = new WorkerWindow()
+
+  // Initialize Notification Window
+  notificationWindow = new NotificationWindow()
+
+  // Listen for show notification request from Renderer (Onboarding logic)
+  ipcMain.handle('notification:show', (_, data) => {
+    notificationWindow?.show(data)
+  })
+
   // Register Global Shortcut for DropZone (Alt+Shift+D)
   globalShortcut.register('Option+Shift+D', () => {
     dropZoneWindow?.toggle()
@@ -131,6 +195,20 @@ app.whenReady().then(() => {
   globalShortcut.register('CommandOrControl+Shift+Space', () => {
     spotlightWindow?.toggle()
   })
+
+  // Startup Notification
+  if (Notification.isSupported()) {
+    const n = new Notification({
+      title: 'DashArchive',
+      body: 'Ghost Librarian is running in the background.',
+      silent: true,
+      // Icon usage might need string path in main process if not handled by bundler correctly here,
+      // but 'icon' variable is imported. Leaving as is if it worked elsewhere, but standard Electron Notification
+      // takes `icon` as string path usually.
+      icon: process.platform === 'linux' ? icon : undefined // simplified for now to match types
+    })
+    n.show()
+  }
 
   app.on('activate', function () {
     // On macOS it's common to re-create a window in the app when the
@@ -143,8 +221,9 @@ app.whenReady().then(() => {
 // for applications and their menu bar to stay active until the user quits
 // explicitly with Cmd + Q.
 app.on('window-all-closed', () => {
+  // Respect Tray-first: Do not quit if windows are closed
   if (process.platform !== 'darwin') {
-    app.quit()
+    // app.quit() // Disabled for background mode
   }
 })
 

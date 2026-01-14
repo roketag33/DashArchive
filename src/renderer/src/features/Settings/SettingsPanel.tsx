@@ -165,22 +165,26 @@ export function SettingsPanel(): React.JSX.Element {
             <div className="md:col-span-2 flex items-center justify-between p-4 rounded-xl border border-blue-500/20 bg-blue-500/5 hover:bg-blue-500/10 transition-colors">
               <div className="space-y-0.5">
                 <label className="text-sm font-medium leading-none text-blue-600 dark:text-blue-400">
-                  Didacticiel interactif
+                  Ghost Mode & Analyse
                 </label>
                 <p className="text-xs text-muted-foreground">
-                  Relancez le guide de démarrage pour revoir les fonctionnalités.
+                  Relancez l&apos;analyse universelle (Ghost Mode) pour organiser vos fichiers.
                 </p>
               </div>
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => {
-                  localStorage.removeItem('dasharchive-onboarding-completed')
-                  window.location.reload()
+                onClick={async () => {
+                  try {
+                    await window.api.saveSettings({ ...settings, firstRun: true })
+                    window.location.reload()
+                  } catch {
+                    toast.error('Impossible de relancer le Ghost Mode')
+                  }
                 }}
                 className="border-blue-200 hover:bg-blue-100 dark:border-blue-800 dark:hover:bg-blue-900/50"
               >
-                Relancer le tutoriel
+                Relancer le Scan
               </Button>
             </div>
 

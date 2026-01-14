@@ -1,0 +1,86 @@
+# Workflow Status Template
+
+# This tracks progress through BMM methodology Analysis, Planning, and Solutioning phases.
+# Implementation phase is tracked separately in sprint-status.yaml
+
+generated: "2026-01-13T15:52:00+01:00"
+project: "Electron.js"
+project_type: "brownfield"
+selected_track: "bmad-method"
+field_type: "brownfield"
+workflow_path: "_bmad/bmm/workflows/workflow-status/paths/method-brownfield.yaml"
+
+workflow_status:
+  - phase: 0
+    name: "Documentation"
+    status: "pending"
+    workflows:
+      - id: "document-project"
+        status: "completed"
+        required: true
+        agent: "analyst"
+        command: "/bmad-bmm-workflows-document-project"
+        purpose: "Understand existing codebase before planning"
+
+  - phase: 1
+    name: "Analysis"
+    status: "pending"
+    workflows:
+      - id: "brainstorm-project"
+        status: "completed"
+        required: true
+        agent: "analyst"
+        command: "/bmad-core-workflows-brainstorming"
+        purpose: "Define vision and features"
+      - id: "research"
+        status: "completed"
+        required: true
+        agent: "analyst"
+        command: "/bmad-bmm-workflows-research"
+        purpose: "Market and utility validation"
+
+  - phase: 2
+    name: "Planning"
+    status: "pending"
+    workflows:
+      - id: "prd"
+        status: "pending"
+        required: true
+        agent: "pm"
+        command: "/bmad-bmm-workflows-prd"
+        output: "Product Requirements Document"
+      - id: "create-ux-design"
+        status: "pending"
+        conditional: "if_has_ui"
+        agent: "ux-designer"
+        command: "/bmad-bmm-workflows-create-ux-design"
+
+  - phase: 3
+    name: "Solutioning"
+    status: "pending"
+    workflows:
+      - id: "create-architecture"
+        status: "pending"
+        required: true
+        agent: "architect"
+        command: "/bmad-bmm-workflows-create-architecture"
+      - id: "create-epics-and-stories"
+        status: "pending"
+        required: true
+        agent: "pm"
+        command: "/bmad-bmm-workflows-create-epics-and-stories"
+      - id: "implementation-readiness"
+        status: "pending"
+        required: true
+        agent: "architect"
+        command: "/bmad-bmm-workflows-check-implementation-readiness"
+
+  - phase: 4
+    name: "Implementation"
+    status: "pending"
+    workflows:
+      - id: "sprint-planning"
+        status: "pending"
+        required: true
+        agent: "sm"
+        command: "/bmad-bmm-workflows-sprint-planning"

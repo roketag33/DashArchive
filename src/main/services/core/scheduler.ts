@@ -7,7 +7,7 @@ import { Folder } from '../../../shared/types'
 import { getSettings } from './settings'
 import { extractText } from '../analysis/textExtractor'
 import { aiService } from '../analysis/aiService'
-import { sendNotification } from './notifications'
+import { notificationService } from './notifications'
 
 class SchedulerService {
   private intervals: Map<string, NodeJS.Timeout> = new Map()
@@ -112,7 +112,10 @@ class SchedulerService {
       // 6. Notify/Log
       if (result.success && result.processed > 0) {
         addEntry(plan)
-        sendNotification(`Scheduled Scan: ${folder.name}`, `Organized ${result.processed} files.`)
+        notificationService.send({
+          title: `Scheduled Scan: ${folder.name}`,
+          body: `Organized ${result.processed} files.`
+        })
       }
     } catch (e) {
       console.error(`[Scheduler] Job failed for ${folder.id}`, e)

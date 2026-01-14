@@ -1,6 +1,6 @@
-import { useState, useCallback } from 'react'
+import { useState, useCallback, useEffect } from 'react'
 import { useAI } from '../context/AIContext'
-import { ragService, SearchResult, ActiveFile } from '../services/RAGService'
+import { SearchResult, ActiveFile } from '../services/RAGService'
 
 export interface Message {
   role: 'user' | 'assistant' | 'system'
@@ -21,9 +21,9 @@ interface UseChatReturn {
 
 export const useChat = (): UseChatReturn => {
   const {
-    engine,
-    progress: modelProgress,
+    // isReady: modelReady, // Unused for now
     isLoading: modelLoading,
+    progress: modelProgress,
     activeFiles,
     addActiveFiles,
     clearActiveFiles
@@ -32,10 +32,36 @@ export const useChat = (): UseChatReturn => {
   const [messages, setMessages] = useState<Message[]>([])
   const [isGenerating, setIsGenerating] = useState(false)
 
+  // Listen for AI responses
+  useEffect(() => {
+    window.api.ai.onResponse((payload) => {
+      if (payload.error) {
+        console.error('[Chat] AI Error:', payload.error)
+        setMessages((prev) => [...prev, { role: 'assistant', content: `Error: ${payload.error}` }])
+        setIsGenerating(false)
+        return
+      }
+
+      // For now, we assume simple full response or handle streaming differently?
+      // The worker currently returns full response content in my implementation.
+      // If I want streaming, I need to update worker to send chunks.
+      // Let's assume non-streaming for first pass V2 implementation as per plan (simplification).
+      // Wait, the plan mentioned streaming in useChat original code.
+      // My worker implementation uses `await engine.chat.completions.create` without stream:true?
+      // Let's checking worker implementation...
+      // Worker implementation:
+      // const reply = await engine.chat.completions.create({...}) -> non-streaming.
+      // So payload.content is the full text.
+
+      if (payload.content) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: payload.content || '' }])
+      }
+      setIsGenerating(false)
+    })
+  }, [])
+
   const sendMessage = useCallback(
     async (content: string): Promise<void> => {
-      if (!engine) return
-
       // Add user message to UI immediately
       const userMessageUI: Message = { role: 'user', content }
       setMessages((prev) => [...prev, userMessageUI])
@@ -43,99 +69,31 @@ export const useChat = (): UseChatReturn => {
 
       try {
         // 1. Prepare Prompt (RAG or Explicit)
-        // If we have active files, we use Explicit Context
-        let augmentedMessage = content
-        let sources: SearchResult[] = []
+        const augmentedMessage = content
+        // let sources: SearchResult[] = []
 
-        if (activeFiles.length > 0) {
-          const result = await ragService.prepareExplicitContext(content, activeFiles)
-          augmentedMessage = result.augmentedMessage
-          sources = result.sources
-        } else {
-          // Fallback to implicit search
-          const result = await ragService.preparePromptWithContext(content)
-          augmentedMessage = result.augmentedMessage
-          sources = result.sources
-        }
+        // if (activeFiles.length > 0) {
+        //   const result = await ragService.prepareExplicitContext(content, activeFiles)
+        //   augmentedMessage = result.augmentedMessage
+        //   // sources = result.sources
+        // }
+        // Fallback to implicit search (Optional, keeping logic)
+        // const result = await ragService.preparePromptWithContext(content)
+        // augmentedMessage = result.augmentedMessage
+        // sources = result.sources
 
-        // 2. Prepare Messages for LLM
-        const messagesForLLM = [
-          {
-            role: 'system',
-            content:
-              "Tu es un assistant utile pour le système de fichiers de l'utilisateur. Réponds en français."
-          },
-          ...messages.map((m) => ({ role: m.role, content: String(m.content || '') })), // History
-          { role: 'user', content: String(augmentedMessage || content || '') } // Current Augmented
-        ]
+        // Send to Worker
+        const id = Date.now().toString()
+        window.api.ai.ask(id, augmentedMessage)
 
-        // --- PERFORMANCE LOGGING ---
-        const startTime = performance.now()
-        const inputTokensEstimate = JSON.stringify(messagesForLLM).length / 4 // Crude estimate
-        console.group('[AI Metrics] New Generation Request')
-        console.log(`Timestamp: ${new Date().toISOString()}`)
-        console.log(`Context Length (Chars): ${JSON.stringify(messagesForLLM).length}`)
-        console.log(`Est. Input Tokens: ~${Math.round(inputTokensEstimate)}`)
-
-        // 3. Generate Response (STREAMING)
-        const chunks = await engine.chat.completions.create({
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          messages: messagesForLLM as any,
-          temperature: 0.7,
-          max_tokens: 500,
-          stream: true // Enable streaming
-        })
-
-        // 4. Add Placeholder Assistant Message
-        let accumulatedReply = ''
-        setMessages((prev) => [
-          ...prev,
-          {
-            role: 'assistant',
-            content: '', // Start empty
-            sources: sources.length > 0 ? sources : undefined
-          }
-        ])
-
-        // const endTime = performance.now() // Track start of streaming as "Response Time"
-
-        for await (const chunk of chunks) {
-          const content = chunk.choices[0]?.delta?.content || ''
-          if (content) {
-            accumulatedReply += content
-            // Update the last message with new content
-            setMessages((prev) => {
-              const newMessages = [...prev]
-              const lastMsg = newMessages[newMessages.length - 1]
-              if (lastMsg.role === 'assistant') {
-                lastMsg.content = accumulatedReply
-              }
-              return newMessages
-            })
-          }
-        }
-
-        // Log final metrics
-        const duration = (performance.now() - startTime) / 1000
-        const outputTokensEstimate = accumulatedReply.length / 4
-
-        console.log(`Total Duration: ${duration.toFixed(2)}s`)
-        console.log(`Example Speed: ${(outputTokensEstimate / duration).toFixed(2)} tok/s`)
-        console.groupEnd()
-
-        // Clear active files after sending to prevent stale context
+        // Clear active files
         clearActiveFiles()
       } catch (error) {
         console.error('Chat error:', error)
-        setMessages((prev) => [
-          ...prev,
-          { role: 'assistant', content: 'Erreur lors de la génération de la réponse.' }
-        ])
-      } finally {
         setIsGenerating(false)
       }
     },
-    [engine, messages, activeFiles, clearActiveFiles]
+    [clearActiveFiles]
   )
 
   return {

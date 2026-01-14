@@ -100,6 +100,48 @@
     "deleteSelected": "Supprimer la Sélection ({{count}})",
     "confirmDelete": "Supprimer {{count}} fichiers dupliqués ?"
   },
+  "onboarding": {
+    "welcome": {
+      "title": "DashArchive V2",
+      "subtitle": "L'archiviste fantôme qui veille sur vos fichiers.",
+      "description": "Je ne suis pas une énième application de rangement manuel.\nJe suis un <strong>écosystème vivant</strong>.",
+      "start": "Configurer mon Fantôme"
+    },
+    "blocks": {
+      "title": "Qui êtes-vous ?",
+      "subtitle": "Sélectionnez vos \"Briques de Vie\" pour que je prépare votre écosystème.",
+      "back": "Retour",
+      "continue": "Continuer"
+    },
+    "folders": {
+      "title": "Où est le désordre ?",
+      "subtitle": "Je vais surveiller ces dossiers pour vous.",
+      "items": {
+        "downloads": "Téléchargements",
+        "desktop": "Bureau",
+        "documents": "Documents",
+        "pictures": "Images",
+        "music": "Musique",
+        "videos": "Vidéos"
+      },
+      "addCustom": "Ajouter un autre dossier..."
+    },
+    "game": {
+      "calibration": "Calibration",
+      "card": "Carte {{current}} sur {{total}}",
+      "fileDetected": "Fichier détecté",
+      "proposal": "Je propose de ranger ça ici :",
+      "proposalAlt": "Ah mince. Et là alors ?",
+      "chooseCustom": "Choisir un autre dossier...",
+      "yes": "Oui",
+      "no": "Non",
+      "finish": "Ouvrir mon Dashboard",
+      "completionTitle": "C'est tout bon !",
+      "completionSubtitle": "Votre écosystème est configuré.",
+      "completionScore": "Score de calibration : {{score}}/{{total}}",
+      "completionNote": "Le <strong>Ghost Librarian</strong> tourne maintenant en tâche de fond."
+    }
+  },
   "settings": {
     "title": "Paramètres",
     "description": "Gérez vos règles d'organisation et vos préférences.",

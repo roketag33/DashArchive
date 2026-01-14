@@ -1,4 +1,12 @@
-import { FileEntry, Plan, ExecutionResult, AppSettings, JournalEntry, Rule } from '../shared/types'
+import {
+  FileEntry,
+  Plan,
+  ExecutionResult,
+  AppSettings,
+  JournalEntry,
+  Rule,
+  UniversalScanResult
+} from '../shared/types'
 
 interface CustomAPI {
   selectFolder: () => Promise<string | null>
@@ -9,6 +17,7 @@ interface CustomAPI {
   getSettings: () => Promise<AppSettings>
   getRules: () => Promise<Rule[]>
   saveSettings: (settings: Partial<AppSettings>) => Promise<AppSettings>
+  savePresets: (blockIds: string[]) => Promise<void>
   getHistory: () => Promise<JournalEntry[]>
   undoPlan: (plan: Plan, entryId?: string) => Promise<ExecutionResult>
   suggestAiCategories: (path: string) => Promise<string[]>
@@ -22,6 +31,13 @@ interface CustomAPI {
   searchSemantic(query: string): Promise<any[]> // eslint-disable-line @typescript-eslint/no-explicit-any
   showInFolder: (path: string) => Promise<void>
   removeFileAddedListener: () => void
+
+  universalScan: (directories: string[]) => Promise<UniversalScanResult>
+  universalApply: (result: UniversalScanResult) => Promise<ExecutionResult>
+  showNotification: (data: UniversalScanResult) => Promise<void>
+  onNotificationData: (callback: (data: UniversalScanResult) => void) => () => void
+  closeNotification: () => void
+  getSystemPaths: () => Promise<{ downloads: string; desktop: string; documents: string }>
 
   // Folders
   getFolders: () => Promise<import('./shared/types').Folder[]>
@@ -46,6 +62,16 @@ interface CustomAPI {
   }
   // Explicit Context API
   readFiles: (paths: string[]) => Promise<{ path: string; name: string; content: string }[]>
+
+  // AI Worker API
+  ai: {
+    ask: (id: string, prompt: string) => void
+    onResponse: (
+      callback: (response: { id: string; content?: string; error?: string }) => void
+    ) => void
+    onProgress: (callback: (progress: unknown) => void) => void
+    onReady: (callback: () => void) => void
+  }
 }
 
 declare global {

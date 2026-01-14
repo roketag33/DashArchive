@@ -10,6 +10,9 @@ import { Loader2, Plus } from 'lucide-react'
 import { useDashboard } from './useDashboard'
 import { Folder } from '../../../../shared/types'
 import { FolderView } from './FolderView'
+import { useLocation } from 'react-router-dom'
+import { VisualReport } from './VisualReport'
+import { UniversalScanResult } from '../../../../shared/types'
 
 export function Dashboard(): React.JSX.Element {
   const { t } = useTranslation()
@@ -59,11 +62,47 @@ export function Dashboard(): React.JSX.Element {
     show: { y: 0, opacity: 1 }
   }
 
+  const location = useLocation()
+  const [visualReportResults, setVisualReportResults] = useState<UniversalScanResult | null>(
+    (location.state as { scanResults?: UniversalScanResult })?.scanResults || null
+  )
+
+  const handleVisualReportConfirm = async (): Promise<void> => {
+    if (!visualReportResults) return
+    try {
+      const result = await window.api.universalApply(visualReportResults)
+      setVisualReportResults(null)
+      window.history.replaceState({}, '')
+
+      // Show success screen and refresh stats
+      setExecutionResult(result)
+      // Optionally refresh folders here if needed, but dashboard stats might auto-refresh
+    } catch (error) {
+      console.error('Move failed', error)
+    }
+  }
+
+  const handleVisualReportCancel = (): void => {
+    setVisualReportResults(null)
+    window.history.replaceState({}, '')
+  }
+
   if (isLoadingFolders) {
     return (
       <div className="flex justify-center items-center h-full">
         <Loader2 className="h-8 w-8 animate-spin" />
       </div>
+    )
+  }
+
+  // Visual Report Mode (Ghost Mode Result)
+  if (visualReportResults) {
+    return (
+      <VisualReport
+        results={visualReportResults}
+        onConfirm={handleVisualReportConfirm}
+        onCancel={handleVisualReportCancel}
+      />
     )
   }
 

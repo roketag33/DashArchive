@@ -1,115 +1,93 @@
 # DashArchive 📂✨
 
-**DashArchive** is an intelligent, privacy-focused file organizer for macOS, Windows, and Linux. It automatically sorts your chaotic downloads and document folders using smart rules and local AI.
+**DashArchive** est un organisateur de fichiers intelligent et respectueux de la vie privée pour macOS, Windows et Linux. Il met de l'ordre dans le chaos de vos documents grâce à une IA locale générative et des règles proactives.
 
-## 📸 Screenshots
-
-<div align="center">
-  <img src="docs/images/dashboard.png" alt="Dashboard View" width="800" />
-  <br>
-  <em>The Main Dashboard: Drag & drop folders to organize instantly.</em>
-</div>
-
-<br>
+## 📸 Captures d'écran
 
 <div align="center">
-  <img src="docs/images/settings.png" alt="Settings View" width="800" />
+  <img src="docs/images/dashboard.png" alt="Vue Dashboard" width="800" />
   <br>
-  <em>Settings Panel: Customize your organization rules and preferences.</em>
+  <em>Le Dashboard Principal : Glissez-déposez pour organiser instantanément.</em>
 </div>
 
-<br>
+## 🚀 Fonctionnalités Clés
 
-<div align="center">
-  <img src="docs/images/history.png" alt="History View" width="800" />
-  <br>
-  <em>History & Undo: Review past actions and revert changes safely.</em>
-</div>
-
-<br>
-
-<div align="center">
-  <img src="docs/images/classification.png" alt="Classification View" width="800" />
-  <br>
-  <em>AI Classification: Watch the local AI sort your document content.</em>
-</div>
-
-<br>
-
-## 🚀 Key Features
-
-- **🤖 Local AI Classification**: Uses on-device AI (MobileBERT) to analyze file content and suggest categories without your data ever leaving your computer.
-- **📄 Smart Text Extraction**: Reading support for PDFs, DOCX, and Text files.
-- **👁️ OCR Integration**: Extract text from images (screenshots, scans) for better sorting.
-- **⚡️ Drag & Drop Interface**: Simply drag a folder to scan it instantly.
-- **↩️ Safely Undo**: Not happy with a move? One-click undo to revert all changes.
-- **🛠️ Flexible Rules**:
-  - **Manual**: Sort by extension, name pattern, size, or date.
-  - **AI**: Sort by semantic category (e.g., "Finance", "Personal", "Work").
-- **🔒 Privacy First**: All processing happens locally. No cloud uploads.
+- **👻 Ghost Librarian (V2)** : L'application tourne discrètement en tâche de fond (Tray). Elle veille sur vos dossiers et vous notifie uniquement quand c'est nécessaire.
+- **🧠 Double IA Hybride (Hybrid AI Architecture)** :
+  - **Classement Rapide** : Utilise **MobileBERT** (via `@xenova/transformers`) pour analyser et trier vos fichiers instantanément en arrière-plan.
+  - **Assistant Intelligent** : Utilise **Llama 3** (via `@mlc-ai/web-llm`, WebGPU) pour discuter avec vos documents et comprendre des instructions complexes via le chat.
+- **📄 Extraction & OCR** : Capable de lire le texte des PDFs, DOCX et même des images (via `Tesseract.js`) pour un tri basé sur le contenu réel.
+- **🔔 Notifications Interactives** : Recevez des alertes avec des actions rapides ("J'ai trouvé 3 factures, les classer ?").
+- **⚡️ Performance Native** : Surveillance de fichiers optimisée en C++ (`@parcel/watcher`).
+- **↩️ Annulation Sécurisée** : Un clic pour tout annuler en cas d'erreur.
 
 ## 📦 Installation
 
-Download the latest version for your OS from the [Releases Page](https://github.com/roketag33/DashArchive/releases).
+Téléchargez la dernière version pour votre OS depuis la [Page des Releases](https://github.com/roketag33/DashArchive/releases).
 
-- **macOS**: Download `.dmg`
-- **Windows**: Download `.exe`
-- **Linux**: Download `.AppImage` or `.deb`
+- **macOS** : `.dmg`
+- **Windows** : `.exe`
+- **Linux** : `.AppImage` ou `.deb`
 
-## 🛠️ Development
+## 🛠️ Développement
 
-### Prerequisites
+### Prérequis
 
 - Node.js 20+
 - Yarn
 
-### Setup
+### Installation
 
 ```bash
-# Clone the repository
+# Cloner le dépôt
 git clone https://github.com/roketag33/DashArchive.git
 
-# Install dependencies
+# Installer les dépendances
 yarn install
 ```
 
-### Run Locally
+### Lancer Localement
 
 ```bash
-# Start development server
+# Démarrer le serveur de développement
 yarn dev
 ```
 
-### Build for Production
+> **Note**: Le modèle de Chat (Llama 3) sera téléchargé au premier usage (~2-4GB). Le modèle de classement (MobileBERT) est beaucoup plus léger.
+
+### Build pour la Production
 
 ```bash
-# Build for your current OS
 yarn build
 ```
 
-## 🏗️ Tech Stack
+## 🏗️ Stack Technique
 
 - **Electron** (v30)
 - **React** + **TypeScript**
 - **TailwindCSS** + **Shadcn/UI**
-- **@xenova/transformers** (Local AI)
-- **Tesseract.js** (OCR)
-- **Electron Builder** (Packaging)
+- **IA & ML** :
+  - **@mlc-ai/web-llm** (Llama 3 - Chat & Raisonnement Complexe)
+  - **@xenova/transformers** (MobileBERT - Classification Rapide)
+  - **Tesseract.js** (OCR Images)
+- **Système** :
+  - **@parcel/watcher** (Surveillance Fichiers Native)
+  - **Better-SQLite3** (Base de données locale)
 
-## 👥 Contributing
+## 👥 Contribuer
 
-Contributions are what make the open source community such an amazing place to learn, inspire, and create. Any contributions you make are **greatly appreciated**.
+Les contributions sont ce qui rend la communauté open source incroyable. Toute contribution est **grandement appréciée**.
 
-Please check out our [Contributing Guidelines](CONTRIBUTING.md) for details on how to join the project.
+Consultez nos [Directives de Contribution](CONTRIBUTING.md) pour plus de détails.
 
-## 🤝 Code of Conduct
+## 🤝 Code de Conduite
 
-We are committed to providing a friendly, safe and welcoming environment for all. Please take a moment to read our [Code of Conduct](CODE_OF_CONDUCT.md).
+Nous nous engageons à fournir un environnement amical, sûr et accueillant. Merci de lire notre [Code de Conduite](CODE_OF_CONDUCT.md).
 
-## 🛡️ Security
+## 🛡️ Sécurité
 
-If you discover a security vulnerability within DashArchive, please check our [Security Policy](SECURITY.md) for reporting instructions.
+Si vous découvrez une vulnérabilité, merci de consulter notre [Politique de Sécurité](SECURITY.md).
 
-## 📝 License
+## 📝 Licence
 
-Distributed under the MIT License. See [LICENSE](LICENSE) for more information.
+Distribué sous la licence MIT. Voir [LICENSE](LICENSE) pour plus d'informations.

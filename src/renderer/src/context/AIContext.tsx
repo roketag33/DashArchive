@@ -3,15 +3,15 @@ import React, {
   useContext,
   useState,
   useEffect,
-  useRef,
   ReactNode,
   useCallback
 } from 'react'
-import { CreateMLCEngine, MLCEngine, InitProgressCallback } from '@mlc-ai/web-llm'
-import { ActiveFile } from '../services/RAGService' // Import interface
+import { ActiveFile } from '../services/RAGService'
 
 interface AIContextType {
-  engine: MLCEngine | null
+  // Engine is now hidden in worker, so we don't expose it directly
+  // We expose a flag saying if it's ready
+  isReady: boolean
   isLoading: boolean
   progress: string
   error: string | null
@@ -23,19 +23,14 @@ interface AIContextType {
 
 const AIContext = createContext<AIContextType | undefined>(undefined)
 
-// Use Phi-3.5-mini-instruct (q4f16_1) ~2.2GB
-const SELECTED_MODEL = 'Phi-3.5-mini-instruct-q4f16_1-MLC'
-
 export function AIProvider({ children }: { children: ReactNode }): React.JSX.Element {
-  const [engine, setEngine] = useState<MLCEngine | null>(null)
+  const [isReady, setIsReady] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-  const [progress, setProgress] = useState<string>('')
-  const [error, setError] = useState<string | null>(null)
+  const [progress, setProgress] = useState<string>('En attente du Worker...')
+  const [error] = useState<string | null>(null)
   const [activeFiles, setActiveFiles] = useState<ActiveFile[]>([])
-  const initializationStarted = useRef(false)
 
   const addActiveFiles = useCallback((files: ActiveFile[]) => {
-    // Prevent duplicates by path
     setActiveFiles((prev) => {
       const newFiles = files.filter((f) => !prev.some((p) => p.path === f.path))
       return [...prev, ...newFiles]
@@ -51,40 +46,30 @@ export function AIProvider({ children }: { children: ReactNode }): React.JSX.Ele
   }, [])
 
   useEffect(() => {
-    if (initializationStarted.current) return
-    initializationStarted.current = true
+    // Listen to Worker events via Preload
+    window.api.ai.onProgress((p) => {
+      const text = typeof p === 'string' ? p : (p as { text: string }).text || String(p)
+      setProgress(text)
+      setIsLoading(true)
+    })
 
-    const initEngine = async (): Promise<void> => {
-      setProgress('Initialisation du moteur IA...')
-      try {
-        const initProgressCallback: InitProgressCallback = (report) => {
-          setProgress(report.text)
-        }
+    window.api.ai.onReady(() => {
+      setIsReady(true)
+      setIsLoading(false)
+      setProgress('')
+    })
 
-        console.log('Starting AI Engine initialization...')
-        const engineInstance = await CreateMLCEngine(SELECTED_MODEL, {
-          initProgressCallback,
-          logLevel: 'INFO'
-        })
+    // If we missed the ready event (reloads), we might want to check status (optional)
+    // For now we assume init sends progress/ready events.
 
-        console.log('AI Engine initialized successfully')
-        setEngine(engineInstance)
-        setProgress('')
-        setIsLoading(false)
-      } catch (err) {
-        console.error('Failed to init AI engine:', err)
-        setError("Erreur de chargement de l'IA. Vérifiez votre connexion.")
-        setIsLoading(false)
-      }
-    }
-
-    initEngine()
+    // Cleanup listeners not easily possible with current simple preload exposure
+    // without returning remove function, but Context is usually mounted once.
   }, [])
 
   return (
     <AIContext.Provider
       value={{
-        engine,
+        isReady,
         isLoading,
         progress,
         error,

@@ -105,3 +105,18 @@ export interface JournalEntry {
   plan: Plan
   status: 'revertible' | 'reverted'
 }
+
+export interface ProposedMove {
+  file: FileEntry
+  ruleId: string
+  targetFolder: string
+  label: string
+}
+
+export interface UniversalScanResult {
+  stats: {
+    [key: string]: number // ruleId -> count
+  }
+  moves: ProposedMove[]
+  totalDetected: number
+}

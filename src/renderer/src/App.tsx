@@ -5,13 +5,17 @@ import { SettingsPanel } from './features/Settings/SettingsPanel'
 import { HistoryPanel } from './features/History/HistoryPanel'
 import { DropZone } from './features/DropZone/DropZone'
 import { StorageView } from './features/Storage/StorageView'
-import { FlowEditor } from './features/Automation/FlowEditor'
 import { Spotlight } from './features/Spotlight/Spotlight'
-import { Vault } from './features/Vault/Vault'
 import { ChatInterface } from './features/Chat/ChatInterface'
 import { AIProvider } from './context/AIContext'
+import { useSettings } from './hooks/useSettings'
+import { NotificationPage } from './pages/NotificationPage'
 
 function App(): React.JSX.Element {
+  const { loading } = useSettings()
+
+  if (loading) return <div className="flex items-center justify-center h-screen">Loading...</div>
+
   return (
     <AIProvider>
       <Routes>
@@ -22,12 +26,11 @@ function App(): React.JSX.Element {
           <Route path="settings" element={<SettingsPanel />} />
           <Route path="history" element={<HistoryPanel />} />
           <Route path="storage" element={<StorageView />} />
-          <Route path="automation" element={<FlowEditor />} />
-          <Route path="vault" element={<Vault />} />
           <Route path="chat" element={<ChatInterface />} />
         </Route>
         <Route path="/dropzone" element={<DropZone />} />
         <Route path="/spotlight" element={<Spotlight />} />
+        <Route path="/notification" element={<NotificationPage />} />
       </Routes>
     </AIProvider>
   )

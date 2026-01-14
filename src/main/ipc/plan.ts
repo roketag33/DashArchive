@@ -1,18 +1,18 @@
 import { ipcMain, shell } from 'electron'
 import { buildPlan } from '../services/planning/planner'
 import { executePlan, undoPlan } from '../services/fs/executor'
-import { getSettings, saveSettings } from '../services/core/settings'
 import { addEntry, getHistory, markReverted } from '../services/core/journal'
 import { extractText } from '../services/analysis/textExtractor'
 import { aiService } from '../services/analysis/aiService'
 import { FileEntry } from '../../shared/types'
 
-import { sendNotification } from '../services/core/notifications'
+import { notificationService } from '../services/core/notifications'
 import { incrementFilesOrganized } from '../services/core/stats'
 
 export function registerPlanHandlers(): void {
   ipcMain.handle('generate-plan', async (_, files: FileEntry[]) => {
-    const rules = getSettings().rules
+    // eslint-disable-next-line @typescript-eslint/no-require-imports
+    const rules = require('../services/core/settings').getSettings().rules
     return await buildPlan(files, rules, extractText, (text, labels) =>
       aiService.classify(text, labels)
     )
@@ -31,7 +31,8 @@ export function registerPlanHandlers(): void {
       addEntry(plan)
       void incrementFilesOrganized(result.processed)
 
-      const settings = getSettings()
+      // eslint-disable-next-line @typescript-eslint/no-require-imports
+      const settings = require('../services/core/settings').getSettings()
       const lang = settings.language
       const title = lang === 'fr' ? 'Organisation terminée' : 'Organization Complete'
       const body =
@@ -39,7 +40,10 @@ export function registerPlanHandlers(): void {
           ? `${result.processed} fichiers organisés avec succès.`
           : `Successfully organized ${result.processed} files.`
 
-      sendNotification(title, body)
+      notificationService.send({
+        title,
+        body
+      })
     }
     return result
   })
@@ -63,13 +67,5 @@ export function registerPlanHandlers(): void {
 
   ipcMain.handle('mark-reverted', (_, id) => {
     markReverted(id)
-  })
-
-  ipcMain.handle('get-settings', () => {
-    return getSettings()
-  })
-
-  ipcMain.handle('save-settings', (_, settings) => {
-    return saveSettings(settings)
   })
 }

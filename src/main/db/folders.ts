@@ -47,6 +47,20 @@ export function getFolder(id: string): Folder | undefined {
 }
 
 export function addFolder(folder: Omit<Folder, 'createdAt' | 'updatedAt'>): Folder {
+  // Check for existing folder by path to avoid duplicates
+  const existing = db.select().from(folders).where(eq(folders.path, folder.path)).get()
+
+  if (existing) {
+    // If exists, update it ensuring it's active/configured as requested
+    const updated = {
+      ...toFolder(existing),
+      ...folder,
+      updatedAt: new Date()
+    }
+    updateFolder(updated.id, updated)
+    return updated
+  }
+
   const newFolder = {
     ...folder,
     createdAt: new Date(),

@@ -88,6 +88,9 @@
 
 @layer components {
   /* Keep existing custom classes if any, or migrate them */
+  .transparent-body {
+    background: transparent !important;
+  }
 }
 
 /* Animations - Keeping existing ones */

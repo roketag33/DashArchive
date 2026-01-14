@@ -8,8 +8,10 @@ const api = {
   openFile: (): Promise<string[]> => ipcRenderer.invoke('dialog:openFile'),
   scanFolder: (pathOrId: string | { path?: string; id?: string }): Promise<FileEntry[]> => {
     // Support legacy string or new object signature
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    const arg = (typeof pathOrId === 'string' ? { path: pathOrId } : pathOrId) as any
+    const arg = (typeof pathOrId === 'string' ? { path: pathOrId } : pathOrId) as unknown as {
+      path?: string
+      id?: string
+    }
     return ipcRenderer.invoke('scan-folder', arg)
   },
   generatePlan: (files: FileEntry[]): Promise<Plan> => ipcRenderer.invoke('generate-plan', files),
@@ -19,6 +21,8 @@ const api = {
     ipcRenderer.invoke('get-settings').then((s) => s.rules), // Helper
   saveSettings: (settings: Partial<AppSettings>): Promise<AppSettings> =>
     ipcRenderer.invoke('save-settings', settings),
+  savePresets: (blockIds: string[]): Promise<void> =>
+    ipcRenderer.invoke('settings:save-presets', blockIds),
   getHistory: (): Promise<JournalEntry[]> => ipcRenderer.invoke('get-history'),
   undoPlan: (plan: Plan, entryId?: string): Promise<ExecutionResult> =>
     ipcRenderer.invoke('undo-plan', { plan, entryId }),
@@ -45,6 +49,26 @@ const api = {
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   searchSemantic: (query: string): Promise<any[]> => ipcRenderer.invoke('SEARCH:SEMANTIC', query),
 
+  universalScan: (directories: string[]): Promise<import('../shared/types').UniversalScanResult> =>
+    ipcRenderer.invoke('universal:scan', directories),
+
+  universalApply: (
+    result: import('../shared/types').UniversalScanResult
+  ): Promise<import('../shared/types').ExecutionResult> =>
+    ipcRenderer.invoke('universal:apply', result),
+
+  showNotification: (data: import('../shared/types').UniversalScanResult) =>
+    ipcRenderer.invoke('notification:show', data),
+  onNotificationData: (callback: (data: import('../shared/types').UniversalScanResult) => void) => {
+    const handler = (
+      _: Electron.IpcRendererEvent,
+      data: import('../shared/types').UniversalScanResult
+    ): void => callback(data)
+    ipcRenderer.on('notification:data', handler)
+    return () => ipcRenderer.removeListener('notification:data', handler)
+  },
+  closeNotification: () => ipcRenderer.send('notification:close'),
+
   // Explicit Context API
   readFiles: (paths: string[]): Promise<{ path: string; name: string; content: string }[]> =>
     ipcRenderer.invoke('fs:read-files', paths),
@@ -57,6 +81,7 @@ const api = {
   getFolderRules: (folderId) => ipcRenderer.invoke('folders:get-rules', folderId),
   setFolderRules: (folderId, ruleIds) =>
     ipcRenderer.invoke('folders:set-rules', { folderId, ruleIds }),
+  getSystemPaths: () => ipcRenderer.invoke('folders:get-system-paths'),
 
   // Stats API
   getStats: () => ipcRenderer.invoke('stats:get'),
@@ -71,6 +96,22 @@ const api = {
       ipcRenderer.invoke('vault:encrypt-file', { source, dest }),
     decryptFile: (source: string, dest: string) =>
       ipcRenderer.invoke('vault:decrypt-file', { source, dest })
+  },
+
+  // AI Worker API
+  ai: {
+    ask: (id: string, prompt: string) => ipcRenderer.send('ai:ask', { id, prompt }),
+    onResponse: (
+      callback: (response: { id: string; content?: string; error?: string }) => void
+    ) => {
+      ipcRenderer.on('ai:response', (_, payload) => callback(payload))
+    },
+    onProgress: (callback: (progress: unknown) => void) => {
+      ipcRenderer.on('ai:progress', (_, payload) => callback(payload))
+    },
+    onReady: (callback: () => void) => {
+      ipcRenderer.on('ai:ready', () => callback())
+    }
   }
 }
 

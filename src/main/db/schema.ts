@@ -78,4 +78,27 @@ export const globalStats = sqliteTable('global_stats', {
   updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(new Date())
 })
 
-export type GlobalStatRecord = typeof globalStats.$inferSelect
+export const files = sqliteTable('files', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  path: text('path').notNull().unique(),
+  hash: text('hash'),
+  size: integer('size'),
+  lastModified: integer('last_modified', { mode: 'timestamp' }),
+  status: text('status').notNull().default('pending'), // 'pending', 'processed', 'ignored'
+  createdAt: integer('created_at', { mode: 'timestamp' }).notNull().default(new Date()),
+  updatedAt: integer('updated_at', { mode: 'timestamp' }).notNull().default(new Date())
+})
+
+export type FileRecord = typeof files.$inferSelect
+export type NewFileRecord = typeof files.$inferInsert
+
+export const events = sqliteTable('events', {
+  id: integer('id').primaryKey({ autoIncrement: true }),
+  type: text('type').notNull(), // 'add', 'change', 'unlink'
+  path: text('path').notNull(),
+  details: text('details', { mode: 'json' }),
+  timestamp: integer('timestamp', { mode: 'timestamp' }).notNull().default(new Date())
+})
+
+export type EventRecord = typeof events.$inferSelect
+export type NewEventRecord = typeof events.$inferInsert

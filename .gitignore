@@ -14,5 +14,5 @@ debug.png
 *.db-journal
 drizzle/
 # Tooling
-_bmad-output/
+# _bmad-output/
 .claude/

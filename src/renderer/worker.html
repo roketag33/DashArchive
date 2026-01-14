@@ -1,0 +1,17 @@
+<!doctype html>
+<html>
+
+<head>
+    <meta charset="UTF-8" />
+    <title>DashArchive AI Worker</title>
+    <!-- Content Security Policy to allow Web-LLM (WASM, Connect) -->
+    <meta http-equiv="Content-Security-Policy"
+        content="default-src 'self'; script-src 'self' 'unsafe-eval'; connect-src 'self' https: data:; worker-src 'self' blob:;" />
+</head>
+
+<body>
+    <div id="root"></div>
+    <script type="module" src="/src/worker/ai.ts"></script>
+</body>
+
+</html>

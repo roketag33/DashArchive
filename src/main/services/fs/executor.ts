@@ -73,17 +73,45 @@ export async function undoPlan(plan: Plan): Promise<ExecutionResult> {
   for (const item of reversedItems) {
     if (item.status !== 'ok') continue
 
-    result.processed++
     try {
       // Source is now the destination, and Destination is the source
       const originalPath = item.file.path
-      const currentPath = item.destinationPath
+      let currentPath = item.destinationPath
+
+      // RECOVERY LOGIC: Check if path is relative and file is missing at absolute logic
+      // If path is relative (e.g "Documents/Admin/file.pdf"), fs functions usually take it relative to CWD.
+      // But if it failed, maybe we need to be explicit or check CWD.
+      // Actually, let's verify if the file exists at currentPath.
+      let exists = false
+      try {
+        await fs.access(currentPath)
+        exists = true
+      } catch {
+        // If not found, try resolving relative to CWD explicitly if path is relative
+        if (!path.isAbsolute(currentPath)) {
+          const cwdPath = path.resolve(process.cwd(), currentPath)
+          try {
+            await fs.access(cwdPath)
+            currentPath = cwdPath
+            exists = true
+          } catch {
+            // Still not found
+          }
+        }
+      }
+
+      if (!exists) {
+        // Fail early for this item but continue others? Or count as failed.
+        throw new Error(`File not found at ${item.destinationPath} (or CWD resolved)`)
+      }
 
       // Ensure original directory exists (it should, but just in case)
       await fs.mkdir(path.dirname(originalPath), { recursive: true })
 
       // Move back
       await moveFile(currentPath, originalPath)
+
+      result.processed++
 
       // Optional: Clean up empty directories if they were created?
       // Logic for that is complex, skipping for MVP.

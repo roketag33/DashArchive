@@ -1,9 +1,10 @@
-import { ipcMain, dialog } from 'electron'
+import { ipcMain, dialog, BrowserWindow } from 'electron'
 
 export function registerDialogHandlers(): void {
-  ipcMain.handle('dialog:openDirectory', async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
-      properties: ['openDirectory']
+  ipcMain.handle('dialog:openDirectory', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender) || undefined
+    const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+      properties: ['openDirectory', 'createDirectory']
     })
     if (canceled) {
       return null
@@ -12,8 +13,9 @@ export function registerDialogHandlers(): void {
     }
   })
 
-  ipcMain.handle('dialog:openFile', async () => {
-    const { canceled, filePaths } = await dialog.showOpenDialog({
+  ipcMain.handle('dialog:openFile', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender) || undefined
+    const { canceled, filePaths } = await dialog.showOpenDialog(win, {
       properties: ['openFile', 'multiSelections'],
       filters: [{ name: 'Documents', extensions: ['pdf', 'txt', 'md', 'jpg', 'png', 'webp'] }]
     })

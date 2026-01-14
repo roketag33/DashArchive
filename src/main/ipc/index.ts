@@ -5,6 +5,9 @@ import { registerPlanHandlers } from './plan'
 import { registerWatcherHandlers } from './watcher'
 import { registerDatabaseHandlers } from './database'
 import { registerFoldersHandlers } from './folders'
+import { registerAIHandlers } from './ai'
+import { registerSettingsHandlers } from './settings'
+import { registerUniversalHandlers } from './universal'
 
 import { registerStatsHandlers } from './stats'
 
@@ -23,8 +26,11 @@ export function registerIpcHandlers(): void {
   registerDialogHandlers()
   registerScannerHandlers()
   registerPlanHandlers()
+  registerSettingsHandlers()
   registerWatcherHandlers()
   registerVaultHandlers() // Register Vault Handlers
+  registerAIHandlers()
+  registerUniversalHandlers()
 
   // Drop Zone IPC
   ipcMain.handle('DROP_ZONE:FILE_DROPPED', async (_, paths: string[]) => {

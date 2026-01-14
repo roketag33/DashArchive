@@ -1,15 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import {
-  Settings,
-  Home,
-  History,
-  Sun,
-  Moon,
-  HardDrive,
-  Zap,
-  Shield,
-  MessageSquare
-} from 'lucide-react'
+import { Settings, Home, History, Sun, Moon, HardDrive, MessageSquare } from 'lucide-react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
@@ -18,6 +8,7 @@ import { cn } from '../../lib/utils'
 import { Button } from '../ui/button'
 import { SearchBar } from '../../features/Search/SearchBar'
 import { OnboardingModal } from '../../features/Onboarding/OnboardingModal'
+import { Onboarding } from '../../features/Onboarding/Onboarding'
 import { Tooltip } from '../ui/tooltip'
 
 interface SidebarItemProps {
@@ -131,12 +122,7 @@ export function AppLayout(): React.JSX.Element {
               isActive={currentPath === '/' || currentPath === '/folders'}
               onClick={() => navigateTo('/folders')}
             />
-            <SidebarItem
-              icon={Zap}
-              label="Automation"
-              isActive={currentPath === '/automation'}
-              onClick={() => navigateTo('/automation')}
-            />
+
             <SidebarItem
               icon={MessageSquare}
               label={
@@ -154,13 +140,7 @@ export function AppLayout(): React.JSX.Element {
               isActive={currentPath === '/storage'}
               onClick={() => navigateTo('/storage')}
             />
-            <SidebarItem
-              icon={Shield}
-              label="Coffre-fort"
-              isActive={currentPath === '/vault'}
-              onClick={() => navigateTo('/vault')}
-              tooltip="Zone sécurisée chiffrée"
-            />
+
             <SidebarItem
               icon={History}
               label={t('app.history', 'Historique')}
@@ -242,6 +222,7 @@ export function AppLayout(): React.JSX.Element {
       </main>
       <Toaster position="bottom-right" theme={theme as 'light' | 'dark' | 'system'} />
       <OnboardingModal />
+      <Onboarding />
     </div>
   )
 }
