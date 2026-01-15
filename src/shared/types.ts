@@ -120,3 +120,12 @@ export interface UniversalScanResult {
   moves: ProposedMove[]
   totalDetected: number
 }
+export interface LearningSuggestion {
+  type: 'LEARNING_SUGGESTION'
+  file: string // Name of the file moved
+  extension: string // e.g., 'pdf'
+  targetFolder: string // Absolute path
+  suggestedRuleName: string
+}
+
+export type NotificationData = UniversalScanResult | LearningSuggestion

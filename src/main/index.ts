@@ -140,7 +140,13 @@ app.whenReady().then(() => {
   // Start Scheduler
   import('./services/core/scheduler').then(({ schedulerService }) => schedulerService.init())
   // Start Learning Service
-  import('./services/core/learning')
+  // Start Learning Service
+  import('./services/core/learning').then(({ learningService }) => {
+    learningService.on('suggestion', (data) => {
+      console.log('[Main] Received learning suggestion:', data)
+      notificationWindow?.show(data)
+    })
+  })
 
   // Check for updates (dynamic import to avoid early app access)
   if (app.isPackaged) {

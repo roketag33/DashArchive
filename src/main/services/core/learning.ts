@@ -6,6 +6,8 @@ import path from 'path'
 import { v4 as uuidv4 } from 'uuid'
 import { Event } from '@parcel/watcher'
 import log from 'electron-log'
+import { EventEmitter } from 'events'
+import { ipcMain } from 'electron'
 
 interface DeletedFile {
   path: string
@@ -16,12 +18,20 @@ interface DeletedFile {
 // TTL for correlating a Delete + Create as a Move (in ms)
 const MOVE_CORRELATION_TTL = 2000
 
-class LearningService {
+class LearningService extends EventEmitter {
   private deletedFiles: Map<string, DeletedFile> = new Map() // Key: fileName
 
   constructor() {
+    super()
     this.startListening()
-    this.listenToUserFeedback()
+    this.setupIpcListeners()
+  }
+
+  private setupIpcListeners(): void {
+    // Listen for 'YES' from the custom popup (via IPC)
+    ipcMain.handle('learning:approve', async (_, { extension, targetFolder }) => {
+      await this.learnRule(extension, targetFolder)
+    })
   }
 
   private startListening(): void {
@@ -29,46 +39,6 @@ class LearningService {
     watcherService.on('batch', (events: Event[]) => {
       this.processEvents(events)
     })
-  }
-
-  private listenToUserFeedback(): void {
-    notificationService.on('action', async ({ index, payload }) => {
-      if (payload?.type === 'LEARNING_SUGGESTION' && index === 0) {
-        // User clicked "Yes, always"
-        await this.learnRule(payload.data.extension, payload.data.targetFolder)
-      }
-    })
-  }
-
-  private async learnRule(extension: string, targetFolder: string): Promise<void> {
-    if (!extension || !targetFolder) return
-
-    // Create new Rule
-    const newRule: Rule = {
-      id: uuidv4(),
-      name: `Auto-Learn: ${extension.toUpperCase()}`,
-      isActive: true,
-      priority: 5, // Lower detected priority than manual presets
-      type: 'extension',
-      extensions: [extension],
-      destination: targetFolder,
-      description: `Learned from your move to ${path.basename(targetFolder)}`
-    }
-
-    const settings = getSettings()
-    // Avoid duplicates for same extension?
-    // For MVP, just append.
-    const updatedRules = [...settings.rules, newRule]
-
-    await saveSettings({ ...settings, rules: updatedRules })
-
-    notificationService.send({
-      title: 'Ghost Learner',
-      body: "Règle apprise ! Je m'occupe des prochains fichiers.",
-      silent: false
-    })
-
-    log.info(`[Learning] Learned new rule for .${extension} -> ${targetFolder}`)
   }
 
   private processEvents(events: Event[]): void {
@@ -105,33 +75,55 @@ class LearningService {
     }
   }
 
-  private handleDetectedMove(oldPath: string, newPath: string): void {
+  private handleDetectedMove(_oldPath: string, newPath: string): void {
     const fileName = path.basename(newPath)
     const newFolder = path.dirname(newPath)
     const extension = path.extname(newPath).toLowerCase().replace('.', '')
 
     log.info(`[Learning] Detected Move: ${fileName} -> ${newFolder}`)
-    // Avoid re-learning existing rules?
-    // Check if a rule already covers this?
-    // For now, simple logic.
 
     // Ignore if moved to Trash or temp or if extension is empty
     if (newPath.includes('.Trash') || newPath.includes('.tmp') || !extension) return
 
-    // Notify
-    notificationService.send({
-      title: '👻 Ghost Learner',
-      body: `J'ai vu que tu as déplacé "${fileName}". Je range les ".${extension}" ici la prochaine fois ?`,
-      silent: false,
-      actions: [{ type: 'button', text: 'Oui, toujours' }],
-      payload: {
-        type: 'LEARNING_SUGGESTION',
-        data: {
-          extension,
-          targetFolder: newFolder
-        }
-      }
+    // Emit event for Main Process to show Custom Window
+    this.emit('suggestion', {
+      type: 'LEARNING_SUGGESTION',
+      file: fileName,
+      extension,
+      targetFolder: newFolder,
+      suggestedRuleName: `Auto: .${extension}`
     })
+  }
+
+  private async learnRule(extension: string, targetFolder: string): Promise<void> {
+    if (!extension || !targetFolder) return
+
+    // Create new Rule
+    const newRule: Rule = {
+      id: uuidv4(),
+      name: `Auto-Learn: ${extension.toUpperCase()}`,
+      isActive: true,
+      priority: 5, // Lower detected priority than manual presets
+      type: 'extension',
+      extensions: [extension],
+      destination: targetFolder,
+      description: `Learned from your move to ${path.basename(targetFolder)}`
+    }
+
+    const settings = getSettings()
+    // Avoid duplicates for same extension?
+    // For MVP, just append.
+    const updatedRules = [...settings.rules, newRule]
+
+    await saveSettings({ ...settings, rules: updatedRules })
+
+    notificationService.send({
+      title: 'Ghost Learner',
+      body: "Règle apprise ! Je m'occupe des prochains fichiers.",
+      silent: false
+    })
+
+    log.info(`[Learning] Learned new rule for .${extension} -> ${targetFolder}`)
   }
 }
 

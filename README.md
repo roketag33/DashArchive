@@ -12,14 +12,17 @@
 
 ## 🚀 Fonctionnalités Clés
 
-- **👻 Ghost Librarian (V2)** : L'application tourne discrètement en tâche de fond (Tray). Elle veille sur vos dossiers et vous notifie uniquement quand c'est nécessaire.
-- **🧠 Double IA Hybride (Hybrid AI Architecture)** :
-  - **Classement Rapide** : Utilise **MobileBERT** (via `@xenova/transformers`) pour analyser et trier vos fichiers instantanément en arrière-plan.
-  - **Assistant Intelligent** : Utilise **Llama 3** (via `@mlc-ai/web-llm`, WebGPU) pour discuter avec vos documents et comprendre des instructions complexes via le chat.
-- **📄 Extraction & OCR** : Capable de lire le texte des PDFs, DOCX et même des images (via `Tesseract.js`) pour un tri basé sur le contenu réel.
-- **🔔 Notifications Interactives** : Recevez des alertes avec des actions rapides ("J'ai trouvé 3 factures, les classer ?").
+- **👻 Ghost Librarian (V2)** : L'application tourne discrètement en tâche de fond (Tray). Elle veille sur vos dossiers et apprend de vos habitudes grâce à la **Boucle d'Apprentissage (Learning Loop)**.
+- **🧱 Smart Onboarding (Life Blocks)** : Configuration ultra-rapide par profils (Admin, Dev, Créatif...) qui génère automatiquement les règles de tri.
+- **🧠 Architecture IA Locale (Local-First AI)** :
+  - **Llama 3** (via `@mlc-ai/web-llm`) : Le cerveau de l'**Oracle**, capable de discuter avec vos documents et de répondre à des questions complexes.
+  - **MobileBERT** (via `@xenova/transformers`) : Analyse ultra-rapide du texte des documents pour la classification automatique.
+  - **ResNet-50** (via `@xenova/transformers`) : Vision par ordinateur pour classer vos images (photos, screenshots, memes).
+  - **all-MiniLM-L6-v2** : Modèle d'embedding pour la recherche sémantique vectorielle (RAG).
+  - **Tesseract.js** : OCR local pour extraire le texte des images et PDFs scannés.
+- **🔔 Notifications Intelligentes** : Le Ghost vous "tape sur l'épaule" uniquement quand il a une suggestion pertinente ("Tu ranges souvent les .pdf ici, je crée une règle ?").
 - **⚡️ Performance Native** : Surveillance de fichiers optimisée en C++ (`@parcel/watcher`).
-- **↩️ Annulation Sécurisée** : Un clic pour tout annuler en cas d'erreur.
+- **↩️ Annulation Sécurisée (Undo)** : Un clic pour tout annuler en cas d'erreur.
 
 ## 📦 Installation
 
@@ -53,7 +56,7 @@ yarn install
 yarn dev
 ```
 
-> **Note**: Le modèle de Chat (Llama 3) sera téléchargé au premier usage (~2-4GB). Le modèle de classement (MobileBERT) est beaucoup plus léger.
+> **Note**: Les modèles IA (Llama 3, BERT, ResNet) sont stockés localement. Le téléchargement initial peut prendre quelques minutes (~2-4GB total).
 
 ### Build pour la Production
 
@@ -66,13 +69,15 @@ yarn build
 - **Electron** (v30)
 - **React** + **TypeScript**
 - **TailwindCSS** + **Shadcn/UI**
-- **IA & ML** :
-  - **@mlc-ai/web-llm** (Llama 3 - Chat & Raisonnement Complexe)
-  - **@xenova/transformers** (MobileBERT - Classification Rapide)
-  - **Tesseract.js** (OCR Images)
+- **IA & ML** (Tout tourne en local sur le GPU/CPU) :
+  - **LLM** : Llama 3 (`@mlc-ai/web-llm`)
+  - **NLP** : MobileBERT (`@xenova/transformers`)
+  - **Vision** : ResNet-50 (`@xenova/transformers`)
+  - **Embeddings** : all-MiniLM-L6-v2 (`@xenova/transformers`)
+  - **OCR** : Tesseract.js
 - **Système** :
   - **@parcel/watcher** (Surveillance Fichiers Native)
-  - **Better-SQLite3** (Base de données locale)
+  - **Better-SQLite3** (Base de données locale rapide)
 
 ## 👥 Contribuer
 

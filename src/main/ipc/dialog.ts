@@ -3,7 +3,7 @@ import { ipcMain, dialog, BrowserWindow } from 'electron'
 export function registerDialogHandlers(): void {
   ipcMain.handle('dialog:openDirectory', async (event) => {
     const win = BrowserWindow.fromWebContents(event.sender) || undefined
-    const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+    const { canceled, filePaths } = await dialog.showOpenDialog(win as BrowserWindow, {
       properties: ['openDirectory', 'createDirectory']
     })
     if (canceled) {
@@ -15,7 +15,7 @@ export function registerDialogHandlers(): void {
 
   ipcMain.handle('dialog:openFile', async (event) => {
     const win = BrowserWindow.fromWebContents(event.sender) || undefined
-    const { canceled, filePaths } = await dialog.showOpenDialog(win, {
+    const { canceled, filePaths } = await dialog.showOpenDialog(win as BrowserWindow, {
       properties: ['openFile', 'multiSelections'],
       filters: [{ name: 'Documents', extensions: ['pdf', 'txt', 'md', 'jpg', 'png', 'webp'] }]
     })

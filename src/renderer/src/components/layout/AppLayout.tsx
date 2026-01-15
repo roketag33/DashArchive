@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, Home, History, Sun, Moon, HardDrive, MessageSquare } from 'lucide-react'
+import { Settings, Home, History, Sun, Moon, Sparkles } from 'lucide-react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
@@ -124,21 +124,15 @@ export function AppLayout(): React.JSX.Element {
             />
 
             <SidebarItem
-              icon={MessageSquare}
+              icon={Sparkles}
               label={
                 isAILoading && aiProgress
-                  ? `Assistant (${aiProgress.match(/\d+%/)?.[0] || '...'})`
-                  : 'Assistant'
+                  ? `Oracle (${aiProgress.match(/\d+%/)?.[0] || '...'})`
+                  : 'Oracle'
               }
               isActive={currentPath === '/chat'}
               onClick={() => navigateTo('/chat')}
-              tooltip={isAILoading ? aiProgress : 'Chat RAG avec vos fichiers'}
-            />
-            <SidebarItem
-              icon={HardDrive}
-              label="Stockage"
-              isActive={currentPath === '/storage'}
-              onClick={() => navigateTo('/storage')}
+              tooltip={isAILoading ? aiProgress : 'Consultez le savoir du Ghost'}
             />
 
             <SidebarItem

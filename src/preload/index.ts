@@ -112,7 +112,9 @@ const api = {
     onReady: (callback: () => void) => {
       ipcRenderer.on('ai:ready', () => callback())
     }
-  }
+  },
+  approveLearning: (data: { extension: string; targetFolder: string }) =>
+    ipcRenderer.invoke('learning:approve', data)
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

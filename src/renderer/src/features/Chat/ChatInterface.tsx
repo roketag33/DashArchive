@@ -1,23 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Bot, User, Loader2, Sparkles, Paperclip } from 'lucide-react'
+import { Send, Bot, User, Loader2, Sparkles } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { useChat } from '../../hooks/useChat'
 import { cn } from '../../lib/utils'
 
 export function ChatInterface(): React.JSX.Element {
-  const {
-    messages,
-    sendMessage,
-    isGenerating,
-    modelProgress,
-    modelLoading,
-    activeFiles,
-    addActiveFiles,
-    clearActiveFiles
-  } = useChat()
+  const { messages, sendMessage, isGenerating, modelProgress, modelLoading } = useChat()
   const [input, setInput] = useState('')
-  const [isAttaching, setIsAttaching] = useState(false)
   const scrollRef = useRef<HTMLDivElement>(null)
 
   // Auto-scroll to bottom
@@ -33,36 +23,6 @@ export function ChatInterface(): React.JSX.Element {
     setInput('')
   }
 
-  const handleAttach = async (): Promise<void> => {
-    setIsAttaching(true)
-    console.log('[ChatInterface] Handing attach...')
-    try {
-      const paths = await window.api.openFile()
-      console.log('[ChatInterface] Selected paths:', paths)
-
-      if (paths && paths.length > 0) {
-        // 1. Index them for future RAG (Background)
-        window.api.processDroppedFiles(paths).catch((err) => console.error('Indexing failed', err))
-
-        // 2. Read content for IMMEDIATE context (Explicit)
-        console.log('[ChatInterface] Calling readFiles...')
-        const filesWithContent = await window.api.readFiles(paths)
-        console.log('[ChatInterface] readFiles returned:', filesWithContent)
-
-        if (filesWithContent.length > 0) {
-          console.log('[ChatInterface] Adding to activeFiles:', filesWithContent.length)
-          addActiveFiles(filesWithContent)
-        } else {
-          console.warn('[ChatInterface] readFiles returned empty array')
-        }
-      }
-    } catch (err) {
-      console.error('Failed to attach file:', err)
-    } finally {
-      setIsAttaching(false)
-    }
-  }
-
   return (
     <div className="h-full w-full flex flex-col relative overflow-hidden bg-background/50 backdrop-blur-lg rounded-xl border border-white/10 shadow-2xl">
       {/* Header */}
@@ -73,9 +33,9 @@ export function ChatInterface(): React.JSX.Element {
           </div>
           <div>
             <div className="flex items-center gap-2">
-              <h2 className="font-semibold text-sm">Assistant IA</h2>
-              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-yellow-500/20 text-yellow-600 border border-yellow-500/30">
-                BÊTA
+              <h2 className="font-semibold text-sm">Oracle</h2>
+              <span className="px-1.5 py-0.5 rounded text-[10px] font-bold bg-purple-500/20 text-purple-300 border border-purple-500/30">
+                V2
               </span>
             </div>
             <div className="flex items-center gap-1.5">
@@ -83,7 +43,7 @@ export function ChatInterface(): React.JSX.Element {
                 className={`h-1.5 w-1.5 rounded-full ${modelLoading ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}
               />
               <span className="text-[10px] text-muted-foreground font-mono">
-                {modelLoading ? 'LOADING MODEL' : 'PHI-3 READY'}
+                {modelLoading ? 'LOADING MODEL' : 'CONNAISSANCE ACTIVE'}
               </span>
             </div>
           </div>
@@ -93,9 +53,10 @@ export function ChatInterface(): React.JSX.Element {
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6" ref={scrollRef}>
         {messages.length === 0 && !modelLoading && (
-          <div className="h-full flex flex-col items-center justify-center opacity-30 select-none">
-            <Bot className="h-16 w-16 mb-4" />
-            <p className="text-sm">Posez une question sur vos documents.</p>
+          <div className="h-full flex flex-col items-center justify-center opacity-30 select-none text-center">
+            <Sparkles className="h-16 w-16 mb-4" />
+            <p className="text-sm font-medium">L&apos;Oracle connait vos documents.</p>
+            <p className="text-xs mt-1">Posez simplement votre question.</p>
           </div>
         )}
 
@@ -197,44 +158,7 @@ export function ChatInterface(): React.JSX.Element {
 
       {/* Input Area */}
       <div className="p-4 bg-background/80 backdrop-blur-md border-t border-white/10">
-        {/* Active Files Chips */}
-        {activeFiles.length > 0 && (
-          <div className="flex flex-wrap gap-2 mb-3">
-            {activeFiles.map((file, idx) => (
-              <div
-                key={idx}
-                className="flex items-center gap-2 bg-primary/10 text-primary px-3 py-1.5 rounded-full text-xs border border-primary/20"
-              >
-                <Paperclip className="h-3 w-3" />
-                <span className="truncate max-w-[150px] font-medium">{file.name}</span>
-                <button
-                  onClick={clearActiveFiles}
-                  className="hover:text-destructive transition-colors ml-1"
-                >
-                  ×
-                </button>
-              </div>
-            ))}
-          </div>
-        )}
-
         <div className="relative flex items-center gap-2">
-          {/* Attachment Button */}
-          <Button
-            size="icon"
-            variant="ghost"
-            onClick={handleAttach}
-            disabled={isGenerating || !!modelLoading || isAttaching}
-            className="shrink-0 h-10 w-10 rounded-xl text-muted-foreground hover:text-white"
-            title="Ajouter un document (PDF, Texte, Image)"
-          >
-            {isAttaching ? (
-              <Loader2 className="h-5 w-5 animate-spin text-indigo-400" />
-            ) : (
-              <Paperclip className="h-5 w-5" />
-            )}
-          </Button>
-
           <textarea
             value={input}
             onChange={(e) => setInput(e.target.value)}

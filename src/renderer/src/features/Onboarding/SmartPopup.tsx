@@ -1,11 +1,11 @@
 import React from 'react'
 import { motion } from 'framer-motion'
-import { Ghost, FileText, Image, Box, Check } from 'lucide-react'
-import { UniversalScanResult } from '../../../../shared/types'
+import { Ghost, FileText, Image, Box, Check, Brain } from 'lucide-react'
+import { NotificationData } from '../../../../shared/types'
 import { cn } from '../../lib/utils'
 
 interface SmartPopupProps {
-  results: UniversalScanResult
+  results: NotificationData
   onOrganize: () => void
   onDashboard: () => void
   isEmbedded?: boolean
@@ -46,50 +46,109 @@ export function SmartPopup({
       </div>
 
       {/* Body */}
-      <div className="px-4 py-3 space-y-3">
-        <p className="text-muted-foreground text-xs">
-          <span className="text-foreground font-bold">{results.totalDetected} fichiers</span>{' '}
-          trouvés.
-        </p>
+      {'type' in results && results.type === 'LEARNING_SUGGESTION' ? (
+        <>
+          <div className="px-4 py-3 space-y-3">
+            <div className="flex items-start gap-3">
+              <div className="p-2 bg-yellow-500/10 rounded-full animate-bounce">
+                <Brain className="w-5 h-5 text-yellow-500" />
+              </div>
+              <div>
+                <p className="text-sm font-semibold text-foreground">
+                  Nouvelle habitude détectée !
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">
+                  Je vois que tu ranges les{' '}
+                  <span className="text-yellow-500 font-mono">.{results.extension}</span> ici.
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  Veux-tu que je le fasse pour toi la prochaine fois ?
+                </p>
+              </div>
+            </div>
+          </div>
+          <div className="p-3 bg-muted/40 flex gap-2">
+            <button
+              onClick={onDashboard} // Serves as "No" / Close
+              className="flex-1 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+            >
+              Non merci
+            </button>
+            <button
+              // We need a specific handler for learning approval
+              // NotificationPage passes handleOrganize as onOrganize, check if that works?
+              // handleOrganize calls window.api.universalApply which might check type?
+              // Wait, we need a new API for approval.
+              onClick={onOrganize}
+              className="flex-[2] py-1.5 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-bold rounded-lg shadow-md shadow-yellow-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            >
+              <Check className="w-3 h-3" /> Oui, toujours
+            </button>
+          </div>
+        </>
+      ) : (
+        <>
+          <div className="px-4 py-3 space-y-3">
+            <p className="text-muted-foreground text-xs">
+              <span className="text-foreground font-bold">
+                {(results as import('../../../../shared/types').UniversalScanResult).totalDetected}{' '}
+                fichiers
+              </span>{' '}
+              trouvés.
+            </p>
 
-        {/* Mini Visual Stats */}
-        <div className="flex gap-2 justify-between">
-          <StatItem
-            icon={FileText}
-            count={results.stats['admin'] || 0}
-            color="text-blue-400"
-            bg="bg-blue-500/10"
-          />
-          <StatItem
-            icon={Image}
-            count={results.stats['media'] || 0}
-            color="text-pink-400"
-            bg="bg-pink-500/10"
-          />
-          <StatItem
-            icon={Box}
-            count={results.stats['misc'] || 0}
-            color="text-yellow-400"
-            bg="bg-yellow-500/10"
-          />
-        </div>
-      </div>
+            {/* Mini Visual Stats */}
+            <div className="flex gap-2 justify-between">
+              <StatItem
+                icon={FileText}
+                count={
+                  (results as import('../../../../shared/types').UniversalScanResult).stats[
+                    'admin'
+                  ] || 0
+                }
+                color="text-blue-400"
+                bg="bg-blue-500/10"
+              />
+              <StatItem
+                icon={Image}
+                count={
+                  (results as import('../../../../shared/types').UniversalScanResult).stats[
+                    'media'
+                  ] || 0
+                }
+                color="text-pink-400"
+                bg="bg-pink-500/10"
+              />
+              <StatItem
+                icon={Box}
+                count={
+                  (results as import('../../../../shared/types').UniversalScanResult).stats[
+                    'misc'
+                  ] || 0
+                }
+                color="text-yellow-400"
+                bg="bg-yellow-500/10"
+              />
+            </div>
+          </div>
 
-      {/* Actions */}
-      <div className="p-3 bg-muted/40 flex gap-2">
-        <button
-          onClick={onDashboard}
-          className="flex-1 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
-        >
-          Voir
-        </button>
-        <button
-          onClick={onOrganize}
-          className="flex-[2] py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-md shadow-indigo-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
-        >
-          <Check className="w-3 h-3" /> Ranger
-        </button>
-      </div>
+          {/* Actions */}
+          <div className="p-3 bg-muted/40 flex gap-2">
+            <button
+              onClick={onDashboard}
+              className="flex-1 py-1.5 text-xs font-medium text-muted-foreground hover:text-foreground hover:bg-muted/50 rounded-lg transition-colors"
+            >
+              Voir
+            </button>
+            <button
+              onClick={onOrganize}
+              className="flex-[2] py-1.5 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-md shadow-indigo-500/20 active:scale-95 transition-all flex items-center justify-center gap-1.5"
+            >
+              <Check className="w-3 h-3" /> Ranger
+            </button>
+          </div>
+        </>
+      )}
     </motion.div>
   )
 }

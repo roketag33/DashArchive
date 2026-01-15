@@ -1,7 +1,7 @@
 import { BrowserWindow, screen, ipcMain } from 'electron'
 import { join } from 'path'
 import { is } from '@electron-toolkit/utils'
-import { UniversalScanResult } from '../../shared/types'
+import { NotificationData } from '../../shared/types'
 
 export class NotificationWindow {
   private window: BrowserWindow | null = null
@@ -51,7 +51,7 @@ export class NotificationWindow {
     })
   }
 
-  public show(data: UniversalScanResult): void {
+  public show(data: NotificationData): void {
     console.log('[NotificationWindow] show() called with data:', data)
     if (!this.window) {
       console.log('[NotificationWindow] Window was null, creating new...')

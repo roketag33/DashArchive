@@ -4,7 +4,6 @@ import { Dashboard } from './features/Dashboard/Dashboard'
 import { SettingsPanel } from './features/Settings/SettingsPanel'
 import { HistoryPanel } from './features/History/HistoryPanel'
 import { DropZone } from './features/DropZone/DropZone'
-import { StorageView } from './features/Storage/StorageView'
 import { Spotlight } from './features/Spotlight/Spotlight'
 import { ChatInterface } from './features/Chat/ChatInterface'
 import { AIProvider } from './context/AIContext'
@@ -25,7 +24,7 @@ function App(): React.JSX.Element {
           <Route path="folders/:folderId" element={<Dashboard />} />
           <Route path="settings" element={<SettingsPanel />} />
           <Route path="history" element={<HistoryPanel />} />
-          <Route path="storage" element={<StorageView />} />
+          <Route path="history" element={<HistoryPanel />} />
           <Route path="chat" element={<ChatInterface />} />
         </Route>
         <Route path="/dropzone" element={<DropZone />} />

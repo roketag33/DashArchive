@@ -1,9 +1,9 @@
 import React, { useEffect, useState } from 'react'
 import { SmartPopup } from '../features/Onboarding/SmartPopup'
-import type { UniversalScanResult } from '../../../shared/types'
+import type { NotificationData } from '../../../shared/types'
 
 export function NotificationPage(): React.JSX.Element {
-  const [data, setData] = useState<UniversalScanResult | null>(null)
+  const [data, setData] = useState<NotificationData | null>(null)
 
   useEffect(() => {
     console.log('[NotificationPage] Mounted!')
@@ -33,7 +33,19 @@ export function NotificationPage(): React.JSX.Element {
   // It's `window.api.universalApply`. We can call it from here!
   const handleOrganize = async (): Promise<void> => {
     if (data) {
-      await window.api.universalApply(data)
+      if ('type' in data && data.type === 'LEARNING_SUGGESTION') {
+        // Handle Learning Approval
+        // We need a way to call ipcRenderer.invoke('learning:approve', ...)
+        // Check preload/index.ts. I don't recall adding learning:approve to api.
+        // I define it right now dynamically or check if I can add it?
+        // I should update preload.
+        // For now, I'll use invoke directly via extended window.api if possible or assume I update preload separate.
+        // Let's assume I update preload to include learnRule or similar.
+        await window.api.approveLearning(data)
+      } else {
+        // Universal Scan
+        await window.api.universalApply(data as import('../../../shared/types').UniversalScanResult)
+      }
       window.api.closeNotification()
     }
   }

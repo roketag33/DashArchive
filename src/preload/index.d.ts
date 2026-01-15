@@ -5,7 +5,8 @@ import {
   AppSettings,
   JournalEntry,
   Rule,
-  UniversalScanResult
+  UniversalScanResult,
+  NotificationData
 } from '../shared/types'
 
 interface CustomAPI {
@@ -34,10 +35,11 @@ interface CustomAPI {
 
   universalScan: (directories: string[]) => Promise<UniversalScanResult>
   universalApply: (result: UniversalScanResult) => Promise<ExecutionResult>
-  showNotification: (data: UniversalScanResult) => Promise<void>
-  onNotificationData: (callback: (data: UniversalScanResult) => void) => () => void
+  showNotification: (data: NotificationData) => Promise<void>
+  onNotificationData: (callback: (data: NotificationData) => void) => () => void
   closeNotification: () => void
   getSystemPaths: () => Promise<{ downloads: string; desktop: string; documents: string }>
+  approveLearning: (data: { extension: string; targetFolder: string }) => Promise<void>
 
   // Folders
   getFolders: () => Promise<import('./shared/types').Folder[]>
