@@ -1,7 +1,7 @@
 {
   "name": "dash-archive",
   "description": "Intelligent, privacy-focused file organizer powered by local AI",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "main": "./out/main/index.js",
   "author": "roketag33",
   "license": "MIT",
