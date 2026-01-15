@@ -1,9 +1,13 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
 import { Dialog, DialogContent } from '../../components/ui/dialog'
 import { Button } from '../../components/ui/button'
-import { ArrowRight, Check, Briefcase, Palette, Code, GraduationCap, Sparkles } from 'lucide-react'
+import { Input } from '../../components/ui/input'
+import { Switch } from '../../components/ui/switch'
+import { Label } from '../../components/ui/label'
+import { ArrowRight, Check, Sparkles, Brain, FolderInput } from 'lucide-react'
 import { cn } from '../../lib/utils'
-import { LIFE_BLOCKS } from './presets'
+import { Rule } from '../../../../shared/types'
+import { v4 as uuidv4 } from 'uuid'
 
 const ONBOARDING_KEY = 'dasharchive-onboarding-completed'
 
@@ -12,14 +16,50 @@ export const OnboardingModal = (): React.JSX.Element => {
     return !localStorage.getItem(ONBOARDING_KEY)
   })
   const [step, setStep] = useState(0)
-  const [selectedBlocks, setSelectedBlocks] = useState<string[]>([])
   const [isSaving, setIsSaving] = useState(false)
+
+  // AI Fallback State
+  const [enableFallback, setEnableFallback] = useState(true)
+  const [fallbackCategories, setFallbackCategories] = useState(
+    'Administratif, Personnel, Factures, Divers'
+  )
+  const [documentsPath, setDocumentsPath] = useState<string>('')
+
+  useEffect(() => {
+    // Fetch paths for default destination
+    window.api.getSystemPaths().then((paths) => {
+      setDocumentsPath(paths.documents)
+    })
+  }, [])
 
   const handleComplete = async (): Promise<void> => {
     setIsSaving(true)
     try {
-      // Save selected presets
-      await window.api.savePresets(selectedBlocks)
+      // 1. If Fallback enabled, create the wildcard rule
+      if (enableFallback) {
+        const currentRules = await window.api.getRules()
+        const categories = fallbackCategories
+          .split(',')
+          .map((s) => s.trim())
+          .filter((s) => s)
+
+        const fallbackRule: Rule = {
+          id: uuidv4(),
+          name: 'Tri Intelligent (Reste)',
+          type: 'ai',
+          extensions: ['*'],
+          isActive: true,
+          priority: 0, // Low priority to act as fallback
+          destination: `${documentsPath}/{{category}}`,
+          aiPrompts: categories.length > 0 ? categories : ['Divers'],
+          description: 'Gère les fichiers qui ne correspondent à aucune autre règle.'
+        }
+
+        await window.api.saveSettings({
+          rules: [...currentRules, fallbackRule]
+        })
+      }
+
       localStorage.setItem(ONBOARDING_KEY, 'true')
       setIsOpen(false)
     } catch (err) {
@@ -34,25 +74,6 @@ export const OnboardingModal = (): React.JSX.Element => {
       setStep(step + 1)
     } else {
       handleComplete()
-    }
-  }
-
-  const toggleBlock = (id: string): void => {
-    setSelectedBlocks((prev) => (prev.includes(id) ? prev.filter((b) => b !== id) : [...prev, id]))
-  }
-
-  const getIcon = (name: string): React.ReactNode => {
-    switch (name) {
-      case 'Briefcase':
-        return <Briefcase className="w-8 h-8" />
-      case 'Palette':
-        return <Palette className="w-8 h-8" />
-      case 'Code':
-        return <Code className="w-8 h-8" />
-      case 'GraduationCap':
-        return <GraduationCap className="w-8 h-8" />
-      default:
-        return <Sparkles className="w-8 h-8" />
     }
   }
 
@@ -73,61 +94,68 @@ export const OnboardingModal = (): React.JSX.Element => {
         </div>
       )
     },
+
     {
-      id: 'blocks',
-      title: 'Qui êtes-vous ?',
-      description: 'Sélectionnez vos "Briques de Vie" pour configurer le Ghost.',
+      id: 'ai-fallback',
+      title: 'Intelligence Artificielle',
+      description: 'Que faire des fichiers qui ne correspondent à aucune règle ?',
       content: (
-        <div className="grid grid-cols-2 gap-3 py-4 w-full">
-          {LIFE_BLOCKS.map((block) => {
-            const isSelected = selectedBlocks.includes(block.id)
-            return (
-              <button
-                key={block.id}
-                onClick={() => toggleBlock(block.id)}
-                className={cn(
-                  'flex flex-col items-center p-4 rounded-xl border-2 transition-all duration-200 text-center gap-3',
-                  isSelected
-                    ? 'border-primary bg-primary/5 shadow-md scale-105'
-                    : 'border-muted bg-card hover:border-primary/50 hover:bg-muted/50'
-                )}
-              >
-                <div
-                  className={cn(
-                    'p-3 rounded-full transition-colors',
-                    isSelected
-                      ? 'bg-primary text-primary-foreground'
-                      : 'bg-muted text-muted-foreground'
-                  )}
-                >
-                  {getIcon(block.icon)}
-                </div>
-                <div>
-                  <h3 className="font-bold text-sm">{block.label}</h3>
-                  <p className="text-[10px] text-muted-foreground leading-tight mt-1">
-                    {block.description}
-                  </p>
-                </div>
-              </button>
-            )
-          })}
+        <div className="flex flex-col gap-6 py-4 w-full">
+          <div className="flex items-center justify-between p-4 rounded-xl border bg-card">
+            <div className="flex items-center gap-4">
+              <div className="p-3 bg-purple-100 dark:bg-purple-900/30 text-purple-600 rounded-full">
+                <Brain className="w-6 h-6" />
+              </div>
+              <div className="flex flex-col">
+                <span className="font-semibold">Tri Intelligent</span>
+                <span className="text-xs text-muted-foreground">
+                  L&apos;IA analyse le contenu et le nom pour deviner le dossier.
+                </span>
+              </div>
+            </div>
+            <Switch checked={enableFallback} onCheckedChange={setEnableFallback} />
+          </div>
+
+          {enableFallback && (
+            <div className="space-y-4 animate-in fade-in slide-in-from-top-4">
+              <div className="space-y-2">
+                <Label>Catégories Sugggérées</Label>
+                <Input
+                  value={fallbackCategories}
+                  onChange={(e) => setFallbackCategories(e.target.value)}
+                  placeholder="Ex: Factures, Contrats, Photos..."
+                />
+                <p className="text-[10px] text-muted-foreground">
+                  L&apos;IA choisira parmi ces catégories pour ranger vos fichiers inconnus.
+                </p>
+              </div>
+
+              <div className="flex items-center gap-2 p-3 bg-muted/30 rounded border text-xs text-muted-foreground">
+                <FolderInput className="w-4 h-4" />
+                Destination :{' '}
+                {documentsPath ? `${documentsPath}/{{category}}` : 'Documents/{{category}}'}
+              </div>
+            </div>
+          )}
         </div>
       )
     }
   ]
 
   const currentStep = steps[step]
-  const canContinue = step !== 1 || selectedBlocks.length > 0
 
   return (
     <Dialog
       open={isOpen}
       onOpenChange={(open) => {
-        if (!open && selectedBlocks.length > 0) handleComplete()
+        // Prevent closing by clicking outside if not complete?
+        // Actually the code allows closing if blocks selected.
+        if (!isOpen && !open) return // safety
+        // if (!open && selectedBlocks.length > 0) handleComplete() // removed
       }}
     >
       <DialogContent className="max-w-md sm:max-w-xl p-0 border-0 overflow-hidden bg-background">
-        <div className="relative h-full flex flex-col min-h-[500px]">
+        <div className="relative h-full flex flex-col min-h-[550px]">
           {/* Progress Bar */}
           <div className="absolute top-0 left-0 right-0 h-1 bg-muted/50">
             <div
@@ -172,7 +200,7 @@ export const OnboardingModal = (): React.JSX.Element => {
                 ))}
               </div>
 
-              <Button onClick={handleNext} className="flex-1" disabled={!canContinue || isSaving}>
+              <Button onClick={handleNext} className="flex-1" disabled={isSaving}>
                 {step === steps.length - 1 ? (
                   <>
                     {isSaving ? 'Configuration...' : 'Terminer'} <Check className="ml-2 w-4 h-4" />

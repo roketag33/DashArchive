@@ -39,9 +39,23 @@ export function SmartPopup({
         </div>
         <button
           onClick={onDashboard}
-          className="ml-auto text-muted-foreground hover:text-foreground"
+          title="Fermer"
+          className="ml-auto text-muted-foreground hover:text-foreground p-1 hover:bg-muted rounded-md transition-colors"
         >
-          {/* Close/Dismiss icon could go here, for now reusing Dashboard action implicitly or just letting logic handle it */}
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            width="14"
+            height="14"
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            strokeWidth="2"
+            strokeLinecap="round"
+            strokeLinejoin="round"
+          >
+            <path d="M18 6 6 18" />
+            <path d="m6 6 12 12" />
+          </svg>
         </button>
       </div>
 

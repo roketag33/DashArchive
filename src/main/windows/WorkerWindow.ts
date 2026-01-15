@@ -11,14 +11,16 @@ export class WorkerWindow {
 
   private createWindow(): void {
     this.window = new BrowserWindow({
-      show: false, // Hidden
+      show: false, // Hidden for production
       width: 100,
       height: 100,
       webPreferences: {
         preload: join(__dirname, '../../preload/index.js'),
         sandbox: false,
-        backgroundThrottling: false, // Critical for AI performance in background
-        webSecurity: true
+        webSecurity: false,
+        backgroundThrottling: false, // CRITICAL: Prevent AI from sleeping when hidden
+        nodeIntegration: true, // Required for Polyfill
+        contextIsolation: false // Required for Polyfill
       }
     })
 

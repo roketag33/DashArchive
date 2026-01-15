@@ -5,9 +5,10 @@ import { Button } from '../../components/ui/button'
 import { Input } from '../../components/ui/input'
 import { Badge } from '../../components/ui/badge'
 import { Label } from '../../components/ui/label'
-import { Save, FolderOpen, Wand2, Brain, Wrench, Check } from 'lucide-react'
+import { FolderOpen, Brain, Wrench, ChevronDown, ChevronRight, X } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
+import { cn } from '../../lib/utils'
 
 interface RuleEditorProps {
   initialRule: Rule
@@ -15,20 +16,40 @@ interface RuleEditorProps {
   onCancel: () => void
 }
 
+const COMMON_EXTENSIONS = ['pdf', 'doc', 'docx', 'jpg', 'png', 'zip', 'mp4', 'mp3']
+
 export function RuleEditor({ initialRule, onSave, onCancel }: RuleEditorProps): React.JSX.Element {
   const { t } = useTranslation()
   const [editForm, setEditForm] = useState<Partial<Rule>>({ ...initialRule })
+  const [showAdvanced, setShowAdvanced] = useState(false)
+  const [extInput, setExtInput] = useState('')
 
   const handleChange = (field: keyof Rule, value: string | string[] | number): void => {
     setEditForm((prev) => ({ ...prev, [field]: value }))
   }
 
-  const handleArrayChange = (value: string): void => {
-    const arr = value
-      .split(',')
-      .map((s) => s.trim())
-      .filter((s) => s)
-    setEditForm((prev) => ({ ...prev, extensions: arr }))
+  const handleAddExtension = (ext: string): void => {
+    const clean = ext.trim().toLowerCase().replace(/^\./, '')
+    if (!clean) return
+    const current = editForm.extensions || []
+    if (!current.includes(clean)) {
+      setEditForm((prev) => ({ ...prev, extensions: [...current, clean] }))
+    }
+  }
+
+  const handleRemoveExtension = (ext: string): void => {
+    setEditForm((prev) => ({
+      ...prev,
+      extensions: (prev.extensions || []).filter((e) => e !== ext)
+    }))
+  }
+
+  const handleKeyDown = (e: React.KeyboardEvent): void => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault()
+      handleAddExtension(extInput)
+      setExtInput('')
+    }
   }
 
   const handleAiPromptsChange = (value: string): void => {
@@ -46,6 +67,8 @@ export function RuleEditor({ initialRule, onSave, onCancel }: RuleEditorProps): 
     }
   }
 
+  /*
+  // Disabled: Feature not yet wired to UI
   const handleSuggestCategories = async (): Promise<void> => {
     const folder = await window.api.selectFolder()
     if (!folder) return
@@ -66,6 +89,7 @@ export function RuleEditor({ initialRule, onSave, onCancel }: RuleEditorProps): 
       toast.error('Failed to analyze folder.')
     }
   }
+  */
 
   const handleSaveEdit = (): void => {
     if (!editForm.name || editForm.name.trim() === '') {
@@ -76,217 +100,226 @@ export function RuleEditor({ initialRule, onSave, onCancel }: RuleEditorProps): 
     onSave({ ...initialRule, ...editForm } as Rule)
   }
 
+  const isSimpleExtensionRule = editForm.type === 'extension' || !editForm.type
+
   return (
-    <div className="grid gap-4 border p-4 rounded-lg bg-card/50">
-      <div className="grid grid-cols-2 gap-4">
-        <div className="grid gap-2">
-          <label className="text-sm font-medium">{t('settings.rules.edit.name')}</label>
-          <Input
-            placeholder={t('settings.rules.edit.namePlaceholder')}
-            value={editForm.name}
-            onChange={(e) => handleChange('name', e.target.value)}
-          />
-        </div>
-        <div className="grid gap-2">
-          <Label className="text-sm font-medium">{t('settings.destination')}</Label>
-          <div className="flex gap-2">
-            <Input
-              value={editForm.destination || ''}
-              onChange={(e) => handleChange('destination', e.target.value)}
-              placeholder="Documents/{{category}}"
-            />
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={handleSelectDestination}
-              title="Select destination folder"
-            >
-              <FolderOpen className="h-4 w-4" />
-            </Button>
-          </div>
-          <p className="text-xs text-muted-foreground">
-            Supports placeholders: {'{{extension}}, {{year}}, {{month}}, {{category}}'}. You can
-            also select external drives.
-          </p>
-        </div>
+    <div className="flex flex-col gap-4 border p-6 rounded-xl bg-card shadow-sm animate-in fade-in zoom-in-95 duration-200">
+      {/* Header / Name */}
+      <div className="flex flex-col gap-3">
+        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wider">
+          {t('settings.rules.edit.name')}
+        </label>
+        <Input
+          className="text-lg font-medium border-0 border-b rounded-none px-0 shadow-none focus-visible:ring-0 focus-visible:border-primary placeholder:text-muted-foreground/50 transition-colors bg-transparent"
+          placeholder="ex: Documents Personnels"
+          value={editForm.name}
+          onChange={(e) => handleChange('name', e.target.value)}
+          autoFocus
+        />
+      </div>
 
-        <div className="grid gap-2">
-          <Label className="text-sm font-medium">{t('settings.labelColor')}</Label>
-          <select
-            className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background"
-            value={editForm.labelColor || 'none'}
-            onChange={(e) => handleChange('labelColor', e.target.value)}
-          >
-            <option value="none">{t('settings.colors.none')}</option>
-            <option value="Red">{t('settings.colors.Red')}</option>
-            <option value="Orange">{t('settings.colors.Orange')}</option>
-            <option value="Yellow">{t('settings.colors.Yellow')}</option>
-            <option value="Green">{t('settings.colors.Green')}</option>
-            <option value="Blue">{t('settings.colors.Blue')}</option>
-            <option value="Purple">{t('settings.colors.Purple')}</option>
-            <option value="Gray">{t('settings.colors.Gray')}</option>
-          </select>
-        </div>
-        <div className="grid gap-2">
-          <label className="text-sm font-medium">{t('settings.rules.edit.ruleMode')}</label>
-          <div className="flex p-1 bg-muted rounded-lg">
-            <button
-              className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type === 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => handleChange('type', 'ai')}
-            >
-              <Brain className="h-4 w-4" /> {t('settings.rules.edit.aiSmartSort')}
-            </button>
-            <button
-              className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type !== 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
-              onClick={() => handleChange('type', 'extension')}
-            >
-              <Wrench className="h-4 w-4" /> {t('settings.rules.edit.manualCriteria')}
-            </button>
-          </div>
-        </div>
-
-        {editForm.type === 'ai' ? (
-          <div className="grid gap-2 col-span-2 bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-lg border border-blue-100 dark:border-blue-900/50">
-            <label className="text-sm font-medium">Categories to Match</label>
-            <div className="flex gap-2 items-end">
-              <div className="grid gap-2 flex-1">
-                <Input
-                  placeholder="Categories e.g. Invoice, Contract, Personal"
-                  value={editForm.aiPrompts?.join(', ') || ''}
-                  onChange={(e) => handleAiPromptsChange(e.target.value)}
-                />
+      {/* Simplified Main Logic */}
+      {isSimpleExtensionRule ? (
+        <div className="grid gap-6 py-2">
+          {/* Extensions visual input */}
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <Label className="text-sm font-medium">Fichiers concernés (extensions)</Label>
+              <div className="flex gap-1">
+                {COMMON_EXTENSIONS.slice(0, 4).map((ext) => (
+                  <button
+                    key={ext}
+                    onClick={() => handleAddExtension(ext)}
+                    className="text-[10px] px-2 py-0.5 rounded bg-muted hover:bg-muted-foreground/20 text-muted-foreground transition-colors"
+                  >
+                    +{ext}
+                  </button>
+                ))}
               </div>
-              <Button
-                variant="outline"
-                size="icon"
-                onClick={handleSuggestCategories}
-                title="Magic Suggest from Folder"
-                className="shrink-0"
-              >
-                <Wand2 className="h-4 w-4" />
-              </Button>
             </div>
-            <div className="flex flex-wrap gap-1.5 mt-2">
-              {COMMON_CATEGORIES.map((cat) => (
+
+            <div className="min-h-[42px] p-2 rounded-lg border bg-background flex flex-wrap gap-2 items-center focus-within:ring-2 focus-within:ring-ring focus-within:ring-offset-2">
+              {(editForm.extensions || []).map((ext) => (
                 <Badge
-                  key={cat}
-                  variant={editForm.aiPrompts?.includes(cat) ? 'default' : 'outline'}
-                  className="cursor-pointer hover:bg-primary/90 transition-colors"
-                  onClick={() => {
-                    const current = editForm.aiPrompts || []
-                    if (!current.includes(cat)) {
-                      setEditForm((prev) => ({
-                        ...prev,
-                        aiPrompts: [...current, cat]
-                      }))
-                    } else {
-                      setEditForm((prev) => ({
-                        ...prev,
-                        aiPrompts: current.filter((c) => c !== cat)
-                      }))
-                    }
-                  }}
+                  key={ext}
+                  variant="secondary"
+                  className="pl-2 pr-1 py-1 flex items-center gap-1 text-sm font-normal"
                 >
-                  {editForm.aiPrompts?.includes(cat) && (
-                    <Check className="h-3 w-3 mr-1 inline-block" />
-                  )}
-                  {cat}
+                  .{ext}
+                  <button
+                    onClick={() => handleRemoveExtension(ext)}
+                    className="hover:bg-destructive/10 hover:text-destructive rounded-full p-0.5 transition-colors"
+                  >
+                    <X className="w-3 h-3" />
+                  </button>
                 </Badge>
               ))}
-            </div>
-            <div className="text-xs text-muted-foreground bg-yellow-50 dark:bg-yellow-900/20 p-2 rounded border border-yellow-200 dark:border-yellow-900 mt-2">
-              <strong>Note:</strong> First run will download the AI model (~50MB). Processing will
-              be slower than standard rules.
+              <input
+                className="flex-1 bg-transparent min-w-[60px] outline-none text-sm placeholder:text-muted-foreground/50"
+                placeholder={
+                  (editForm.extensions || []).length === 0
+                    ? 'Ajouter une extension (ex: pdf) + Entrée'
+                    : ''
+                }
+                value={extInput}
+                onChange={(e) => setExtInput(e.target.value)}
+                onKeyDown={handleKeyDown}
+                onBlur={() => {
+                  if (extInput) {
+                    handleAddExtension(extInput)
+                    setExtInput('')
+                  }
+                }}
+              />
             </div>
           </div>
-        ) : (
-          <div className="grid gap-4 col-span-2 border p-4 rounded-lg bg-muted/20">
+
+          {/* Destination */}
+          <div className="space-y-3">
+            <Label className="text-sm font-medium">Déplacer vers</Label>
+            <div className="flex gap-2">
+              <div className="relative flex-1">
+                <Input
+                  className="pl-9 bg-muted/20 border-muted-foreground/20"
+                  value={editForm.destination || ''}
+                  onChange={(e) => handleChange('destination', e.target.value)}
+                  placeholder="Choisir un dossier..."
+                />
+                <FolderOpen className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              </div>
+              <Button variant="secondary" onClick={handleSelectDestination}>
+                Parcourir
+              </Button>
+            </div>
+          </div>
+        </div>
+      ) : (
+        /* Fallback for AI/Complex modes - just a placeholder or the simplified AI view */
+        <div className="p-4 bg-muted/20 rounded-lg text-center text-sm text-muted-foreground">
+          Mode avancé activé. Utilisez les options ci-dessous pour modifier la logique complexe.
+        </div>
+      )}
+
+      {/* Footer / Advanced Toggle */}
+      <div className="pt-2 border-t mt-2">
+        <button
+          onClick={() => setShowAdvanced(!showAdvanced)}
+          className="flex items-center gap-2 text-xs font-medium text-muted-foreground hover:text-primary transition-colors mb-4"
+        >
+          {showAdvanced ? (
+            <ChevronDown className="w-4 h-4" />
+          ) : (
+            <ChevronRight className="w-4 h-4" />
+          )}
+          {showAdvanced
+            ? 'Masquer les options avancées'
+            : 'Options avancées (conflits, mode IA, regex...)'}
+        </button>
+
+        {showAdvanced && (
+          <div className="grid gap-6 animate-in fade-in slide-in-from-top-2">
             <div className="grid gap-2">
-              <label className="text-sm font-medium">
-                {t('settings.rules.edit.matchingCondition')}
-              </label>
-              <select
-                className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background file:border-0 file:bg-transparent file:text-sm file:font-medium placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                value={editForm.type || 'extension'}
-                onChange={(e) => handleChange('type', e.target.value)}
-              >
-                <option value="extension">{t('settings.rules.edit.fileExtension')}</option>
-                <option value="name">{t('settings.rules.edit.fileName')}</option>
-                <option value="size">{t('settings.rules.edit.fileSize')}</option>
-                <option value="date">{t('settings.rules.edit.fileDate')}</option>
-                <option value="fallback">{t('settings.rules.edit.fallback')}</option>
-              </select>
+              <Label className="text-sm font-medium">{t('settings.labelColor')}</Label>
+              <div className="flex flex-wrap gap-2">
+                {['none', 'Red', 'Orange', 'Yellow', 'Green', 'Blue', 'Purple', 'Gray'].map(
+                  (color) => (
+                    <button
+                      key={color}
+                      onClick={() => handleChange('labelColor', color)}
+                      className={cn(
+                        'w-6 h-6 rounded-full border-2 transition-all',
+                        editForm.labelColor === color
+                          ? 'border-primary scale-110 shadow-sm'
+                          : 'border-transparent opacity-50 hover:opacity-100'
+                      )}
+                      style={{
+                        backgroundColor: color === 'none' ? 'transparent' : color.toLowerCase()
+                      }}
+                      title={color}
+                    >
+                      {color === 'none' && <X className="w-4 h-4 m-auto text-muted-foreground" />}
+                    </button>
+                  )
+                )}
+              </div>
             </div>
 
             <div className="grid gap-2">
-              {editForm.type === 'extension' && (
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium">Extensions</label>
+              <label className="text-sm font-medium">{t('settings.rules.edit.ruleMode')}</label>
+              <div className="flex p-1 bg-muted rounded-lg">
+                <button
+                  className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type === 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                  onClick={() => handleChange('type', 'ai')}
+                >
+                  <Brain className="h-4 w-4" /> {t('settings.rules.edit.aiSmartSort')}
+                </button>
+                <button
+                  className={`flex-1 py-1.5 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${editForm.type !== 'ai' ? 'bg-background shadow text-foreground' : 'text-muted-foreground hover:text-foreground'}`}
+                  onClick={() => handleChange('type', 'extension')}
+                >
+                  <Wrench className="h-4 w-4" /> {t('settings.rules.edit.manualCriteria')}
+                </button>
+              </div>
+            </div>
+
+            {/* Legacy/Detailed manual criteria fields if type is strangely set to name/size/etc */}
+            {!isSimpleExtensionRule && editForm.type !== 'ai' && (
+              <div className="grid gap-2 p-4 border rounded bg-muted/10">
+                <Label>Condition Type</Label>
+                <select
+                  className="h-9 rounded-md border bg-background px-3 text-sm"
+                  value={editForm.type}
+                  onChange={(e) => handleChange('type', e.target.value)}
+                >
+                  <option value="name">Nom du fichier (Regex)</option>
+                  <option value="size">Taille</option>
+                  <option value="date">Date</option>
+                </select>
+                {/* Specific inputs for regex/size would go here or be revealed */}
+                {editForm.type === 'name' && (
                   <Input
-                    placeholder="e.g. txt, md, json"
-                    value={editForm.extensions?.join(', ') || ''}
-                    onChange={(e) => handleArrayChange(e.target.value)}
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Comma separated list of extensions.
-                  </p>
-                </div>
-              )}
-              {editForm.type === 'name' && (
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium">Pattern</label>
-                  <Input
-                    placeholder="Regex Pattern e.g. ^report_.*"
+                    placeholder="Regex Pattern"
                     value={editForm.namePattern || ''}
                     onChange={(e) => handleChange('namePattern', e.target.value)}
                   />
+                )}
+              </div>
+            )}
+
+            {editForm.type === 'ai' && (
+              <div className="grid gap-2 bg-blue-50/50 dark:bg-blue-900/10 p-4 rounded-lg">
+                <Label>Catégories (Prompt)</Label>
+                <Input
+                  placeholder="e.g. Factures, Contrats"
+                  value={editForm.aiPrompts?.join(', ') || ''}
+                  onChange={(e) => handleAiPromptsChange(e.target.value)}
+                />
+                <div className="flex flex-wrap gap-1 mt-2">
+                  {COMMON_CATEGORIES.map((cat) => (
+                    <Badge
+                      key={cat}
+                      variant="outline"
+                      className="cursor-pointer"
+                      onClick={() =>
+                        handleAiPromptsChange((editForm.aiPrompts || []).concat(cat).join(','))
+                      }
+                    >
+                      {cat}
+                    </Badge>
+                  ))}
                 </div>
-              )}
-              {editForm.type === 'size' && (
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium">Size Range (Bytes)</label>
-                  <div className="flex gap-2">
-                    <Input
-                      type="number"
-                      placeholder="Min"
-                      value={editForm.sizeMin || ''}
-                      onChange={(e) => handleChange('sizeMin', parseInt(e.target.value))}
-                    />
-                    <Input
-                      type="number"
-                      placeholder="Max"
-                      value={editForm.sizeMax || ''}
-                      onChange={(e) => handleChange('sizeMax', parseInt(e.target.value))}
-                    />
-                  </div>
-                </div>
-              )}
-              {editForm.type === 'date' && (
-                <div className="grid gap-2">
-                  <label className="text-sm font-medium">Minimum Age</label>
-                  <Input
-                    type="number"
-                    placeholder="Days old"
-                    value={editForm.ageDays || ''}
-                    onChange={(e) => handleChange('ageDays', parseInt(e.target.value))}
-                  />
-                </div>
-              )}
-              {editForm.type === 'fallback' && (
-                <p className="text-sm text-muted-foreground italic">
-                  Matches any file that was not matched by previous rules.
-                </p>
-              )}
-            </div>
+              </div>
+            )}
           </div>
         )}
       </div>
-      <div className="flex justify-end gap-2">
-        <Button variant="outline" size="sm" onClick={onCancel}>
-          Cancel
+
+      <div className="flex justify-end gap-3 mt-4">
+        <Button variant="ghost" onClick={onCancel} className="text-muted-foreground">
+          Annuler
         </Button>
-        <Button size="sm" onClick={handleSaveEdit}>
-          <Save className="mr-2 h-4 w-4" /> Save
+        <Button onClick={handleSaveEdit} className="min-w-[100px] shadow-lg shadow-primary/20">
+          Enregistrer
         </Button>
       </div>
     </div>

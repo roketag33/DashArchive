@@ -9,6 +9,7 @@ import { ChatInterface } from './features/Chat/ChatInterface'
 import { AIProvider } from './context/AIContext'
 import { useSettings } from './hooks/useSettings'
 import { NotificationPage } from './pages/NotificationPage'
+import { LearningPage } from './features/Learning/LearningPage'
 
 function App(): React.JSX.Element {
   const { loading } = useSettings()
@@ -26,6 +27,7 @@ function App(): React.JSX.Element {
           <Route path="history" element={<HistoryPanel />} />
           <Route path="history" element={<HistoryPanel />} />
           <Route path="chat" element={<ChatInterface />} />
+          <Route path="learning" element={<LearningPage />} />
         </Route>
         <Route path="/dropzone" element={<DropZone />} />
         <Route path="/spotlight" element={<Spotlight />} />

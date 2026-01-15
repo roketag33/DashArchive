@@ -52,9 +52,7 @@ export class NotificationWindow {
   }
 
   public show(data: NotificationData): void {
-    console.log('[NotificationWindow] show() called with data:', data)
     if (!this.window) {
-      console.log('[NotificationWindow] Window was null, creating new...')
       this.createWindow()
     }
     if (!this.window) return
@@ -63,14 +61,10 @@ export class NotificationWindow {
     const { workArea } = screen.getPrimaryDisplay()
     const { width, height } = this.window.getBounds()
 
-    // Log bounds
-    console.log('[NotificationWindow] WorkArea:', workArea)
-
     // Bottom Right
     const x = workArea.x + workArea.width - width - 20 // 20px padding from right
     const y = workArea.y + workArea.height - height - 20 // 20px padding from bottom
 
-    console.log('[NotificationWindow] Setting bounds:', { x, y, width, height })
     this.window.setBounds({ x, y, width, height })
 
     // Send data to renderer

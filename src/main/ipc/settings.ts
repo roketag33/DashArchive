@@ -1,6 +1,8 @@
 import { ipcMain } from 'electron'
 import { getSettings, saveSettings } from '../services/core/settings'
 import { getPresetsForProfile, LifeBlockId } from '../services/core/presets'
+import { getDefaultRules } from '../config/defaultRules'
+import { replaceRules } from '../db/rules'
 
 export function registerSettingsHandlers(): void {
   ipcMain.handle('get-settings', () => {
@@ -30,5 +32,11 @@ export function registerSettingsHandlers(): void {
       rules: mergedRules,
       firstRun: false // Implicitly finish onboarding
     })
+  })
+
+  ipcMain.handle('settings:reset-rules', () => {
+    const defaults = getDefaultRules()
+    replaceRules(defaults)
+    return getSettings()
   })
 }

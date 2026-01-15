@@ -23,6 +23,7 @@ const api = {
     ipcRenderer.invoke('save-settings', settings),
   savePresets: (blockIds: string[]): Promise<void> =>
     ipcRenderer.invoke('settings:save-presets', blockIds),
+  resetRules: (): Promise<AppSettings> => ipcRenderer.invoke('settings:reset-rules'),
   getHistory: (): Promise<JournalEntry[]> => ipcRenderer.invoke('get-history'),
   undoPlan: (plan: Plan, entryId?: string): Promise<ExecutionResult> =>
     ipcRenderer.invoke('undo-plan', { plan, entryId }),
@@ -103,18 +104,44 @@ const api = {
     ask: (id: string, prompt: string) => ipcRenderer.send('ai:ask', { id, prompt }),
     onResponse: (
       callback: (response: { id: string; content?: string; error?: string }) => void
-    ) => {
-      ipcRenderer.on('ai:response', (_, payload) => callback(payload))
+    ): (() => void) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const handler = (_: any, payload: any): void => callback(payload)
+      ipcRenderer.on('ai:response', handler)
+      return (): void => {
+        ipcRenderer.removeListener('ai:response', handler)
+      }
     },
     onProgress: (callback: (progress: unknown) => void) => {
       ipcRenderer.on('ai:progress', (_, payload) => callback(payload))
     },
     onReady: (callback: () => void) => {
       ipcRenderer.on('ai:ready', () => callback())
+    },
+    onError: (callback: (error: string) => void) => {
+      ipcRenderer.on('ai:error', (_, error) => callback(error))
+    }
+  },
+  // Dedicated Worker API (Sending side)
+  aiWorker: {
+    sendProgress: (data: unknown) => ipcRenderer.send('ai:progress', data),
+    sendReady: () => ipcRenderer.send('ai:ready'),
+    sendError: (msg: string) => ipcRenderer.send('ai:error', msg),
+    sendResponse: (data: unknown) => ipcRenderer.send('ai:response', data),
+    onAsk: (callback: (payload: { id: string; prompt: string }) => void) => {
+      ipcRenderer.on('ai:ask', (_, payload) => callback(payload))
     }
   },
   approveLearning: (data: { extension: string; targetFolder: string }) =>
-    ipcRenderer.invoke('learning:approve', data)
+    ipcRenderer.invoke('learning:approve', data),
+  runStressTest: () => ipcRenderer.invoke('debug:stress-test'),
+
+  // Learning API
+  analyzeFolder: (path: string) => ipcRenderer.invoke('learning:analyze-folder', path),
+
+  // Tools API
+  listTools: () => ipcRenderer.invoke('tools:list'),
+  executeTool: (name, args) => ipcRenderer.invoke('tools:execute', { name, args })
 }
 
 // Use `contextBridge` APIs to expose Electron APIs to

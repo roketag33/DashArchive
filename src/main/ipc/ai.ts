@@ -28,6 +28,7 @@ export function registerAIHandlers(): void {
 
   // Progress updates
   ipcMain.on('ai:progress', (_, payload) => {
+    // console.log('[AI Main] Progress:', typeof payload === 'object' ? payload.progress : payload)
     BrowserWindow.getAllWindows().forEach((w) => {
       if (!w.webContents.getURL().includes('worker.html')) {
         w.webContents.send('ai:progress', payload)

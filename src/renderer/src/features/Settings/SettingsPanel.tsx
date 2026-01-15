@@ -177,6 +177,7 @@ export function SettingsPanel(): React.JSX.Element {
                 onClick={async () => {
                   try {
                     await window.api.saveSettings({ ...settings, firstRun: true })
+                    // Also trigger the scan via generic means if needed, but firstRun flag usually triggers it
                     window.location.reload()
                   } catch {
                     toast.error('Impossible de relancer le Ghost Mode')
@@ -185,6 +186,29 @@ export function SettingsPanel(): React.JSX.Element {
                 className="border-blue-200 hover:bg-blue-100 dark:border-blue-800 dark:hover:bg-blue-900/50"
               >
                 Relancer le Scan
+              </Button>
+            </div>
+
+            {/* Restart Onboarding */}
+            <div className="md:col-span-2 flex items-center justify-between p-4 rounded-xl border border-purple-500/20 bg-purple-500/5 hover:bg-purple-500/10 transition-colors">
+              <div className="space-y-0.5">
+                <label className="text-sm font-medium leading-none text-purple-600 dark:text-purple-400">
+                  Assistant de Bienvenue
+                </label>
+                <p className="text-xs text-muted-foreground">
+                  Relancer le questionnaire de démarrage (Briques de vie, IA...).
+                </p>
+              </div>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => {
+                  localStorage.removeItem('dasharchive-onboarding-completed')
+                  window.location.reload()
+                }}
+                className="border-purple-200 hover:bg-purple-100 dark:border-purple-800 dark:hover:bg-purple-900/50"
+              >
+                Recommencer
               </Button>
             </div>
 

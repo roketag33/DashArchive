@@ -19,9 +19,55 @@ export class AIService {
   private extractor: unknown = null
   private embeddingModelName = 'Xenova/all-MiniLM-L6-v2'
 
+  private textModelName = 'Xenova/mobilebert-uncased-mnli' // Lightweight zero-shot
+  private textClassifier:
+    | ((text: string, labels: string[]) => Promise<{ labels: string[]; scores: number[] }>)
+    | null = null
+
   private constructor() {
     // Private constructor for singleton
   }
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  async initializeTextClassifier(onProgress?: (data: any) => void): Promise<void> {
+    if (this.textClassifier) return
+    console.log(`[AIService] Loading text model ${this.textModelName}...`)
+    try {
+      const { pipeline } = await this.loadTransformers()
+      this.textClassifier = (await pipeline('zero-shot-classification', this.textModelName, {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        progress_callback: (data: any) => {
+          if (onProgress) onProgress(data)
+        }
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      })) as any
+      console.log('[AIService] Text model loaded successfully')
+    } catch (error) {
+      console.error('[AIService] Failed to load text model:', error)
+      throw error
+    }
+  }
+
+  async classifyFileName(fileName: string, categories: string[]): Promise<string | null> {
+    try {
+      if (!this.textClassifier) await this.initializeTextClassifier()
+      // Clean filename (remove extension and common separators)
+      const cleanName = fileName.replace(/\.[^/.]+$/, '').replace(/[-_]/g, ' ')
+
+      const output = await this.textClassifier!(cleanName, categories)
+      // output = { sequence: '...', labels: [...], scores: [...] }
+
+      if (output && output.labels && output.scores && output.scores[0] > 0.4) {
+        return output.labels[0]
+      }
+      return null
+    } catch (e) {
+      console.error('[AIService] Classification failed:', e)
+      return null
+    }
+  }
+
+  // ... existing methods generateEmbedding etc
 
   static getInstance(): AIService {
     if (!AIService.instance) {

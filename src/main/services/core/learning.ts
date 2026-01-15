@@ -1,130 +1,93 @@
-import { watcherService } from '../fs/watcher'
-import { notificationService } from './notifications'
-import { getSettings, saveSettings } from './settings'
-import { Rule } from '../../../shared/types'
-import path from 'path'
-import { v4 as uuidv4 } from 'uuid'
-import { Event } from '@parcel/watcher'
-import log from 'electron-log'
-import { EventEmitter } from 'events'
-import { ipcMain } from 'electron'
+import { readdir } from 'fs/promises'
+import { join, extname } from 'path'
+import Log from 'electron-log'
 
-interface DeletedFile {
+export interface FolderProfile {
   path: string
-  name: string
-  timestamp: number
+  fileCount: number
+  extensions: Record<string, number>
+  samples: string[] // Paths to sample files
+  subfolders: string[]
 }
 
-// TTL for correlating a Delete + Create as a Move (in ms)
-const MOVE_CORRELATION_TTL = 2000
+export class LearningService {
+  private static instance: LearningService
 
-class LearningService extends EventEmitter {
-  private deletedFiles: Map<string, DeletedFile> = new Map() // Key: fileName
+  // Singleton\n  private constructor() {\n    // Empty\n  }
 
-  constructor() {
-    super()
-    this.startListening()
-    this.setupIpcListeners()
+  static getInstance(): LearningService {
+    if (!LearningService.instance) {
+      LearningService.instance = new LearningService()
+    }
+    return LearningService.instance
   }
 
-  private setupIpcListeners(): void {
-    // Listen for 'YES' from the custom popup (via IPC)
-    ipcMain.handle('learning:approve', async (_, { extension, targetFolder }) => {
-      await this.learnRule(extension, targetFolder)
-    })
-  }
-
-  private startListening(): void {
-    log.info('[Learning] Service started')
-    watcherService.on('batch', (events: Event[]) => {
-      this.processEvents(events)
-    })
-  }
-
-  private processEvents(events: Event[]): void {
-    const now = Date.now()
-
-    // Prune old deleted files
-    for (const [key, entry] of this.deletedFiles.entries()) {
-      if (now - entry.timestamp > MOVE_CORRELATION_TTL) {
-        this.deletedFiles.delete(key)
-      }
+  /**
+   * Scans a reference folder to understand its structure.
+   * Collects file statistics and samples for AI analysis.
+   */
+  async analyzeFolderStructure(folderPath: string, maxSamples = 5): Promise<FolderProfile> {
+    const profile: FolderProfile = {
+      path: folderPath,
+      fileCount: 0,
+      extensions: {},
+      samples: [],
+      subfolders: []
     }
 
-    for (const event of events) {
-      const fileName = path.basename(event.path)
+    try {
+      const entries = await readdir(folderPath, { withFileTypes: true })
 
-      if (event.type === 'delete') {
-        // Store candidate for move detection
-        this.deletedFiles.set(fileName, {
-          path: event.path,
-          name: fileName,
-          timestamp: now
-        })
-      } else if (event.type === 'create') {
-        const deletedCandidate = this.deletedFiles.get(fileName)
+      for (const entry of entries) {
+        const fullPath = join(folderPath, entry.name)
 
-        if (deletedCandidate) {
-          // HIT! We found a matching deletion for this creation -> It's a MOVE.
-          this.handleDetectedMove(deletedCandidate.path, event.path)
+        if (entry.isDirectory()) {
+          // Identify potential sub-strategies (years, categories)
+          profile.subfolders.push(entry.name)
+        } else if (entry.isFile()) {
+          // Ignore hidden files
+          if (entry.name.startsWith('.')) continue
 
-          // Clear it so we don't match it again
-          this.deletedFiles.delete(fileName)
+          profile.fileCount++
+          const ext = extname(entry.name).toLowerCase().replace('.', '') || 'none'
+          profile.extensions[ext] = (profile.extensions[ext] || 0) + 1
+
+          // Keep random samples for content analysis
+          if (profile.samples.length < maxSamples) {
+            profile.samples.push(fullPath)
+          }
         }
       }
+
+      Log.info(
+        `[Learning] Analyzed ${folderPath}: ${profile.fileCount} files, ${profile.subfolders.length} subfolders`
+      )
+      return profile
+    } catch (error) {
+      Log.error(`[Learning] Failed to analyze folder ${folderPath}:`, error)
+      throw error
     }
   }
 
-  private handleDetectedMove(_oldPath: string, newPath: string): void {
-    const fileName = path.basename(newPath)
-    const newFolder = path.dirname(newPath)
-    const extension = path.extname(newPath).toLowerCase().replace('.', '')
+  /**
+   * Recursive scan (limited depth) to build a map of the user's hierarchy.
+   */
+  async scanHierarchy(rootPath: string, depth = 2): Promise<FolderProfile[]> {
+    if (depth < 0) return []
 
-    log.info(`[Learning] Detected Move: ${fileName} -> ${newFolder}`)
+    const results: FolderProfile[] = []
+    const rootProfile = await this.analyzeFolderStructure(rootPath)
+    results.push(rootProfile)
 
-    // Ignore if moved to Trash or temp or if extension is empty
-    if (newPath.includes('.Trash') || newPath.includes('.tmp') || !extension) return
-
-    // Emit event for Main Process to show Custom Window
-    this.emit('suggestion', {
-      type: 'LEARNING_SUGGESTION',
-      file: fileName,
-      extension,
-      targetFolder: newFolder,
-      suggestedRuleName: `Auto: .${extension}`
-    })
-  }
-
-  private async learnRule(extension: string, targetFolder: string): Promise<void> {
-    if (!extension || !targetFolder) return
-
-    // Create new Rule
-    const newRule: Rule = {
-      id: uuidv4(),
-      name: `Auto-Learn: ${extension.toUpperCase()}`,
-      isActive: true,
-      priority: 5, // Lower detected priority than manual presets
-      type: 'extension',
-      extensions: [extension],
-      destination: targetFolder,
-      description: `Learned from your move to ${path.basename(targetFolder)}`
+    for (const sub of rootProfile.subfolders) {
+      const subPath = join(rootPath, sub)
+      // Recurse
+      const subResults = await this.scanHierarchy(subPath, depth - 1)
+      results.push(...subResults)
     }
 
-    const settings = getSettings()
-    // Avoid duplicates for same extension?
-    // For MVP, just append.
-    const updatedRules = [...settings.rules, newRule]
-
-    await saveSettings({ ...settings, rules: updatedRules })
-
-    notificationService.send({
-      title: 'Ghost Learner',
-      body: "Règle apprise ! Je m'occupe des prochains fichiers.",
-      silent: false
-    })
-
-    log.info(`[Learning] Learned new rule for .${extension} -> ${targetFolder}`)
+    return results
   }
 }
 
-export const learningService = new LearningService()
+export const learningService = LearningService.getInstance()

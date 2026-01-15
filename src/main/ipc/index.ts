@@ -8,6 +8,8 @@ import { registerFoldersHandlers } from './folders'
 import { registerAIHandlers } from './ai'
 import { registerSettingsHandlers } from './settings'
 import { registerUniversalHandlers } from './universal'
+import { registerLearningHandlers } from './learning'
+import { registerToolsHandlers } from './tools'
 
 import { registerStatsHandlers } from './stats'
 
@@ -31,6 +33,8 @@ export function registerIpcHandlers(): void {
   registerVaultHandlers() // Register Vault Handlers
   registerAIHandlers()
   registerUniversalHandlers()
+  registerLearningHandlers()
+  registerToolsHandlers()
 
   // Drop Zone IPC
   ipcMain.handle('DROP_ZONE:FILE_DROPPED', async (_, paths: string[]) => {

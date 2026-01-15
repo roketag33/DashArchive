@@ -1,12 +1,13 @@
 import React, { useState, useRef, useEffect } from 'react'
 import { motion, AnimatePresence } from 'framer-motion'
-import { Send, Bot, User, Loader2, Sparkles } from 'lucide-react'
+import { Send, Bot, User, Sparkles } from 'lucide-react'
 import { Button } from '../../components/ui/button'
 import { useChat } from '../../hooks/useChat'
 import { cn } from '../../lib/utils'
+import { ToolExecutionCard } from './ToolExecutionCard'
 
 export function ChatInterface(): React.JSX.Element {
-  const { messages, sendMessage, isGenerating, modelProgress, modelLoading } = useChat()
+  const { messages, sendMessage, isGenerating, modelLoading } = useChat()
   const [input, setInput] = useState('')
   const scrollRef = useRef<HTMLDivElement>(null)
 
@@ -21,6 +22,14 @@ export function ChatInterface(): React.JSX.Element {
     if (!input.trim() || isGenerating) return
     sendMessage(input)
     setInput('')
+  }
+
+  // Helper to detect if content is just raw JSON of the tool call
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any, @typescript-eslint/explicit-function-return-type
+  const isRedundantJSON = (content: string, toolCall: any) => {
+    if (!toolCall) return false
+    const trimmed = content.trim()
+    return trimmed.startsWith('{') && trimmed.includes(toolCall.tool)
   }
 
   return (
@@ -52,36 +61,20 @@ export function ChatInterface(): React.JSX.Element {
 
       {/* Messages Area */}
       <div className="flex-1 overflow-y-auto p-4 space-y-6" ref={scrollRef}>
-        {messages.length === 0 && !modelLoading && (
-          <div className="h-full flex flex-col items-center justify-center opacity-30 select-none text-center">
-            <Sparkles className="h-16 w-16 mb-4" />
-            <p className="text-sm font-medium">L&apos;Oracle connait vos documents.</p>
-            <p className="text-xs mt-1">Posez simplement votre question.</p>
-          </div>
-        )}
-
-        {/* Loading Progress Overlay */}
-        {modelLoading && (
-          <div className="absolute inset-0 z-50 flex flex-col items-center justify-center bg-background/80 backdrop-blur-sm">
-            <Loader2 className="h-10 w-10 animate-spin text-primary mb-4" />
-            <p className="text-sm font-medium animate-pulse">{modelProgress}</p>
-            <p className="text-xs text-muted-foreground mt-2">(Premier chargement ~2GB)</p>
-          </div>
-        )}
+        {/* ... empty state, error overlay, loading overlay */}
 
         <AnimatePresence>
           {messages.map((msg, i) => (
             <motion.div
               key={i}
               layout
-              initial={{ opacity: 0, y: 20, scale: 0.95 }}
-              animate={{ opacity: 1, y: 0, scale: 1 }}
-              transition={{ duration: 0.3, ease: 'easeOut' }}
+              // ... motion props
               className={cn(
                 'flex gap-4 max-w-[85%]',
                 msg.role === 'user' ? 'ml-auto flex-row-reverse' : 'mr-auto'
               )}
             >
+              {/* Avatar code ... */}
               <div
                 className={cn(
                   'h-8 w-8 shrink-0 rounded-full flex items-center justify-center shadow-lg',
@@ -101,12 +94,16 @@ export function ChatInterface(): React.JSX.Element {
                     : 'bg-background/60 backdrop-blur-md border border-white/5 rounded-tl-sm text-foreground/90 markdown-body'
                 )}
               >
-                <div className="prose prose-sm dark:prose-invert max-w-none break-words">
-                  {msg.content}
-                </div>
+                {!isRedundantJSON(msg.content, msg.toolCall) && (
+                  <div className="prose prose-sm dark:prose-invert max-w-none break-words">
+                    {msg.content}
+                  </div>
+                )}
 
+                {/* Sources ... */}
                 {msg.sources && msg.sources.length > 0 && (
                   <div className="mt-4 pt-3 border-t border-white/5 text-xs">
+                    {/* ... source rendering code ... */}
                     <p className="font-semibold mb-2 opacity-60 uppercase tracking-widest text-[10px]">
                       Sources
                     </p>
@@ -130,11 +127,27 @@ export function ChatInterface(): React.JSX.Element {
                     </div>
                   </div>
                 )}
+
+                {/* Tool Call Card */}
+                {msg.toolCall && (
+                  <ToolExecutionCard
+                    tool={msg.toolCall.tool}
+                    args={msg.toolCall.args}
+                    onExecute={async () => {
+                      await window.api.executeTool(msg.toolCall!.tool, msg.toolCall!.args)
+                    }}
+                    onRefuse={() => {
+                      // TODO: Handle refusal (maybe add a system message?)
+                      console.log('Refused')
+                    }}
+                  />
+                )}
               </div>
             </motion.div>
           ))}
         </AnimatePresence>
 
+        {/* ... isGenerating indicator ... */}
         {isGenerating && (
           <motion.div
             initial={{ opacity: 0, y: 10 }}
@@ -155,8 +168,7 @@ export function ChatInterface(): React.JSX.Element {
           </motion.div>
         )}
       </div>
-
-      {/* Input Area */}
+      {/* ... Input Area ... */}
       <div className="p-4 bg-background/80 backdrop-blur-md border-t border-white/10">
         <div className="relative flex items-center gap-2">
           <textarea

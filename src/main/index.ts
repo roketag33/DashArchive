@@ -3,6 +3,7 @@ import path, { join } from 'path'
 import log from 'electron-log'
 import icon from '../../resources/icon.png?asset'
 import { registerIpcHandlers } from './ipc'
+import { registerDebugHandlers } from './ipc/debug'
 import { watcherService } from './services/fs/watcher'
 import { trayService } from './services/core/tray'
 import { initDB } from './db/index'
@@ -141,11 +142,11 @@ app.whenReady().then(() => {
   import('./services/core/scheduler').then(({ schedulerService }) => schedulerService.init())
   // Start Learning Service
   // Start Learning Service
-  import('./services/core/learning').then(({ learningService }) => {
-    learningService.on('suggestion', (data) => {
-      console.log('[Main] Received learning suggestion:', data)
-      notificationWindow?.show(data)
-    })
+  import('./services/core/learning').then((/* { learningService } */) => {
+    // learningService.on('suggestion', (data) => {
+    //   console.log('[Main] Received learning suggestion:', data)
+    //   notificationWindow?.show(data)
+    // })
   })
 
   // Check for updates (dynamic import to avoid early app access)
@@ -172,6 +173,7 @@ app.whenReady().then(() => {
   })
 
   registerIpcHandlers()
+  registerDebugHandlers()
 
   createWindow()
 

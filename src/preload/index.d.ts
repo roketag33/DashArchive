@@ -19,6 +19,7 @@ interface CustomAPI {
   getRules: () => Promise<Rule[]>
   saveSettings: (settings: Partial<AppSettings>) => Promise<AppSettings>
   savePresets: (blockIds: string[]) => Promise<void>
+  resetRules: () => Promise<AppSettings>
   getHistory: () => Promise<JournalEntry[]>
   undoPlan: (plan: Plan, entryId?: string) => Promise<ExecutionResult>
   suggestAiCategories: (path: string) => Promise<string[]>
@@ -40,6 +41,7 @@ interface CustomAPI {
   closeNotification: () => void
   getSystemPaths: () => Promise<{ downloads: string; desktop: string; documents: string }>
   approveLearning: (data: { extension: string; targetFolder: string }) => Promise<void>
+  runStressTest: () => Promise<{ success: boolean; reportPath?: string; error?: string }>
 
   // Folders
   getFolders: () => Promise<import('./shared/types').Folder[]>
@@ -70,10 +72,27 @@ interface CustomAPI {
     ask: (id: string, prompt: string) => void
     onResponse: (
       callback: (response: { id: string; content?: string; error?: string }) => void
-    ) => void
+    ) => () => void
     onProgress: (callback: (progress: unknown) => void) => void
     onReady: (callback: () => void) => void
+    onError: (callback: (error: string) => void) => void
   }
+
+  aiWorker: {
+    sendProgress: (data: unknown) => void
+    sendReady: () => void
+    sendError: (msg: string) => void
+    sendResponse: (data: unknown) => void
+    onAsk: (callback: (payload: { id: string; prompt: string }) => void) => void
+  }
+
+  // Learning API
+  analyzeFolder: (path: string) => Promise<import('./main/services/core/learning').FolderProfile[]>
+
+  // Tools API
+  listTools: () => Promise<import('./main/services/core/tools').ToolDefinition[]>
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  executeTool: (name: string, args: any) => Promise<any>
 }
 
 declare global {

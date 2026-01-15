@@ -14,6 +14,7 @@ interface AIContextType {
   isReady: boolean
   isLoading: boolean
   progress: string
+  progressValue: number // 0-100
   error: string | null
   activeFiles: ActiveFile[]
   addActiveFiles: (files: ActiveFile[]) => void
@@ -27,7 +28,8 @@ export function AIProvider({ children }: { children: ReactNode }): React.JSX.Ele
   const [isReady, setIsReady] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [progress, setProgress] = useState<string>('En attente du Worker...')
-  const [error] = useState<string | null>(null)
+  const [progressValue, setProgressValue] = useState(0)
+  const [error, setError] = useState<string | null>(null)
   const [activeFiles, setActiveFiles] = useState<ActiveFile[]>([])
 
   const addActiveFiles = useCallback((files: ActiveFile[]) => {
@@ -47,9 +49,14 @@ export function AIProvider({ children }: { children: ReactNode }): React.JSX.Ele
 
   useEffect(() => {
     // Listen to Worker events via Preload
-    window.api.ai.onProgress((p) => {
-      const text = typeof p === 'string' ? p : (p as { text: string }).text || String(p)
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    window.api.ai.onProgress((p: any) => {
+      // InitProgressReport: { progress: number, text: string, timeElapsed: number }
+      const text = typeof p === 'string' ? p : p.text || String(p)
+      const val = typeof p === 'object' && p.progress ? Math.round(p.progress * 100) : 0
+
       setProgress(text)
+      setProgressValue(val)
       setIsLoading(true)
     })
 
@@ -57,7 +64,16 @@ export function AIProvider({ children }: { children: ReactNode }): React.JSX.Ele
       setIsReady(true)
       setIsLoading(false)
       setProgress('')
+      setProgressValue(100)
     })
+
+    if (window.api.ai.onError) {
+      window.api.ai.onError((errMsg) => {
+        setError(errMsg)
+        setIsLoading(false)
+        setProgress('Erreur Critique')
+      })
+    }
 
     // If we missed the ready event (reloads), we might want to check status (optional)
     // For now we assume init sends progress/ready events.
@@ -72,6 +88,7 @@ export function AIProvider({ children }: { children: ReactNode }): React.JSX.Ele
         isReady,
         isLoading,
         progress,
+        progressValue,
         error,
         activeFiles,
         addActiveFiles,

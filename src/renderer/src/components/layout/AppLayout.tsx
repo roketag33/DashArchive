@@ -1,5 +1,5 @@
 import { motion, AnimatePresence } from 'framer-motion'
-import { Settings, Home, History, Sun, Moon, Sparkles } from 'lucide-react'
+import { Settings, Home, History, Sun, Moon, Sparkles, Brain } from 'lucide-react'
 import { useNavigate, useLocation, Outlet } from 'react-router-dom'
 import { useTranslation } from 'react-i18next'
 import { useTheme } from 'next-themes'
@@ -88,6 +88,8 @@ export function AppLayout(): React.JSX.Element {
         return t('app.folders', 'Dossiers')
       case '/history':
         return t('app.history', 'Historique')
+      case '/learning':
+        return t('app.learning', 'Cerveau Numérique')
       case '/settings':
         return t('app.settings', 'Paramètres')
       default:
@@ -133,6 +135,13 @@ export function AppLayout(): React.JSX.Element {
               isActive={currentPath === '/chat'}
               onClick={() => navigateTo('/chat')}
               tooltip={isAILoading ? aiProgress : 'Consultez le savoir du Ghost'}
+            />
+
+            <SidebarItem
+              icon={Brain}
+              label={t('app.learning', 'Cerveau')}
+              isActive={currentPath === '/learning'}
+              onClick={() => navigateTo('/learning')}
             />
 
             <SidebarItem

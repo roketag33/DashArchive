@@ -3,71 +3,52 @@ import { join } from 'path'
 import { Rule } from '../../shared/types'
 
 export const getDefaultRules = (): Rule[] => {
-  const baseDir = join(app.getPath('downloads'), 'FileOrganizer')
+  const home = app.getPath('home')
+
+  // Use relative paths or absolute helpers if needed, but simpler to match Universal Rules style
+  // defaultRules usually assume specific targets.
 
   return [
     {
-      id: 'img',
-      name: 'Images',
+      id: 'admin',
+      name: 'Documents Administratifs',
       type: 'extension',
-      extensions: ['jpg', 'jpeg', 'png', 'gif', 'bmp', 'svg'],
-      destination: join(baseDir, 'Images'),
+      extensions: ['pdf', 'docx', 'doc', 'xlsx', 'xls', 'pptx', 'txt', 'csv'],
+      destination: join(home, 'Documents', 'Admin'),
       isActive: true,
-      priority: 10
+      priority: 20, // Higher priority
+      description: 'Factures, contrats et documents officiels'
     },
     {
-      id: 'vid',
-      name: 'Videos',
+      id: 'media',
+      name: 'Photos & Souvenirs',
       type: 'extension',
-      extensions: ['mp4', 'mkv', 'mov', 'avi'],
-      destination: join(baseDir, 'Videos', '{year}'),
+      extensions: ['jpg', 'jpeg', 'png', 'gif', 'heic', 'svg', 'mov', 'mp4'],
+      destination: join(home, 'Pictures', 'Sorted'),
       isActive: true,
-      priority: 10
+      priority: 20,
+      description: 'Photos et vidéos personnelles'
     },
     {
-      id: 'doc',
-      name: 'Documents',
+      id: 'misc',
+      name: 'Vrac & Installateurs',
       type: 'extension',
-      extensions: ['pdf', 'doc', 'docx', 'txt', 'xls', 'xlsx', 'ppt', 'pptx'],
-      destination: join(baseDir, 'Documents'),
+      extensions: ['zip', 'rar', '7z', 'dmg', 'pkg', 'iso'],
+      destination: join(home, 'Downloads', 'Installers'),
       isActive: true,
-      priority: 10
+      priority: 10,
+      description: "Archives et fichiers d'installation"
     },
-    {
-      id: 'music',
-      name: 'Music',
-      type: 'extension',
-      extensions: ['mp3', 'wav', 'flac'],
-      destination: join(baseDir, 'Music'),
-      isActive: true,
-      priority: 10
-    },
+    // Keep a fallback Dev rule maybe?
     {
       id: 'dev',
-      name: 'Developer',
+      name: 'Code & Scripts',
       type: 'extension',
-      extensions: ['js', 'ts', 'jsx', 'tsx', 'json', 'py', 'java', 'c', 'cpp'],
-      destination: join(baseDir, 'Dev', '{ext}'),
+      extensions: ['js', 'ts', 'tsx', 'json', 'py', 'java'],
+      destination: join(home, 'Documents', 'Dev'),
       isActive: true,
-      priority: 5
-    },
-    {
-      id: 'app',
-      name: 'Applications',
-      type: 'extension',
-      extensions: ['dmg', 'pkg', 'exe', 'msi', 'app'],
-      destination: join(baseDir, 'Apps'),
-      isActive: true,
-      priority: 10
-    },
-    {
-      id: 'archive',
-      name: 'Archives',
-      type: 'extension',
-      extensions: ['zip', 'rar', '7z', 'tar', 'gz'],
-      destination: join(baseDir, 'Archives'),
-      isActive: true,
-      priority: 10
+      priority: 5,
+      description: 'Fichiers de développement'
     }
   ]
 }

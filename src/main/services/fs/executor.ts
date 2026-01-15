@@ -39,6 +39,10 @@ export async function executePlan(plan: Plan): Promise<ExecutionResult> {
 
       await moveFile(item.file.path, finalDest)
 
+      // CRITICAL: Update the item destination to the actual path (in case of rename)
+      // so that undoPlan looks for the file in the right place.
+      item.destinationPath = finalDest
+
       // Apply Label if present
       if (item.labelColor) {
         const { taggerService } = await import('./tagger')
