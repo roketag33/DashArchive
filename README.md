@@ -2,27 +2,37 @@
 
 **DashArchive** est un organisateur de fichiers intelligent et respectueux de la vie privée pour macOS, Windows et Linux. Il met de l'ordre dans le chaos de vos documents grâce à une IA locale générative et des règles proactives.
 
-## 📸 Captures d'écran
+## ✨ Tour d'Horizon des Fonctionnalités
 
-<div align="center">
-  <img src="docs/images/dashboard.png" alt="Vue Dashboard" width="800" />
-  <br>
-  <em>Le Dashboard Principal : Glissez-déposez pour organiser instantanément.</em>
-</div>
+### 1. 🔮 L'Oracle : Votre Assistant Personnel
 
-## 🚀 Fonctionnalités Clés
+Plus besoin de chercher dans les menus. Discutez naturellement avec **l'Oracle**, votre assistant IA local. Donnez-lui des ordres comme _"Range mon dossier Téléchargements par date"_ ou _"Fusionne les dossiers photos de vacances"_. Il comprend, propose un plan d'action, et attend votre validation.
 
-- **👻 Ghost Librarian (V2)** : L'application tourne discrètement en tâche de fond (Tray). Elle veille sur vos dossiers et apprend de vos habitudes grâce à la **Boucle d'Apprentissage (Learning Loop)**.
-- **🧱 Smart Onboarding (Life Blocks)** : Configuration ultra-rapide par profils (Admin, Dev, Créatif...) qui génère automatiquement les règles de tri.
-- **🧠 Architecture IA Locale (Local-First AI)** :
-  - **Llama 3** (via `@mlc-ai/web-llm`) : Le cerveau de l'**Oracle**, capable de discuter avec vos documents et de répondre à des questions complexes.
-  - **MobileBERT** (via `@xenova/transformers`) : Analyse ultra-rapide du texte des documents pour la classification automatique.
-  - **ResNet-50** (via `@xenova/transformers`) : Vision par ordinateur pour classer vos images (photos, screenshots, memes).
-  - **all-MiniLM-L6-v2** : Modèle d'embedding pour la recherche sémantique vectorielle (RAG).
-  - **Tesseract.js** : OCR local pour extraire le texte des images et PDFs scannés.
-- **🔔 Notifications Intelligentes** : Le Ghost vous "tape sur l'épaule" uniquement quand il a une suggestion pertinente ("Tu ranges souvent les .pdf ici, je crée une règle ?").
-- **⚡️ Performance Native** : Surveillance de fichiers optimisée en C++ (`@parcel/watcher`).
-- **↩️ Annulation Sécurisée (Undo)** : Un clic pour tout annuler en cas d'erreur.
+![Oracle Chat Interface](docs/images/oracle.png)
+
+### 2. 📊 Dashboard Intelligent
+
+Gardez le contrôle sur votre chaos numérique. Le **Dashboard** vous offre une vue d'ensemble claire : statistiques de tri, volume d'espace libéré, et activité récente du "Ghost" qui travaille en arrière-plan.
+
+![Dashboard Overview](docs/images/Dashboard.png)
+
+### 3. 🧠 Le Cerveau (Learning Center)
+
+DashArchive ne se contente pas d'exécuter, il apprend. La section **Cerveau** vous montre ce que l'IA a compris de vos habitudes de tri et vous permet de valider ou corriger ses suggestions pour qu'elle s'améliore en permanence.
+
+![Learning Cerveau](docs/images/Cerveau.png)
+
+### 4. 📜 Historique & Traçabilité
+
+Rien n'est jamais perdu. L'**Historique** garde une trace de chaque fichier déplacé, copié ou renommé. Une erreur ? Un clic suffit pour annuler l'action et tout remettre à sa place initiale.
+
+![Historique Complet](docs/images/historique.png)
+
+## 🚀 Autres Atouts (Sous le capot)
+
+- **Notifications "Ghost" Contextuelles** : Une Smart Popup discrète pour les suggestions rapides.
+- **Architecture Local-First** : Vos données ne quittent jamais votre machine.
+- **Performance Native** : Optimisé pour la vitesse avec Electron et C++.
 
 ## 📦 Installation
 
