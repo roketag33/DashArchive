@@ -2,6 +2,38 @@
 
 Ce document liste les questions probables que ton professeur ou le jury pourrait poser, avec des éléments de réponse techniques et pertinents.
 
+## ⚡ Questions Spécifiques ElectronJS (Cours)
+
+### Q: Quelle est la différence fondamentale entre Main et Renderer Process ?
+
+**R:**
+
+- **Main Process (Node.js)** : Il y en a **un seul**. Il a accès à tout le système d'exploitation (`fs`, `child_process`). Il crée les fenêtres (`BrowserWindow`). Si lui plante, tout plante.
+- **Renderer Process (Chromium)** : Il y en a **un par fenêtre**. C'est une page web (HTML/CSS/JS). Il est "sandboxed" (bac à sable) et n'a **pas accès** au système de fichiers (par sécurité).
+
+### Q: Pourquoi `contextIsolation: true` est-il critique ?
+
+**R:**
+
+- Sans ça, le code de la page web (Renderer) partagerait le même contexte JavaScript que le script Preload (qui a des privilèges).
+- **Danger :** Un script malveillant dans le Renderer (ex: une pub injectée) pourrait modifier les prototypes natifs (Prototype Pollution) et pirater les fonctions privilégiées du Preload pour accéder à vos fichiers. L'isolation empêche cela.
+
+### Q: Qu'est-ce que le "Preload Script" ?
+
+**R:**
+
+- C'est un script spécial qui s'exécute **avant** la page web, mais qui a accès à la fois aux APIs Node.js (limitées) et au DOM.
+- Il sert de "passe-plat" sécurisé (`contextBridge`) pour exposer juste ce qu'il faut (ex: `window.ai.chat`) au Renderer, sans lui donner les clés du système.
+
+### Q: Comment gérez-vous le Packaging de l'application ?
+
+**R:**
+
+- J'utilise **electron-builder**. Il prend le code compilé (Vite), le bundle, et produit des installateurs natifs : `.dmg` (Mac), `.exe` (Windows), `.AppImage` (Linux).
+- Il gère aussi la signature de code (Code Signing) nécessaire pour éviter les alertes "Logiciel non sûr".
+
+---
+
 ## 🏗️ Architecture & Choix Techniques
 
 ### Q: Pourquoi avoir choisi Electron alors qu'il est réputé lourd ?
