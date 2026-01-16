@@ -39,6 +39,18 @@ Ce document liste les questions probables que ton professeur ou le jury pourrait
 - **`src/preload`** : La Douane. Scripts qui s'exécutent avant le Renderer pour exposer des APIs sécurisées via `contextBridge`.
 - **`src/shared`** : Le Dictionnaire. Types TypeScript partagés (Interfaces `FileObject`, `Rule`, `Message`) pour garantir que tout le monde parle la même langue.
 
+### Q: Pouvez-vous tracer le chemin d'une requête IA (IPC) ?
+
+**R:**
+Prenons l'exemple où l'utilisateur demande "Trie mes factures" :
+
+1.  **Renderer (React)** : L'utilisateur clique. Le composant appelle `window.ai.chat("Trie mes factures")`.
+2.  **Preload** : Intercepte l'appel et l'envoie via `ipcRenderer.invoke('ai:chat', ...)` au Main Process.
+3.  **Main Process** : Reçoit la demande. Il ne fait pas le calcul lui-même ! Il le relaye au **Worker** via `workerWindow.webContents.send('ai:chat', ...)`.
+4.  **Worker (Hidden)** : Reçoit le message, fait tourner Llama 3 (WebGPU), et génère la réponse token par token.
+5.  **Retour** : Le Worker renvoie les tokens au Main, qui les renvoie au Renderer via `mainWindow.webContents.send('ai:on-token')`.
+    => C'est ce ping-pong qui permet à l'interface de rester fluide pendant que le GPU travaille.
+
 ---
 
 ## 🤖 Intelligence Artificielle (Local-First)
